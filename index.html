@@ -12,41 +12,41 @@
         :root { --primary: #e23744; --light-bg: #f8f9fa; --dark: #2d2d2d; }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--light-bg); padding-bottom: 90px; }
         
-        /* 頂部導覽 */
         .hero-section { background: white; padding: 15px 15px 5px 15px; position: sticky; top:0; z-index: 1020; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .user-block { display: flex; align-items: center; gap: 8px; }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
         .user-name { font-size: 0.9rem; font-weight: bold; color: #555; }
 
-        /* 分類捲軸 */
         .cat-nav { display: flex; overflow-x: auto; white-space: nowrap; padding-bottom: 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
         .cat-nav::-webkit-scrollbar { display: none; }
         .cat-pill { padding: 6px 14px; background: #eee; color: #555; border-radius: 20px; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: 0.2s; border: 1px solid transparent; }
         .cat-pill.active { background: var(--dark); color: white; }
 
-        /* 商品卡片 */
         .section-title { font-weight: 700; margin: 25px 0 10px 0; padding-left: 10px; border-left: 4px solid var(--primary); font-size: 1.1rem; }
         .product-card { background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: none; }
         .product-img { width: 100%; height: 140px; object-fit: cover; background: #e9ecef; cursor: zoom-in; }
         .product-body { padding: 12px; position: relative; }
         
-        /* 數量控制 */
         .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: white; border: 1px solid #ddd; color: var(--primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: white; border-radius: 50px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid #eee; }
         .qty-btn { width: 30px; height: 30px; border: none; background: white; color: var(--primary); font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .qty-val { font-size: 0.9rem; font-weight: bold; width: 20px; text-align: center; color: #333; }
 
-        /* 購物車條 */
         .cart-bar { position: fixed; bottom: 20px; left: 5%; width: 90%; background: var(--primary); color: white; border-radius: 50px; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(226, 55, 68, 0.4); z-index: 1050; cursor: pointer; transition: 0.3s; transform: translateY(150%); }
         .cart-bar.show { transform: translateY(0); }
 
-        /* 🛒 圖片放大燈箱 (Lightbox) */
+        /* Lightbox */
         #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 9999; cursor: zoom-out; }
         #lightbox img { max-width: 90%; max-height: 80%; border-radius: 8px; transform: scale(0.9); transition: 0.3s; }
         #lightbox.show img { transform: scale(1); }
 
-        /* 載入動畫 */
         #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        
+        /* 🛒 購物車分類樣式 */
+        .cart-main-cat { background: #f8f9fa; color: var(--dark); padding: 8px 10px; font-weight: bold; border-left: 4px solid var(--primary); margin-top: 15px; border-radius: 4px; }
+        .cart-sub-cat { font-size: 0.85rem; color: #6c757d; margin: 8px 0 4px 10px; font-weight: bold; display: flex; align-items: center; }
+        .cart-sub-cat::before { content: ''; display: inline-block; width: 6px; height: 6px; background: #ccc; border-radius: 50%; margin-right: 6px; }
+        .cart-item-row { padding-left: 10px; border-bottom: 1px dashed #eee; padding-bottom: 8px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -64,7 +64,6 @@
             <img src="https://placehold.co/100x100?text=U" class="user-avatar" id="user-avatar">
         </div>
     </div>
-    
     <div class="d-flex justify-content-between align-items-center">
          <div class="cat-nav w-75" id="cat-nav"></div>
          <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="openMyOrders()">
@@ -86,8 +85,8 @@
 <div class="modal fade" id="cartModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold">購物清單</h5>
+            <div class="modal-header border-0 pb-0 bg-light">
+                <h5 class="modal-title fw-bold">🛒 購物清單</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="cart-modal-body"></div>
@@ -118,7 +117,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // 🔴 你的設定檔 (請勿隨意更動)
+    // 🔴 設定區 (GitHub Pages 模式)
     const LIFF_ID = "2009014517-qshUmlAc"; 
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
 
@@ -129,14 +128,11 @@
     const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
     const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
 
-    // 1. 初始化
     window.onload = function() {
-        console.log("網頁載入...");
-        fetchMenu(); // 載入菜單
-        initLiff();  // 初始化 LINE 登入
+        fetchMenu();
+        initLiff();
     };
 
-    // 2. LINE 登入邏輯 (修復版)
     async function initLiff() {
         try {
             await liff.init({ liffId: LIFF_ID });
@@ -145,24 +141,13 @@
                 userProfile = profile;
                 document.getElementById('user-name').innerText = profile.displayName;
                 if(profile.pictureUrl) document.getElementById('user-avatar').src = profile.pictureUrl;
-                console.log("LIFF 登入成功:", profile);
             } else {
-                console.log("LIFF 未登入，嘗試登入...");
-                // 🟢 如果未登入，強制執行登入 (解決登入壞掉問題)
                 liff.login(); 
             }
-        } catch (e) {
-            console.error("LIFF 初始化失敗:", e);
-            // 只有在非 LINE 環境下 alert，避免干擾體驗
-            if (!liff.isInClient()) {
-                alert("LINE 登入失敗，請確認網址或 LIFF 設定");
-            }
-        }
+        } catch (e) { console.error("LIFF Error:", e); }
     }
 
-    // 3. 抓取菜單
     function fetchMenu() {
-        // 加上 timestamp 防止快取
         fetch(GAS_URL + "?page=json&t=" + Date.now())
             .then(res => res.json())
             .then(data => {
@@ -172,13 +157,11 @@
                 document.getElementById('loader').style.display = 'none';
             })
             .catch(err => {
-                console.error(err);
-                alert("載入失敗，請檢查網路或後台");
+                alert("載入失敗");
                 document.getElementById('loader').innerHTML = '<div class="text-danger">載入失敗</div>';
             });
     }
 
-    // 4. 渲染菜單 (含圖片放大與防擋機制)
     function renderMenu() {
         const nav = document.getElementById('cat-nav');
         const container = document.getElementById('product-container');
@@ -201,7 +184,6 @@
                 const count = inCart ? inCart.count : 0;
                 const isOOS = p.status === 'oos' || p.stock <= 0;
 
-                // 🟢 圖片處理：加入 onclick 放大 + referrerpolicy 防止 Google Drive 擋圖
                 const imgHtml = p.img 
                     ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` 
                     : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
@@ -231,7 +213,6 @@
         });
     }
 
-    // 5. 購物車邏輯
     function updateQty(name, cat, delta) {
         const product = allData.products.find(p => p.name === name && p.cat === cat);
         const idx = cart.findIndex(c => c.name === name && c.cat === cat);
@@ -258,18 +239,56 @@
 
     function openCartModal() { renderCartModal(); cartModal.show(); }
 
+    // 🟢 購物車分類顯示邏輯 (大分類 > 中分類 > 商品)
     function renderCartModal() {
         const body = document.getElementById('cart-modal-body');
-        body.innerHTML = cart.map(i => `
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div><div class="fw-bold">${i.name}</div><small class="text-muted">$${i.price}</small></div>
-                <div class="d-flex align-items-center border rounded-pill">
-                    <button class="btn btn-sm" onclick="updateQty('${i.name}','${i.cat}',-1)">-</button>
-                    <span class="px-2 fw-bold">${i.count}</span>
-                    <button class="btn btn-sm" onclick="updateQty('${i.name}','${i.cat}',1)">+</button>
-                </div>
-            </div>
-        `).join('') || '<div class="text-center py-4 text-muted">購物車是空的</div>';
+        if (cart.length === 0) {
+            body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>';
+            return;
+        }
+
+        // 1. 資料分組
+        let grouped = {};
+        cart.forEach(item => {
+            // 從原始資料找回中分類 (因為 cart 只有大分類)
+            const originProd = allData.products.find(p => p.name === item.name && p.cat === item.cat);
+            const subCat = originProd ? (originProd.subCat || '其他') : '其他';
+
+            if (!grouped[item.cat]) grouped[item.cat] = {};
+            if (!grouped[item.cat][subCat]) grouped[item.cat][subCat] = [];
+            grouped[item.cat][subCat].push(item);
+        });
+
+        // 2. 產生 HTML
+        let html = '';
+        for (const [cat, subCats] of Object.entries(grouped)) {
+            // 大分類標題
+            html += `<div class="cart-main-cat">${cat}</div>`;
+            
+            for (const [subCat, items] of Object.entries(subCats)) {
+                // 中分類標題 (如果是'其他'且只有這一組，可以選擇隱藏，這裡全顯示比較清楚)
+                if (subCat && subCat !== '') {
+                    html += `<div class="cart-sub-cat">${subCat}</div>`;
+                }
+                
+                // 商品列表
+                items.forEach(i => {
+                    html += `
+                    <div class="d-flex justify-content-between align-items-center cart-item-row">
+                        <div>
+                            <div class="fw-bold">${i.name}</div>
+                            <small class="text-muted">$${i.price}</small>
+                        </div>
+                        <div class="d-flex align-items-center border rounded-pill bg-white">
+                            <button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',-1)">-</button>
+                            <span class="px-2 fw-bold text-dark">${i.count}</span>
+                            <button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',1)">+</button>
+                        </div>
+                    </div>`;
+                });
+            }
+        }
+        body.innerHTML = html;
     }
 
     function submitOrder() {
@@ -300,9 +319,8 @@
         }).catch(e => alert("錯誤: " + e));
     }
 
-    // 6. 🟢 圖片放大功能
     function zoomImg(e, url) {
-        e.stopPropagation(); // 防止觸發加入購物車
+        e.stopPropagation();
         const lb = document.getElementById('lightbox');
         document.getElementById('lightbox-img').src = url;
         lb.style.display = 'flex';
@@ -314,7 +332,6 @@
         setTimeout(() => lb.style.display = 'none', 300);
     }
 
-    // 7. 查單功能
     function openMyOrders() {
         myOrdersModal.show();
         const list = document.getElementById('my-orders-list');
