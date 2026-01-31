@@ -2,45 +2,79 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>線上點餐</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    
     <style>
-        body { padding-bottom: 80px; background-color: #f7f7f7; }
-        .hero { background: white; padding: 15px; position: sticky; top: 0; z-index: 99; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .cat-nav { overflow-x: auto; white-space: nowrap; padding-bottom: 5px; }
-        .cat-pill { display: inline-block; padding: 5px 15px; background: #eee; border-radius: 20px; margin-right: 5px; text-decoration: none; color: #333; }
-        .cat-pill.active { background: #333; color: white; }
-        .prod-card { background: white; border-radius: 10px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .prod-img { width: 100%; height: 150px; object-fit: cover; background: #ddd; }
-        .cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #e23744; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 100; cursor: pointer; }
-        .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: white; z-index: 999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        :root { --primary: #e23744; --light-bg: #f8f9fa; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--light-bg); padding-bottom: 80px; }
+        
+        /* 橫幅 Header */
+        .hero-section { background: white; padding: 15px 15px 5px 15px; position: sticky; top:0; z-index: 1020; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .store-title { font-weight: 800; font-size: 1.4rem; color: #333; margin-bottom: 10px; }
+
+        /* 分類導覽 */
+        .category-nav { display: flex; overflow-x: auto; white-space: nowrap; padding-bottom: 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
+        .category-nav::-webkit-scrollbar { display: none; }
+        .cat-pill { padding: 6px 14px; background: #eee; color: #555; border-radius: 20px; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: 0.2s; border: 1px solid transparent; }
+        .cat-pill.active { background: #333; color: white; border-color: #333; }
+
+        /* 商品卡片 */
+        .section-title { font-weight: 700; margin: 25px 0 10px 0; padding-left: 10px; border-left: 4px solid var(--primary); font-size: 1.1rem; }
+        .product-card { background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: none; transition: transform 0.1s; }
+        .product-card:active { transform: scale(0.98); }
+        .product-img { width: 100%; height: 150px; object-fit: cover; background: #e9ecef; }
+        .product-body { padding: 12px; position: relative; }
+        .product-name { font-weight: 700; font-size: 1rem; margin-bottom: 4px; color: #333; }
+        .product-price { font-weight: 700; color: #333; font-size: 1.1rem; }
+        .btn-add { position: absolute; bottom: 12px; right: 12px; width: 30px; height: 30px; border-radius: 50%; background: white; border: 1px solid #ddd; color: var(--primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* 缺貨樣式 */
+        .oos { opacity: 0.6; pointer-events: none; filter: grayscale(1); }
+        .oos-badge { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; }
+
+        /* 購物車 Bar */
+        .cart-bar { position: fixed; bottom: 20px; left: 5%; width: 90%; background: var(--primary); color: white; border-radius: 50px; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(226, 55, 68, 0.4); z-index: 1050; cursor: pointer; transition: 0.3s; transform: translateY(150%); }
+        .cart-bar.show { transform: translateY(0); }
+        
+        /* 載入畫面 */
+        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
-<div id="loader" class="loading-overlay">
+<div id="loader">
     <div class="spinner-border text-danger mb-3"></div>
-    <div>載入菜單中...</div>
+    <div class="fw-bold text-secondary">載入菜單中...</div>
 </div>
 
-<div class="hero">
-    <h4 class="fw-bold" id="store-title">歡迎光臨</h4>
-    <div class="cat-nav" id="cat-nav"></div>
+<div class="hero-section">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="store-title" id="store-title">歡迎光臨</div>
+        <div id="user-info" class="badge bg-light text-dark border">訪客</div>
+    </div>
+    <div class="category-nav" id="cat-nav"></div>
 </div>
 
-<div class="container mt-3" id="product-list"></div>
+<div class="container mt-2" id="product-container"></div>
 
-<div class="cart-bar" onclick="submitOrder()" id="cart-bar" style="display:none;">
-    <div class="fw-bold">查看購物車 & 結帳</div>
-    <div class="fw-bold" id="cart-total">$0</div>
+<div class="cart-bar" id="cart-bar" onclick="submitOrder()">
+    <div class="d-flex align-items-center">
+        <span class="badge bg-white text-danger me-2 rounded-pill" id="cart-count">0</span>
+        <span class="fw-bold">結帳</span>
+    </div>
+    <span class="fw-bold" id="cart-total">$0</span>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // 🔴 請在這裡填入你的資料
-    const GAS_URL = "https://script.google.com/macros/s/你的_GAS_部署網址/exec"; 
-    const LIFF_ID = "你的_LIFF_ID"; 
+    // 🟢 已經幫你填好了
+    const LIFF_ID = "2009014517-qshUmlAc";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
 
     let allData = {};
     let cart = [];
@@ -54,126 +88,148 @@
             if (liff.isLoggedIn()) {
                 const profile = await liff.getProfile();
                 userProfile = { userId: profile.userId, displayName: profile.displayName };
+                document.getElementById('user-info').innerText = `Hi, ${userProfile.displayName}`;
                 console.log("LIFF 登入成功:", userProfile);
             } else {
-                // 如果沒登入，可以選擇自動登入，或是保持訪客模式
-                // liff.login(); 
-                console.log("LIFF 未登入，使用訪客模式");
+                // 自動跳轉登入
+                liff.login();
             }
         } catch (e) {
-            console.error("LIFF 初始化失敗:", e);
+            console.error("LIFF 初始化失敗 (可能是本地測試):", e);
         }
 
         // 接著載入菜單
         fetchMenu();
     };
 
-    // 2. 從 GAS 抓取菜單 (解決 CORS 用的 fetch)
+    // 2. 從 GAS 抓取菜單
     function fetchMenu() {
-        // 加上 ?page=json 參數
         fetch(GAS_URL + "?page=json")
             .then(res => res.json())
             .then(data => {
                 allData = data;
-                document.getElementById('store-title').innerText = data.appTitle;
+                document.getElementById('store-title').innerText = data.appTitle || '線上點餐';
                 renderMenu();
                 document.getElementById('loader').style.display = 'none';
             })
             .catch(err => {
-                alert("載入失敗，請檢查網路或 GAS 網址");
+                alert("載入失敗，請檢查網路");
                 console.error(err);
+                document.getElementById('loader').innerHTML = '<div class="text-danger">無法連線到伺服器</div>';
             });
     }
 
     // 3. 渲染畫面
     function renderMenu() {
         const nav = document.getElementById('cat-nav');
-        const list = document.getElementById('product-list');
-        nav.innerHTML = '<a href="#" class="cat-pill active" onclick="filter(\'all\')">全部</a>';
-        list.innerHTML = '';
+        const container = document.getElementById('product-container');
+        
+        if (!allData.categories || allData.categories.length === 0) {
+            container.innerHTML = '<div class="text-center mt-5">目前沒有上架商品</div>';
+            return;
+        }
 
-        // 分類按鈕
+        nav.innerHTML = `<a href="#" class="cat-pill active" onclick="filterCat('all', this)">全部</a>`;
+        container.innerHTML = '';
+
+        // 產生分類按鈕 & 商品區塊
         allData.categories.forEach(cat => {
-            nav.innerHTML += `<a href="#cat-${cat}" class="cat-pill">${cat}</a>`;
+            nav.innerHTML += `<a href="#cat-${cat}" class="cat-pill" onclick="setActive(this)">${cat}</a>`;
             
-            // 該分類商品
             const items = allData.products.filter(p => p.cat === cat);
-            let html = `<h5 id="cat-${cat}" class="mt-4 mb-2 fw-bold">${cat}</h5><div class="row g-3">`;
+            if(items.length === 0) return;
+
+            let html = `<div id="cat-${cat}" class="section-title">${cat}</div><div class="row g-3">`;
             
             items.forEach(p => {
                 const isOOS = p.status === 'oos';
+                const imgDisplay = p.img 
+                    ? `<img src="${p.img}" class="product-img">` 
+                    : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-cup-straw fs-1"></i></div>`;
+
                 html += `
-                <div class="col-6 col-md-4">
-                    <div class="prod-card" onclick="addToCart('${p.name}', ${p.price})">
-                        ${p.img ? `<img src="${p.img}" class="prod-img">` : `<div class="prod-img"></div>`}
-                        <div class="p-2">
-                            <div class="fw-bold">${p.name}</div>
-                            <div class="d-flex justify-content-between mt-1">
-                                <span class="text-danger fw-bold">$${p.price}</span>
-                                ${isOOS ? '<span class="badge bg-secondary">售完</span>' : '<span class="badge bg-danger">+</span>'}
-                            </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="product-card ${isOOS ? 'oos' : ''}" onclick="addToCart('${p.name}', ${p.price}, '${cat}')">
+                        <div class="position-relative">
+                            ${imgDisplay}
+                            ${isOOS ? `<span class="oos-badge">售完</span>` : ''}
+                        </div>
+                        <div class="product-body">
+                            <div class="product-name text-truncate">${p.name}</div>
+                            <div class="product-price">$${p.price}</div>
+                            ${!isOOS ? `<div class="btn-add"><i class="bi bi-plus-lg"></i></div>` : ''}
                         </div>
                     </div>
                 </div>`;
             });
-            html += '</div>';
-            list.innerHTML += html;
+            html += `</div>`;
+            container.innerHTML += html;
         });
     }
 
+    function setActive(el) {
+        document.querySelectorAll('.cat-pill').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+    }
+
     // 4. 購物車邏輯
-    function addToCart(name, price) {
-        cart.push({ name, price });
-        updateCart();
+    function addToCart(name, price, cat) {
+        const item = cart.find(i => i.name === name && i.cat === cat);
+        if (item) item.count++;
+        else cart.push({ name, price, cat, count: 1 });
+        updateCartUI();
     }
 
-    function updateCart() {
-        const total = cart.reduce((sum, item) => sum + item.price, 0);
+    function updateCartUI() {
+        const total = cart.reduce((sum, i) => sum + (i.price * i.count), 0);
+        const count = cart.reduce((sum, i) => sum + i.count, 0);
+
+        document.getElementById('cart-count').innerText = count;
         document.getElementById('cart-total').innerText = '$' + total;
-        document.getElementById('cart-bar').style.display = cart.length > 0 ? 'flex' : 'none';
+
+        const bar = document.getElementById('cart-bar');
+        if (count > 0) bar.classList.add('show');
+        else bar.classList.remove('show');
     }
 
-    // 5. 送出訂單 (使用 fetch POST)
+    // 5. 送出訂單
     function submitOrder() {
-        if(!confirm(`確定送出訂單？總金額 $${document.getElementById('cart-total').innerText}`)) return;
+        if(!confirm(`確定送出訂單？\n總金額: $${document.getElementById('cart-total').innerText}`)) return;
 
-        // 整理商品字串
-        const itemsSummary = cart.map(i => i.name).join(', ');
-        const total = cart.reduce((sum, item) => sum + item.price, 0);
+        const total = cart.reduce((sum, i) => sum + (i.price * i.count), 0);
+        const itemsStr = cart.map(i => `${i.name} x${i.count}`).join(', ');
 
         const orderData = {
             action: 'createOrder',
             order: {
                 userId: userProfile.userId,
                 displayName: userProfile.displayName,
-                itemsStr: itemsSummary,
+                itemsStr: itemsStr,
                 total: total
             }
         };
 
-        // 顯示載入中
-        document.getElementById('loader').style.display = 'flex';
-        document.getElementById('loader').innerHTML = '<div class="spinner-border text-danger"></div><div>訂單傳送中...</div>';
+        // 顯示載入動畫
+        const loader = document.getElementById('loader');
+        loader.innerHTML = '<div class="spinner-border text-danger"></div><div class="mt-2 fw-bold">訂單傳送中...</div>';
+        loader.style.display = 'flex';
 
-        // 使用 standard fetch POST
+        // 使用 no-cors 模式發送
         fetch(GAS_URL, {
             method: 'POST',
             body: JSON.stringify(orderData),
-            mode: 'no-cors' // 🔴 關鍵：GAS POST 必須用 no-cors，雖然拿不到回傳值，但能成功送出
+            mode: 'no-cors', 
+            headers: { 'Content-Type': 'application/json' }
         }).then(() => {
-            // 因為 no-cors 拿不到 response，我們假設成功
-            alert("✅ 訂單已送出！");
+            alert('🎉 訂單已送出！\n店家已收到您的點餐。');
             cart = [];
-            updateCart();
-            document.getElementById('loader').style.display = 'none';
-            // 這裡可以選擇關閉視窗 liff.closeWindow();
+            updateCartUI();
+            loader.style.display = 'none';
         }).catch(err => {
-            alert("❌ 發送失敗");
-            console.error(err);
-            document.getElementById('loader').style.display = 'none';
+            alert('❌ 發生錯誤: ' + err);
+            loader.style.display = 'none';
         });
     }
 </script>
-
 </body>
 </html>
