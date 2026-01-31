@@ -60,7 +60,7 @@
     <div class="d-flex justify-content-between align-items-center mb-2">
         <div class="fw-bold fs-5 text-dark" id="store-title">線上點餐</div>
         <div class="user-block">
-            <span class="user-name" id="user-name">訪客</span>
+            <span class="user-name" id="user-name">訪客 (未登入)</span>
             <img src="https://placehold.co/100x100?text=U" class="user-avatar" id="user-avatar">
         </div>
     </div>
@@ -118,7 +118,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // 🔴 記得換成你的 LIFF ID 與 GAS 網址
+    // 🔴 你的設定檔 (請勿隨意更動)
     const LIFF_ID = "2009014517-qshUmlAc"; 
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
 
@@ -129,11 +129,14 @@
     const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
     const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
 
+    // 1. 初始化
     window.onload = function() {
-        fetchMenu();
-        initLiff();
+        console.log("網頁載入...");
+        fetchMenu(); // 載入菜單
+        initLiff();  // 初始化 LINE 登入
     };
 
+    // 2. LINE 登入邏輯 (修復版)
     async function initLiff() {
         try {
             await liff.init({ liffId: LIFF_ID });
@@ -142,11 +145,24 @@
                 userProfile = profile;
                 document.getElementById('user-name').innerText = profile.displayName;
                 if(profile.pictureUrl) document.getElementById('user-avatar').src = profile.pictureUrl;
+                console.log("LIFF 登入成功:", profile);
+            } else {
+                console.log("LIFF 未登入，嘗試登入...");
+                // 🟢 如果未登入，強制執行登入 (解決登入壞掉問題)
+                liff.login(); 
             }
-        } catch (e) { console.error("LIFF錯誤:", e); }
+        } catch (e) {
+            console.error("LIFF 初始化失敗:", e);
+            // 只有在非 LINE 環境下 alert，避免干擾體驗
+            if (!liff.isInClient()) {
+                alert("LINE 登入失敗，請確認網址或 LIFF 設定");
+            }
+        }
     }
 
+    // 3. 抓取菜單
     function fetchMenu() {
+        // 加上 timestamp 防止快取
         fetch(GAS_URL + "?page=json&t=" + Date.now())
             .then(res => res.json())
             .then(data => {
@@ -155,16 +171,24 @@
                 renderMenu();
                 document.getElementById('loader').style.display = 'none';
             })
-            .catch(err => alert("載入失敗，請重新整理"));
+            .catch(err => {
+                console.error(err);
+                alert("載入失敗，請檢查網路或後台");
+                document.getElementById('loader').innerHTML = '<div class="text-danger">載入失敗</div>';
+            });
     }
 
+    // 4. 渲染菜單 (含圖片放大與防擋機制)
     function renderMenu() {
         const nav = document.getElementById('cat-nav');
         const container = document.getElementById('product-container');
         nav.innerHTML = '<a href="#" class="cat-pill active">全部</a>';
         container.innerHTML = '';
 
-        if (!allData.categories) return;
+        if (!allData.categories || allData.categories.length === 0) {
+            container.innerHTML = '<div class="text-center mt-5 text-muted">目前沒有商品</div>';
+            return;
+        }
 
         allData.categories.forEach(cat => {
             nav.innerHTML += `<a href="#cat-${cat}" class="cat-pill">${cat}</a>`;
@@ -177,7 +201,7 @@
                 const count = inCart ? inCart.count : 0;
                 const isOOS = p.status === 'oos' || p.stock <= 0;
 
-                // 圖片點擊放大，使用 referrerpolicy 防止 Drive 擋圖
+                // 🟢 圖片處理：加入 onclick 放大 + referrerpolicy 防止 Google Drive 擋圖
                 const imgHtml = p.img 
                     ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` 
                     : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
@@ -207,6 +231,7 @@
         });
     }
 
+    // 5. 購物車邏輯
     function updateQty(name, cat, delta) {
         const product = allData.products.find(p => p.name === name && p.cat === cat);
         const idx = cart.findIndex(c => c.name === name && c.cat === cat);
@@ -260,7 +285,7 @@
                 displayName: userProfile.displayName,
                 itemsStr: cart.map(i => `${i.name} x${i.count}`).join(', '),
                 total: cart.reduce((s, i) => s + (i.price * i.count), 0),
-                cartItems: cart // 傳送詳細品項供後台扣庫存
+                cartItems: cart 
             }
         };
 
@@ -269,15 +294,15 @@
             body: JSON.stringify(orderData),
             mode: 'no-cors'
         }).then(() => {
-            alert("訂單已送出！");
+            alert("🎉 訂單已送出！");
             cart = []; updateCartUI(); renderMenu();
             document.getElementById('loader').style.display = 'none';
         }).catch(e => alert("錯誤: " + e));
     }
 
-    // 🟢 圖片放大功能
+    // 6. 🟢 圖片放大功能
     function zoomImg(e, url) {
-        e.stopPropagation();
+        e.stopPropagation(); // 防止觸發加入購物車
         const lb = document.getElementById('lightbox');
         document.getElementById('lightbox-img').src = url;
         lb.style.display = 'flex';
@@ -289,6 +314,7 @@
         setTimeout(() => lb.style.display = 'none', 300);
     }
 
+    // 7. 查單功能
     function openMyOrders() {
         myOrdersModal.show();
         const list = document.getElementById('my-orders-list');
@@ -303,7 +329,7 @@
                         <div class="small text-secondary">${o.items}</div>
                         <div class="text-end fw-bold text-danger mt-1">$${o.total}</div>
                     </div>
-                `).join('') || '尚無訂單紀錄';
+                `).join('') || '<div class="text-center py-3">尚無訂單紀錄</div>';
             });
     }
 </script>
