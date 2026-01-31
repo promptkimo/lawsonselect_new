@@ -3,167 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>線上點餐系統</title>
+    <title>線上點餐</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     
     <style>
-        body { font-family: sans-serif; background-color: #f8f9fa; padding-bottom: 100px; }
-        .hero { background: white; padding: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #ddd; }
-        .cat-scroll { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 5px; }
-        .cat-btn { white-space: nowrap; padding: 5px 15px; background: #eee; border-radius: 20px; text-decoration: none; color: #333; }
-        .cat-btn.active { background: #333; color: white; }
-        .prod-card { background: white; border-radius: 10px; margin-bottom: 15px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .prod-img { width: 100%; height: 150px; object-fit: cover; background: #ddd; }
-        .cart-bar { position: fixed; bottom: 20px; left: 5%; width: 90%; background: #dc3545; color: white; padding: 15px; border-radius: 50px; display: none; justify-content: space-between; align-items: center; cursor: pointer; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        :root { --primary: #e23744; --light-bg: #f8f9fa; --dark: #2d2d2d; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--light-bg); padding-bottom: 90px; }
+        
+        /* Header & User Info */
+        .hero-section { background: white; padding: 15px 15px 5px 15px; position: sticky; top:0; z-index: 1020; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .user-block { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
+        .user-name { font-size: 0.9rem; font-weight: bold; color: #555; }
+
+        /* Cat Nav */
+        .cat-nav { display: flex; overflow-x: auto; white-space: nowrap; padding-bottom: 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
+        .cat-nav::-webkit-scrollbar { display: none; }
+        .cat-pill { padding: 6px 14px; background: #eee; color: #555; border-radius: 20px; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: 0.2s; border: 1px solid transparent; }
+        .cat-pill.active { background: var(--dark); color: white; }
+
+        /* Products */
+        .section-title { font-weight: 700; margin: 25px 0 10px 0; padding-left: 10px; border-left: 4px solid var(--primary); font-size: 1.1rem; }
+        .product-card { background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: none; }
+        .product-img { width: 100%; height: 140px; object-fit: cover; background: #e9ecef; }
+        .product-body { padding: 12px; position: relative; }
+        
+        /* 🟢 Quantity Controls on Card */
+        .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: white; border: 1px solid #ddd; color: var(--primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
+        .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: white; border-radius: 50px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid #eee; }
+        .qty-btn { width: 30px; height: 30px; border: none; background: white; color: var(--primary); font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .qty-btn:active { background: #f0f0f0; }
+        .qty-val { font-size: 0.9rem; font-weight: bold; width: 20px; text-align: center; color: #333; }
+
+        .oos-badge { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; }
+        .oos { filter: grayscale(1); opacity: 0.7; pointer-events: none; }
+
+        /* Cart Bar */
+        .cart-bar { position: fixed; bottom: 20px; left: 5%; width: 90%; background: var(--primary); color: white; border-radius: 50px; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(226, 55, 68, 0.4); z-index: 1050; cursor: pointer; transition: 0.3s; transform: translateY(150%); }
+        .cart-bar.show { transform: translateY(0); }
+
+        /* Loader */
+        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
 <div id="loader">
     <div class="spinner-border text-danger mb-3"></div>
-    <div id="loading-msg">系統載入中...</div>
+    <div class="fw-bold text-secondary">載入菜單中...</div>
 </div>
 
-<div class="hero">
+<div class="hero-section">
     <div class="d-flex justify-content-between align-items-center mb-2">
-        <h5 class="m-0 fw-bold" id="store-title">歡迎光臨</h5>
-        <small id="user-name" class="badge bg-light text-dark border">訪客</small>
+        <div class="fw-bold fs-5 text-dark" id="store-title">線上點餐</div>
+        <div class="user-block" id="user-block">
+            <span class="user-name" id="user-name">訪客</span>
+            <img src="https://placehold.co/100x100?text=U" class="user-avatar" id="user-avatar">
+        </div>
     </div>
-    <div class="cat-scroll" id="cat-nav"></div>
+    
+    <div class="d-flex justify-content-between align-items-center">
+         <div class="category-nav w-75" id="cat-nav"></div>
+         <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="openMyOrders()">
+             <i class="bi bi-receipt"></i> 訂單
+         </button>
+    </div>
 </div>
 
-<div class="container mt-3" id="product-container"></div>
+<div class="container mt-2" id="product-container"></div>
 
 <div class="cart-bar" id="cart-bar" onclick="submitOrder()">
-    <strong>查看購物車 (<span id="cart-count">0</span>)</strong>
-    <strong id="cart-total">$0</strong>
+    <div class="d-flex align-items-center">
+        <span class="badge bg-white text-danger me-2 rounded-pill" id="cart-count">0</span>
+        <span class="fw-bold">去結帳</span>
+    </div>
+    <span class="fw-bold" id="cart-total">$0</span>
+</div>
+
+<div class="modal fade" id="myOrdersModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">歷史訂單</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body bg-light" id="my-orders-list"></div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // 🔴 1. 強制除錯：確認 JS 有跑
-    console.log("=== 程式開始執行 ===");
-
-    // 設定
-    const LIFF_ID = "2009014517-qshUmlAc";
+    // 🟢 你的設定
+    const LIFF_ID = "2009014517-qshUmlAc"; 
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
 
     let allData = {};
     let cart = [];
-    let userProfile = { userId: 'guest', displayName: '訪客' };
+    let userProfile = { userId: 'guest', displayName: '訪客', pictureUrl: '' };
+    const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
 
-    // 2. 初始化
     window.onload = function() {
-        console.log("網頁載入完成，開始抓取資料...");
-        
-        // 優先抓菜單
-        fetchMenu();
-        
-        // 背景登入 LIFF
-        initLiff();
+        console.log("Start loading...");
+        fetchMenu(); // 優先載入菜單
+        initLiff();  // 並行登入
     };
 
     async function initLiff() {
         try {
             await liff.init({ liffId: LIFF_ID });
             if (liff.isLoggedIn()) {
-                const p = await liff.getProfile();
-                userProfile = p;
-                document.getElementById('user-name').innerText = p.displayName;
-                console.log("LIFF 登入成功:", p);
+                const profile = await liff.getProfile();
+                userProfile = profile;
+                document.getElementById('user-name').innerText = profile.displayName;
+                if(profile.pictureUrl) document.getElementById('user-avatar').src = profile.pictureUrl;
+                console.log("LIFF logged in");
             } else {
-                console.log("LIFF 未登入");
+                // liff.login(); // 可選擇是否強制登入
+                console.log("LIFF not logged in");
             }
         } catch (e) {
-            console.error("LIFF 錯誤:", e);
+            console.error("LIFF Init Failed:", e);
         }
     }
 
     function fetchMenu() {
-        document.getElementById('loading-msg').innerText = "正在連線資料庫...";
-        
+        // 加 timestamp 防止快取
         fetch(GAS_URL + "?page=json&t=" + Date.now())
             .then(res => res.json())
             .then(data => {
-                console.log("收到 GAS 資料:", data);
                 allData = data;
                 document.getElementById('store-title').innerText = data.appTitle || '線上點餐';
                 renderMenu();
                 document.getElementById('loader').style.display = 'none';
             })
             .catch(err => {
-                console.error("GAS 連線失敗:", err);
-                alert("連線失敗！請按 F12 看 Console 錯誤訊息");
-                document.getElementById('loading-msg').innerHTML = `<span class="text-danger">無法連線<br>請確認後台部署權限</span>`;
+                alert("載入失敗 (請檢查後台權限)");
+                document.getElementById('loader').innerHTML = '<div class="text-danger">無法連線</div>';
             });
     }
 
     function renderMenu() {
         const nav = document.getElementById('cat-nav');
-        const box = document.getElementById('product-container');
+        const container = document.getElementById('product-container');
         
         if (!allData.categories || allData.categories.length === 0) {
-            box.innerHTML = '<div class="text-center mt-5">目前無商品</div>';
+            container.innerHTML = '<div class="text-center mt-5">目前沒有上架商品</div>';
             return;
         }
 
-        nav.innerHTML = '<a href="#" class="cat-btn active" onclick="filterCat(\'all\',this)">全部</a>';
-        box.innerHTML = '';
+        nav.innerHTML = `<a href="#" class="cat-pill active" onclick="filterCat('all', this)">全部</a>`;
+        container.innerHTML = '';
 
         allData.categories.forEach(cat => {
-            nav.innerHTML += `<a href="#cat-${cat}" class="cat-btn" onclick="setActive(this)">${cat}</a>`;
+            nav.innerHTML += `<a href="#cat-${cat}" class="cat-pill" onclick="setActive(this)">${cat}</a>`;
             const items = allData.products.filter(p => p.cat === cat);
+            if(items.length === 0) return;
+
+            let html = `<div id="cat-${cat}" class="section-title">${cat}</div><div class="row g-3">`;
             
-            let html = `<h6 id="cat-${cat}" class="mt-4 fw-bold border-start border-4 border-danger ps-2">${cat}</h6><div class="row g-3">`;
             items.forEach(p => {
                 const isOOS = p.status === 'oos';
+                // 檢查購物車數量
+                const inCart = cart.find(c => c.name === p.name && c.cat === cat);
+                const count = inCart ? inCart.count : 0;
+                
+                // 🟢 產生按鈕 HTML
+                let btnHtml = '';
+                if (!isOOS) {
+                    if (count > 0) {
+                        // 顯示 [-] 1 [+]
+                        btnHtml = `
+                        <div class="qty-group">
+                            <button class="qty-btn" onclick="updateQty('${p.name}', '${cat}', -1)">-</button>
+                            <span class="qty-val">${count}</span>
+                            <button class="qty-btn" onclick="updateQty('${p.name}', '${cat}', 1)">+</button>
+                        </div>`;
+                    } else {
+                        // 顯示 [+]
+                        btnHtml = `<div class="btn-add-only" onclick="updateQty('${p.name}', '${cat}', 1)"><i class="bi bi-plus-lg"></i></div>`;
+                    }
+                }
+
+                const imgHtml = p.img 
+                    ? `<img src="${p.img}" class="product-img">` 
+                    : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-cup-straw fs-1"></i></div>`;
+
                 html += `
-                <div class="col-6 col-md-4">
-                    <div class="prod-card" onclick="addToCart('${p.name}', ${p.price}, '${cat}')">
-                        ${p.img ? `<img src="${p.img}" class="prod-img">` : `<div class="prod-img"></div>`}
-                        <div class="p-2">
-                            <div class="fw-bold text-truncate">${p.name}</div>
-                            <div class="d-flex justify-content-between mt-1">
-                                <span class="text-danger fw-bold">$${p.price}</span>
-                                ${isOOS ? '<span class="badge bg-secondary">售完</span>' : '<span class="badge bg-danger">+</span>'}
-                            </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="product-card ${isOOS ? 'oos' : ''}">
+                        <div class="position-relative">
+                            ${imgHtml}
+                            ${isOOS ? `<span class="oos-badge">售完</span>` : ''}
+                        </div>
+                        <div class="product-body">
+                            <div class="product-name text-truncate">${p.name}</div>
+                            <div class="product-price">$${p.price}</div>
+                            ${btnHtml}
                         </div>
                     </div>
                 </div>`;
             });
-            html += '</div>';
-            box.innerHTML += html;
+            html += `</div>`;
+            container.innerHTML += html;
         });
     }
 
     function setActive(el) {
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.cat-pill').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
     }
 
-    function addToCart(name, price, cat) {
-        const exist = cart.find(i => i.name === name && i.cat === cat);
-        if(exist) exist.count++; else cart.push({name, price, cat, count:1});
-        updateCart();
+    // 🟢 更新數量 (核心邏輯)
+    function updateQty(name, cat, delta) {
+        const product = allData.products.find(p => p.name === name && p.cat === cat);
+        if (!product) return;
+
+        const idx = cart.findIndex(c => c.name === name && c.cat === cat);
+        
+        if (idx > -1) {
+            cart[idx].count += delta;
+            if (cart[idx].count <= 0) cart.splice(idx, 1);
+        } else if (delta > 0) {
+            cart.push({ name: name, price: product.price, cat: cat, count: 1 });
+        }
+        
+        // 🌟 關鍵：重繪選單 (讓卡片上的數字更新) & 更新購物車條
+        renderMenu();
+        updateCartUI();
     }
 
-    function updateCart() {
-        const total = cart.reduce((acc, i) => acc + (i.price * i.count), 0);
-        const count = cart.reduce((acc, i) => acc + i.count, 0);
-        document.getElementById('cart-total').innerText = '$' + total;
+    function updateCartUI() {
+        const total = cart.reduce((sum, i) => sum + (i.price * i.count), 0);
+        const count = cart.reduce((sum, i) => sum + i.count, 0);
+
         document.getElementById('cart-count').innerText = count;
-        document.getElementById('cart-bar').style.display = count > 0 ? 'flex' : 'none';
+        document.getElementById('cart-total').innerText = '$' + total;
+
+        const bar = document.getElementById('cart-bar');
+        if (count > 0) bar.classList.add('show');
+        else bar.classList.remove('show');
     }
 
     function submitOrder() {
-        if(!confirm(`確認送出訂單？總額 $${document.getElementById('cart-total').innerText}`)) return;
-        
-        const loader = document.getElementById('loader');
-        loader.style.display = 'flex';
-        document.getElementById('loading-msg').innerText = "訂單傳送中...";
+        if(!confirm(`確認送出訂單？\n總額: $${document.getElementById('cart-total').innerText}`)) return;
 
         const orderData = {
             action: 'createOrder',
@@ -171,23 +256,66 @@
                 userId: userProfile.userId,
                 displayName: userProfile.displayName,
                 itemsStr: cart.map(i => `${i.name} x${i.count}`).join(', '),
-                total: cart.reduce((acc, i) => acc + (i.price * i.count), 0)
+                total: cart.reduce((sum, i) => sum + (i.price * i.count), 0)
             }
         };
+
+        // 顯示 loading
+        const loader = document.getElementById('loader');
+        loader.style.display = 'flex';
+        document.querySelector('#loader .fw-bold').innerText = "訂單傳送中...";
 
         fetch(GAS_URL, {
             method: 'POST',
             body: JSON.stringify(orderData),
             mode: 'no-cors',
-            headers: {'Content-Type': 'application/json'}
+            headers: { 'Content-Type': 'application/json' }
         }).then(() => {
-            alert("訂單已送出！");
-            cart = []; updateCart();
+            alert('🎉 訂單已送出！');
+            cart = [];
+            renderMenu();
+            updateCartUI();
             loader.style.display = 'none';
-        }).catch(e => {
-            alert("錯誤: " + e);
+        }).catch(err => {
+            alert('錯誤: ' + err);
             loader.style.display = 'none';
         });
+    }
+
+    function openMyOrders() {
+        myOrdersModal.show();
+        const list = document.getElementById('my-orders-list');
+        list.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-secondary"></div><div class="mt-2 text-muted">查詢中...</div></div>';
+
+        fetch(GAS_URL + "?page=myOrders&uid=" + userProfile.userId)
+            .then(res => res.json())
+            .then(orders => {
+                list.innerHTML = '';
+                if (orders.length === 0) {
+                    list.innerHTML = '<div class="text-center py-5 text-muted">無訂單紀錄</div>';
+                    return;
+                }
+                orders.forEach(o => {
+                    let badgeClass = 'bg-secondary';
+                    if (o.status === '待處理') badgeClass = 'bg-warning text-dark';
+                    if (o.status === '處理中') badgeClass = 'bg-primary';
+                    if (o.status === '已完成') badgeClass = 'bg-success';
+
+                    list.innerHTML += `
+                    <div class="bg-white border rounded p-3 mb-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge ${badgeClass}">${o.status}</span>
+                            <small class="text-muted">${o.date.split(' ')[0]}</small>
+                        </div>
+                        <div class="fw-bold mb-1">#${o.id}</div>
+                        <div class="text-secondary small mb-2">${o.items}</div>
+                        <div class="text-end fw-bold text-danger">$${o.total}</div>
+                    </div>`;
+                });
+            })
+            .catch(err => {
+                list.innerHTML = '<div class="text-danger text-center">無法查詢</div>';
+            });
     }
 </script>
 </body>
