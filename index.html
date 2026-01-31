@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#f8f9fa">
+
+    <title>線上點餐系統</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #0d6efd; --secondary-color: #6c757d; 
+            --danger-color: #dc3545; --light-bg: #f8f9fa; 
+            --text-dark: #212529; --line-green: #06C755;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        html { height: 100%; overflow: hidden; overscroll-behavior: none; }
+        body { 
+            background-color: var(--light-bg); color: var(--text-dark);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            width: 100%; height: 100%; margin: 0; padding: 0;
+            padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
+            overflow: hidden; -webkit-user-select: none; user-select: none; position: fixed;
+        }
+
+        #app-scroll-container {
+            width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden;
+            padding-bottom: 120px; -webkit-overflow-scrolling: touch;
+        }
+
+        .header-section {
+            background: white; padding: 15px; margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6; box-shadow: var(--shadow-sm);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .header-title { font-weight: 700; margin: 0; font-size: 1.5rem; }
+
+        .category-btn {
+            font-size: 1rem; font-weight: 500; padding: 8px 16px; margin-bottom: 5px;
+            border: 1px solid #dee2e6; border-radius: 50px; background: white; color: var(--text-dark);
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .category-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: var(--shadow-md); }
+
+        .search-box {
+            border-radius: 50px; border: 1px solid #dee2e6; padding-left: 40px; height: 45px; font-size: 1rem;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23999' class='bi bi-search' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: 15px center;
+        }
+
+        .product-card {
+            background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 12px;
+            display: flex; align-items: center; height: 100%; min-height: 100px;
+            box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+            transition: transform 0.1s;
+        }
+        .product-card:active { transform: scale(0.98); }
+        .product-card.disabled { opacity: 0.7; background-color: #f8f9fa; }
+        
+        .product-thumb {
+            width: 75px; height: 75px; flex-shrink: 0; border-radius: 6px; margin-right: 15px;
+            background-size: cover; background-position: center; background-color: #eee; border: 1px solid #dee2e6;
+        }
+        .product-info { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-right: 40px; }
+        .product-name { font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 4px; line-height: 1.3; }
+        .product-price-tag { color: var(--danger-color); font-size: 1.2rem; font-weight: 700; margin: 0; }
+        
+        .stock-badge { font-size: 0.85rem; padding: 3px 8px; border-radius: 4px; margin-top: 5px; display: inline-block; font-weight: bold; }
+        .stock-normal { background-color: #e8f5e9; color: #198754; border: 1px solid #c3e6cb; }
+        .stock-low { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .stock-out { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .stock-disco { background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+
+        .tag-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-weight: bold; color: white;}
+        .tag-new { background-color: #198754; }
+        .tag-hot { background-color: #dc3545; }
+
+        .btn-add-cart-wrapper { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; z-index: 10; }
+        .btn-add-cart {
+            width: 100%; height: 100%; border-radius: 50%; border: none;
+            background: var(--primary-color); color: white;
+            font-size: 1.5rem; display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-md); padding-bottom: 4px;
+        }
+        .btn-add-cart:disabled { background-color: #adb5bd; box-shadow: none; cursor: not-allowed; }
+        
+        .product-qty-badge {
+            position: absolute; top: -5px; right: -5px; background: var(--danger-color); color: white;
+            font-size: 0.8rem; font-weight: 700; width: 22px; height: 22px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; border: 2px solid white; z-index: 20;
+        }
+
+        .cart-fab {
+            position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; border-radius: 50%;
+            background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4); z-index: 1000; border: 3px solid white; cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .cart-fab:active { transform: scale(0.9); }
+        .cart-badge {
+            position: absolute; top: 0; right: 0; background: var(--danger-color); color: white;
+            border-radius: 50%; padding: 4px 8px; font-size: 0.85rem; font-weight: 700; border: 2px solid white;
+        }
+
+        .modal-content { border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .subcat-header { font-size: 1.1rem; font-weight: 700; color: var(--secondary-color); padding: 10px 5px; margin-top: 15px; border-bottom: 2px solid #dee2e6; }
+        
+        .hidden { display: none !important; }
+        
+        #loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 2000; display:flex; justify-content:center; align-items:center; color:white; flex-direction:column; text-align: center;}
+        #loading-text { font-size: 1.2rem; font-weight: bold; margin-top: 15px; }
+
+        .btn-line {
+            background-color: var(--line-green); color: white; border: none; transition: transform 0.1s;
+        }
+        .btn-line:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+<div id="loading-overlay">
+    <div class="spinner-border text-light mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+    <div id="loading-text">正在更新菜單...</div>
+</div>
+
+<div id="app-scroll-container">
+    <div class="header-section">
+        <div class="container d-flex justify-content-center align-items-center p-0">
+            <h3 class="header-title" id="display-title">價目表</h3>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row g-2 mb-3" id="category-btn-container"></div>
+        
+        <div class="mb-3 ps-1 pe-1">
+            <input type="text" id="front-search-input" class="form-control search-box" placeholder="🔍 搜尋商品..." oninput="handleFrontSearch()">
+        </div>
+
+        <div id="product-list" class="row g-2"></div>
+    </div>
+    
+    <div id="cart-fab" class="cart-fab hidden" onclick="openCartModal()">
+        <i class="bi bi-cart-fill"></i>
+        <span id="cart-count" class="cart-badge hidden">0</span>
+    </div>
+</div>
+
+<div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">購物清單</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cart-items-container"></div>
+            </div>
+            <div class="modal-footer d-flex flex-column">
+                <div class="d-flex w-100 justify-content-between mb-3 align-items-center">
+                     <span class="me-2 text-muted">總計金額</span>
+                     <span class="h2 m-0 fw-bold text-danger" id="cart-total-price">$0</span>
+                </div>
+                <div class="w-100 d-flex gap-2">
+                    <button class="btn btn-secondary flex-grow-1" data-bs-dismiss="modal">繼續選購</button>
+                    <button class="btn btn-outline-danger" onclick="clearCart()">清空</button>
+                </div>
+                <button class="btn btn-line w-100 py-3 mt-2 fw-bold fs-5 shadow-sm" onclick="sendToLine()">
+                    <i class="bi bi-send-fill me-2"></i> 點我直接傳送訂單
+                </button>
+                <div class="text-muted small text-center mt-1">
+                    * 將自動開啟 LINE 視窗，訂單會自動填入，按下傳送即可。
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="imgModal" tabindex="-1" onclick="imgModal.hide()">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-transparent shadow-none border-0">
+            <div class="modal-body p-0 text-center">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" onclick="imgModal.hide()"></button>
+                <img id="big-image" src="" style="max-width:95%; max-height:90vh; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // --- 你的後台連接網址 (已填入) ---
+    const gasApiUrl = "https://script.google.com/macros/s/AKfycbx0na9Xn30yu0uRmIoOEvLdhYwq6PUM51pgIo3WA30E3gKj3LG6drnPfhsWy-GPDqXW/exec";
+    
+    // 全域變數
+    let products = [];
+    let categories = [];
+    let subCategories = {};
+    let cart = [];
+    
+    // 初始化 Modal
+    let cartModal, imgModal;
+
+    window.onload = function() {
+        cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
+        imgModal = new bootstrap.Modal(document.getElementById('imgModal'));
+        localforage.config({ name: 'PriceListApp_Front' });
+        
+        // 1. 先讀取本地購物車
+        loadCart().then(() => {
+            // 2. 再從雲端下載最新菜單
+            loadData();
+        });
+    };
+
+    // --- 資料讀取 ---
+    async function loadData() {
+        toggleLoading(true);
+        try {
+            // 加上 ?page=json 參數來取得 JSON 資料
+            const response = await fetch(gasApiUrl + "?page=json");
+            if(!response.ok) throw new Error("網路連線異常");
+            
+            const data = await response.json();
+            
+            if(data && data.products) {
+                products = data.products;
+                categories = data.categories;
+                subCategories = data.subCategories || {};
+                
+                // 渲染介面
+                renderFrontUI();
+                
+                // 再次確認購物車數量與新庫存的關係
+                updateCartFab();
+            } else {
+                throw new Error("資料格式錯誤");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("無法取得最新菜單，請確認網路連線。");
+        } finally {
+            toggleLoading(false);
+        }
+    }
+
+    async function loadCart() {
+        const savedCart = await localforage.getItem("priceApp_cart");
+        if (savedCart) cart = savedCart;
+        updateCartFab();
+    }
+
+    async function saveCart() {
+        await localforage.setItem("priceApp_cart", cart);
+        updateCartFab();
+    }
+
+    // --- UI 渲染 ---
+    function renderFrontUI() {
+        const container = document.getElementById('category-btn-container');
+        container.innerHTML = '';
+        
+        if (categories.length === 0) {
+            document.getElementById('product-list').innerHTML = '<div class="col-12 text-center mt-5 text-muted">暫無商品資料</div>';
+            return;
+        }
+
+        categories.forEach(cat => {
+            const div = document.createElement('div');
+            div.className = 'col-auto';
+            div.innerHTML = `<button class="btn category-btn" onclick="filterCategory('${cat}', this)">${cat}</button>`;
+            container.appendChild(div);
+        });
+        
+        // 預設選取第一個分類
+        if (!document.querySelector('.category-btn.active') && categories.length > 0) {
+            filterCategory(categories[0], document.querySelector('.category-btn'));
+        }
+    }
+
+    function filterCategory(cat, btn) {
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        
+        const list = document.getElementById('product-list');
+        list.innerHTML = '';
+        
+        // 篩選該分類商品
+        const filtered = products.map((p, i) => ({...p, originalIndex: i})).filter(p => p.cat === cat);
+        
+        let lastSub = "";
+        const fragment = document.createDocumentFragment();
+        
+        filtered.forEach((p) => {
+            // 處理中分類標題
+            if(p.subCat !== lastSub) {
+                if(p.subCat) {
+                    const header = document.createElement('div');
+                    header.className = 'col-12';
+                    header.innerHTML = `<div class="subcat-header">${p.subCat}</div>`;
+                    fragment.appendChild(header);
+                }
+                lastSub = p.subCat;
+            }
+            fragment.appendChild(createProductCardHTML(p));
+        });
+        
+        if(filtered.length === 0) {
+             list.innerHTML = '<div class="col-12 text-center mt-3 text-muted">此分類尚無商品</div>';
+        } else {
+             list.appendChild(fragment);
+        }
+    }
+
+    function createProductCardHTML(p) {
+        // 計算購物車內數量
+        const qty = cart.find(x => x.name === p.name && x.cat === p.cat)?.count || 0;
+        
+        let stockBadge = '';
+        let disabledClass = '';
+        // 點擊事件：如果商品停產或缺貨，點擊不會加入購物車
+        let clickEvent = `onclick="event.stopPropagation();addToCart('${p.name}', '${p.cat}', ${p.price})"`;
+        
+        if (p.status === 'discontinued') {
+            stockBadge = '<span class="stock-badge stock-disco">已停產</span>';
+            disabledClass = 'disabled';
+            clickEvent = '';
+        } else if (p.status === 'oos' || p.stock <= 0) {
+            stockBadge = `<span class="stock-badge stock-out">缺貨</span>`;
+            disabledClass = 'disabled';
+            clickEvent = '';
+        } else if (p.stock < 5) {
+            stockBadge = `<span class="stock-badge stock-low">剩餘: ${p.stock}</span>`;
+        } else {
+            stockBadge = `<span class="stock-badge stock-normal">庫存: ${p.stock}</span>`;
+        }
+        
+        let tagBadge = '';
+        if(p.tag === 'new') tagBadge = '<span class="tag-badge tag-new">NEW</span>';
+        if(p.tag === 'hot') tagBadge = '<span class="tag-badge tag-hot">HOT</span>';
+
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-12';
+        
+        // 圖片處理 (如果沒有圖片，顯示預設灰底)
+        const imgStyle = p.img ? `background-image:url('${p.img}')` : `background-color:#eee`;
+        const imgClick = p.img ? `onclick="showImage('${p.img}')"` : '';
+
+        col.innerHTML = `
+            <div class="product-card ${disabledClass}" ${imgClick}>
+                <div class="product-thumb" style="${imgStyle}"></div>
+                <div class="product-info">
+                    <div class="product-name">${tagBadge}${p.name}</div>
+                    <div class="product-price-tag">$${p.price}</div>
+                    ${stockBadge}
+                </div>
+                <div class="btn-add-cart-wrapper">
+                    ${qty > 0 ? `<div class="product-qty-badge">${qty}</div>` : ''}
+                    <button class="btn-add-cart" ${clickEvent} ${disabledClass ? 'disabled' : ''}>
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        return col;
+    }
+
+    function handleFrontSearch() {
+        const k = document.getElementById('front-search-input').value.toLowerCase();
+        if(!k) {
+            const activeBtn = document.querySelector('.category-btn.active');
+            if(activeBtn) filterCategory(activeBtn.innerText, activeBtn);
+            return;
+        }
+        
+        const list = document.getElementById('product-list');
+        list.innerHTML = '';
+        
+        const filtered = products.filter(p => p.name.toLowerCase().includes(k) || p.cat.toLowerCase().includes(k));
+        
+        const fragment = document.createDocumentFragment();
+        filtered.forEach(p => fragment.appendChild(createProductCardHTML(p)));
+        
+        if(filtered.length === 0) list.innerHTML = '<div class="col-12 text-center mt-3 text-muted">找不到相關商品</div>';
+        else list.appendChild(fragment);
+    }
+
+    // --- 購物車邏輯 ---
+    function addToCart(name, cat, price) {
+        // 為了確保庫存準確，我們從 products 陣列中找最新的資料
+        const product = products.find(p => p.name === name && p.cat === cat);
+        if (!product) return alert("商品資料異常");
+        
+        const existingItem = cart.find(x => x.name === name && x.cat === cat);
+        const currentQty = existingItem ? existingItem.count : 0;
+        
+        if (product.stock <= 0) return alert("抱歉，商品已缺貨！");
+        if (currentQty >= product.stock) return alert(`庫存不足！目前剩餘 ${product.stock} 個`);
+        
+        if(existingItem) {
+            existingItem.count++;
+        } else {
+            cart.push({ name: name, cat: cat, price: price, count: 1 });
+        }
+        
+        saveCart();
+        refreshCurrentView(); // 刷新畫面以更新數字徽章
+        
+        // 震動回饋
+        if(navigator.vibrate) navigator.vibrate(50);
+    }
+
+    function openCartModal() {
+        renderCartItems();
+        cartModal.show();
+    }
+
+    function renderCartItems() {
+        const container = document.getElementById('cart-items-container');
+        container.innerHTML = '';
+        let total = 0;
+        
+        if (cart.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted p-3">購物車是空的</div>';
+            document.getElementById('cart-total-price').innerText = '$0';
+            return;
+        }
+
+        cart.forEach((item, index) => {
+            const subtotal = item.price * item.count;
+            total += subtotal;
+            const row = document.createElement('div');
+            row.className = 'd-flex justify-content-between align-items-center mb-3 border-bottom pb-2';
+            row.innerHTML = `
+                <div>
+                    <div class="fw-bold">${item.name}</div>
+                    <small class="text-muted">${item.cat} | $${item.price}</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="changeCartQty(${index}, -1)">-</button>
+                    <span class="mx-2 fw-bold" style="min-width:20px; text-align:center;">${item.count}</span>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="changeCartQty(${index}, 1)">+</button>
+                    <span class="ms-3 text-danger fw-bold" style="min-width: 60px; text-align: right;">$${subtotal}</span>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+        document.getElementById('cart-total-price').innerText = '$' + total;
+    }
+
+    function changeCartQty(index, delta) {
+        const item = cart[index];
+        const product = products.find(p => p.name === item.name && p.cat === item.cat);
+        
+        // 增加數量時檢查庫存
+        if (delta > 0 && product) {
+            if (item.count >= product.stock) {
+                alert("已達庫存上限！");
+                return;
+            }
+        }
+
+        item.count += delta;
+        
+        if (item.count <= 0) {
+            cart.splice(index, 1);
+        }
+        
+        saveCart();
+        renderCartItems();
+        refreshCurrentView();
+    }
+
+    function clearCart() {
+        if(confirm("確定要清空購物車嗎？")) {
+            cart = [];
+            saveCart();
+            renderCartItems();
+            refreshCurrentView();
+        }
+    }
+
+    function updateCartFab() {
+        const fab = document.getElementById('cart-fab');
+        const badge = document.getElementById('cart-count');
+        const totalItems = cart.reduce((sum, item) => sum + item.count, 0);
+        
+        if (totalItems > 0) {
+            badge.innerText = totalItems;
+            badge.classList.remove('hidden');
+            fab.classList.remove('hidden');
+            // 動畫
+            fab.style.transform = "scale(1.1)";
+            setTimeout(() => fab.style.transform = "scale(1)", 200);
+        } else {
+            badge.classList.add('hidden');
+            fab.classList.add('hidden');
+        }
+    }
+
+    function refreshCurrentView() {
+        const searchVal = document.getElementById('front-search-input').value.trim();
+        if(searchVal) {
+            handleFrontSearch();
+        } else {
+            const activeBtn = document.querySelector('.category-btn.active');
+            if (activeBtn) filterCategory(activeBtn.innerText, activeBtn);
+        }
+    }
+
+    // --- LINE 訂單功能 ---
+    function sendToLine() {
+        if (cart.length === 0) return alert("購物車是空的喔！");
+
+        let total = 0;
+        let message = `【訂購單】\n`; 
+        message += `--------------------------\n`;
+
+        // 依分類排序顯示
+        cart.sort((a,b) => a.cat.localeCompare(b.cat));
+
+        let lastCat = "___INIT___";
+        cart.forEach((item) => {
+            if (item.cat !== lastCat) {
+                message += `\n📂 ${item.cat}\n`;
+                lastCat = item.cat;
+            }
+            const subtotal = item.price * item.count;
+            message += ` ▪️ ${item.name} x ${item.count} ($${subtotal})\n`;
+            total += subtotal;
+        });
+
+        message += `\n--------------------------\n`;
+        message += `💰 總計金額：$${total}\n`;
+        message += `📅 訂購時間：${new Date().toLocaleString('zh-TW')}\n`;
+        
+        // 嘗試複製到剪貼簿 (不一定每個瀏覽器都支援，但不影響跳轉)
+        try { navigator.clipboard.writeText(message); } catch(e){}
+
+        // 跳轉 LINE
+        // 請將 @lawsonshop 替換成你的 LINE 官方帳號 ID
+        window.location.href = `https://line.me/R/oaMessage/@lawsonshop/?${encodeURIComponent(message)}`;
+    }
+
+    function showImage(src) {
+        if(!src) return;
+        document.getElementById('big-image').src = src;
+        imgModal.show();
+    }
+
+    function toggleLoading(show) {
+        const el = document.getElementById('loading-overlay');
+        if(show) el.classList.remove('hidden');
+        else el.classList.add('hidden');
+    }
+</script>
+</body>
+</html>
