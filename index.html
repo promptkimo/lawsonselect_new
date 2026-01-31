@@ -1,21 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>線上點餐系統</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    
+    <style>
+        body { font-family: sans-serif; background-color: #f8f9fa; padding-bottom: 100px; }
+        .hero { background: white; padding: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #ddd; }
+        .cat-scroll { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 5px; }
+        .cat-btn { white-space: nowrap; padding: 5px 15px; background: #eee; border-radius: 20px; text-decoration: none; color: #333; }
+        .cat-btn.active { background: #333; color: white; }
+        .prod-card { background: white; border-radius: 10px; margin-bottom: 15px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .prod-img { width: 100%; height: 150px; object-fit: cover; background: #ddd; }
+        .cart-bar { position: fixed; bottom: 20px; left: 5%; width: 90%; background: #dc3545; color: white; padding: 15px; border-radius: 50px; display: none; justify-content: space-between; align-items: center; cursor: pointer; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+    </style>
+</head>
+<body>
+
+<div id="loader">
+    <div class="spinner-border text-danger mb-3"></div>
+    <div id="loading-msg">系統載入中...</div>
+</div>
+
+<div class="hero">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="m-0 fw-bold" id="store-title">歡迎光臨</h5>
+        <small id="user-name" class="badge bg-light text-dark border">訪客</small>
+    </div>
+    <div class="cat-scroll" id="cat-nav"></div>
+</div>
+
+<div class="container mt-3" id="product-container"></div>
+
+<div class="cart-bar" id="cart-bar" onclick="submitOrder()">
+    <strong>查看購物車 (<span id="cart-count">0</span>)</strong>
+    <strong id="cart-total">$0</strong>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // 你的設定
-    const LIFF_ID = "2009014517-qshUmlAc"; 
+    // 🔴 1. 強制除錯：確認 JS 有跑
+    console.log("=== 程式開始執行 ===");
+
+    // 設定
+    const LIFF_ID = "2009014517-qshUmlAc";
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
 
     let allData = {};
-    let cart = []; 
-    let userProfile = { userId: 'guest', displayName: '訪客', pictureUrl: '' };
-    const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
+    let cart = [];
+    let userProfile = { userId: 'guest', displayName: '訪客' };
 
-    // 1. 初始化 (並行處理：同時抓菜單 + 同時登入 LINE)
+    // 2. 初始化
     window.onload = function() {
-        console.log("開始載入...");
+        console.log("網頁載入完成，開始抓取資料...");
         
-        // A. 優先載入菜單 (不管 LIFF 有沒有成功，都要先讓客人看到菜單)
+        // 優先抓菜單
         fetchMenu();
-
-        // B. 嘗試登入 LIFF (只為了拿頭貼和名字)
+        
+        // 背景登入 LIFF
         initLiff();
     };
 
@@ -23,216 +70,125 @@
         try {
             await liff.init({ liffId: LIFF_ID });
             if (liff.isLoggedIn()) {
-                const profile = await liff.getProfile();
-                userProfile = profile;
-                // 更新頭像介面
-                document.getElementById('user-name').innerText = profile.displayName;
-                if(profile.pictureUrl) document.getElementById('user-img').src = profile.pictureUrl;
-                console.log("LIFF 登入成功");
+                const p = await liff.getProfile();
+                userProfile = p;
+                document.getElementById('user-name').innerText = p.displayName;
+                console.log("LIFF 登入成功:", p);
             } else {
-                // 未登入 (看你要不要強制跳轉，或保持訪客)
-                // liff.login(); 
-                console.log("LIFF 未登入，保持訪客模式");
+                console.log("LIFF 未登入");
             }
         } catch (e) {
-            console.error("LIFF 初始化失敗 (可能是 ID 錯或環境問題):", e);
+            console.error("LIFF 錯誤:", e);
         }
     }
 
-    // 2. 抓取菜單
     function fetchMenu() {
-        console.log("正在連線 GAS...");
-        // 加上 timestamp 防止快取
-        fetch(GAS_URL + "?page=json&t=" + new Date().getTime())
+        document.getElementById('loading-msg').innerText = "正在連線資料庫...";
+        
+        fetch(GAS_URL + "?page=json&t=" + Date.now())
             .then(res => res.json())
             .then(data => {
-                console.log("GAS 資料載入成功:", data);
+                console.log("收到 GAS 資料:", data);
                 allData = data;
                 document.getElementById('store-title').innerText = data.appTitle || '線上點餐';
                 renderMenu();
-                // 隱藏載入動畫
                 document.getElementById('loader').style.display = 'none';
             })
             .catch(err => {
                 console.error("GAS 連線失敗:", err);
-                alert("載入失敗！請檢查網路，或確認 GAS 部署權限是否為「所有人」。");
-                document.getElementById('loader').innerHTML = '<div class="text-danger p-4 text-center">無法連線伺服器<br>請確認 GAS 部署設定</div>';
+                alert("連線失敗！請按 F12 看 Console 錯誤訊息");
+                document.getElementById('loading-msg').innerHTML = `<span class="text-danger">無法連線<br>請確認後台部署權限</span>`;
             });
     }
 
-    // 3. 渲染商品
     function renderMenu() {
         const nav = document.getElementById('cat-nav');
-        const container = document.getElementById('product-container');
+        const box = document.getElementById('product-container');
         
         if (!allData.categories || allData.categories.length === 0) {
-            container.innerHTML = '<div class="text-center mt-5">目前沒有上架商品</div>';
+            box.innerHTML = '<div class="text-center mt-5">目前無商品</div>';
             return;
         }
 
-        nav.innerHTML = `<a href="#" class="cat-pill active" onclick="filterCat('all', this)">全部</a>`;
-        container.innerHTML = '';
+        nav.innerHTML = '<a href="#" class="cat-btn active" onclick="filterCat(\'all\',this)">全部</a>';
+        box.innerHTML = '';
 
         allData.categories.forEach(cat => {
-            nav.innerHTML += `<a href="#cat-${cat}" class="cat-pill" onclick="setActive(this)">${cat}</a>`;
+            nav.innerHTML += `<a href="#cat-${cat}" class="cat-btn" onclick="setActive(this)">${cat}</a>`;
             const items = allData.products.filter(p => p.cat === cat);
-            if(items.length === 0) return;
-
-            let html = `<div id="cat-${cat}" class="section-title">${cat}</div><div class="row g-3">`;
             
+            let html = `<h6 id="cat-${cat}" class="mt-4 fw-bold border-start border-4 border-danger ps-2">${cat}</h6><div class="row g-3">`;
             items.forEach(p => {
                 const isOOS = p.status === 'oos';
-                // 檢查購物車內是否有此商品
-                const inCartItem = cart.find(c => c.name === p.name && c.cat === cat);
-                const count = inCartItem ? inCartItem.count : 0;
-                
-                // 決定按鈕樣式
-                let btnHtml = '';
-                if (!isOOS) {
-                    if (count > 0) {
-                        btnHtml = `
-                        <div class="qty-control">
-                            <button class="qty-btn" onclick="updateQty('${p.name}', '${cat}', -1)">-</button>
-                            <span class="qty-num">${count}</span>
-                            <button class="qty-btn" onclick="updateQty('${p.name}', '${cat}', 1)">+</button>
-                        </div>`;
-                    } else {
-                        btnHtml = `<div class="btn-add-only" onclick="updateQty('${p.name}', '${cat}', 1)"><i class="bi bi-plus-lg"></i></div>`;
-                    }
-                }
-
-                const imgHtml = p.img 
-                    ? `<img src="${p.img}" class="product-img">` 
-                    : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-cup-straw fs-1"></i></div>`;
-
                 html += `
-                <div class="col-6 col-md-4 col-lg-3">
-                    <div class="product-card ${isOOS ? 'oos' : ''}">
-                        <div class="position-relative">
-                            ${imgHtml}
-                            ${isOOS ? `<span class="oos-badge">售完</span>` : ''}
-                        </div>
-                        <div class="product-body">
-                            <div class="product-name text-truncate">${p.name}</div>
-                            <div class="product-price">$${p.price}</div>
-                            ${btnHtml}
+                <div class="col-6 col-md-4">
+                    <div class="prod-card" onclick="addToCart('${p.name}', ${p.price}, '${cat}')">
+                        ${p.img ? `<img src="${p.img}" class="prod-img">` : `<div class="prod-img"></div>`}
+                        <div class="p-2">
+                            <div class="fw-bold text-truncate">${p.name}</div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <span class="text-danger fw-bold">$${p.price}</span>
+                                ${isOOS ? '<span class="badge bg-secondary">售完</span>' : '<span class="badge bg-danger">+</span>'}
+                            </div>
                         </div>
                     </div>
                 </div>`;
             });
-            html += `</div>`;
-            container.innerHTML += html;
+            html += '</div>';
+            box.innerHTML += html;
         });
     }
 
     function setActive(el) {
-        document.querySelectorAll('.cat-pill').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
         el.classList.add('active');
     }
 
-    // 4. 更新數量邏輯
-    function updateQty(name, cat, delta) {
-        const product = allData.products.find(p => p.name === name && p.cat === cat);
-        if (!product) return;
-
-        const itemIndex = cart.findIndex(c => c.name === name && c.cat === cat);
-        
-        if (itemIndex > -1) {
-            cart[itemIndex].count += delta;
-            if (cart[itemIndex].count <= 0) cart.splice(itemIndex, 1);
-        } else if (delta > 0) {
-            cart.push({ name, price: product.price, cat, count: 1 });
-        }
-        
-        renderMenu(); 
-        updateCartUI();
+    function addToCart(name, price, cat) {
+        const exist = cart.find(i => i.name === name && i.cat === cat);
+        if(exist) exist.count++; else cart.push({name, price, cat, count:1});
+        updateCart();
     }
 
-    function updateCartUI() {
-        const total = cart.reduce((sum, i) => sum + (i.price * i.count), 0);
-        const count = cart.reduce((sum, i) => sum + i.count, 0);
-
-        document.getElementById('cart-count').innerText = count;
+    function updateCart() {
+        const total = cart.reduce((acc, i) => acc + (i.price * i.count), 0);
+        const count = cart.reduce((acc, i) => acc + i.count, 0);
         document.getElementById('cart-total').innerText = '$' + total;
-
-        const bar = document.getElementById('cart-bar');
-        if (count > 0) bar.classList.add('show');
-        else bar.classList.remove('show');
+        document.getElementById('cart-count').innerText = count;
+        document.getElementById('cart-bar').style.display = count > 0 ? 'flex' : 'none';
     }
 
-    // 5. 送出訂單
     function submitOrder() {
-        if(!confirm(`確定送出訂單？\n總金額: $${document.getElementById('cart-total').innerText}`)) return;
-
-        const total = cart.reduce((sum, i) => sum + (i.price * i.count), 0);
-        const itemsStr = cart.map(i => `${i.name} x${i.count}`).join(', ');
+        if(!confirm(`確認送出訂單？總額 $${document.getElementById('cart-total').innerText}`)) return;
+        
+        const loader = document.getElementById('loader');
+        loader.style.display = 'flex';
+        document.getElementById('loading-msg').innerText = "訂單傳送中...";
 
         const orderData = {
             action: 'createOrder',
             order: {
                 userId: userProfile.userId,
                 displayName: userProfile.displayName,
-                itemsStr: itemsStr,
-                total: total
+                itemsStr: cart.map(i => `${i.name} x${i.count}`).join(', '),
+                total: cart.reduce((acc, i) => acc + (i.price * i.count), 0)
             }
         };
-
-        const loader = document.getElementById('loader');
-        loader.innerHTML = '<div class="spinner-border text-danger"></div><div class="mt-2 fw-bold">訂單傳送中...</div>';
-        loader.style.display = 'flex';
 
         fetch(GAS_URL, {
             method: 'POST',
             body: JSON.stringify(orderData),
-            mode: 'no-cors', 
-            headers: { 'Content-Type': 'application/json' }
+            mode: 'no-cors',
+            headers: {'Content-Type': 'application/json'}
         }).then(() => {
-            alert('🎉 訂單已送出！');
-            cart = [];
-            renderMenu();
-            updateCartUI();
+            alert("訂單已送出！");
+            cart = []; updateCart();
             loader.style.display = 'none';
-        }).catch(err => {
-            alert('❌ 發生錯誤: ' + err);
+        }).catch(e => {
+            alert("錯誤: " + e);
             loader.style.display = 'none';
         });
     }
-
-    // 6. 查詢歷史訂單
-    function openMyOrders() {
-        myOrdersModal.show();
-        const list = document.getElementById('my-orders-list');
-        list.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-secondary"></div><div class="mt-2 text-muted">載入中...</div></div>';
-
-        fetch(GAS_URL + "?page=myOrders&uid=" + userProfile.userId)
-            .then(res => res.json())
-            .then(orders => {
-                list.innerHTML = '';
-                if (orders.length === 0) {
-                    list.innerHTML = '<div class="text-center py-5 text-muted">您還沒有訂單紀錄</div>';
-                    return;
-                }
-                orders.forEach(o => {
-                    let badgeClass = 'bg-secondary';
-                    if (o.status === '待處理') badgeClass = 'badge-pending';
-                    if (o.status === '處理中') badgeClass = 'badge-processing';
-                    if (o.status === '已完成') badgeClass = 'badge-completed';
-
-                    list.innerHTML += `
-                    <div class="order-history-card">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge ${badgeClass}">${o.status}</span>
-                            <small class="text-muted">${o.date.split(' ')[0]}</small>
-                        </div>
-                        <div class="fw-bold mb-1">訂單編號: ${o.id}</div>
-                        <div class="bg-white border rounded p-2 text-secondary small mb-2">${o.items}</div>
-                        <div class="text-end fw-bold text-danger">$${o.total}</div>
-                    </div>`;
-                });
-            })
-            .catch(err => {
-                console.error(err);
-                list.innerHTML = '<div class="text-danger text-center">無法載入訂單 (GAS 權限可能未開)</div>';
-            });
-    }
 </script>
+</body>
+</html>
