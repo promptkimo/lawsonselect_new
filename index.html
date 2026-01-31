@@ -22,19 +22,17 @@
         .cat-pill { padding: 6px 14px; background: #eee; color: #555; border-radius: 20px; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: 0.2s; border: 1px solid transparent; }
         .cat-pill.active { background: var(--dark); color: white; }
 
-        /* 🟢 大分類樣式 */
         .section-title { font-weight: 800; margin: 30px 0 15px 0; padding-left: 12px; border-left: 6px solid var(--primary); font-size: 1.4rem; color: #222; background: #fff; padding-top:8px; padding-bottom:8px; border-radius: 0 8px 8px 0; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
         
-        /* 🟢 中分類樣式 (色塊強化版) */
         .sub-cat-title { 
-            background-color: #e9ecef; /* 淺灰底色 */
-            color: #495057;            /* 深灰文字 */
+            background-color: #e9ecef; 
+            color: #495057;            
             font-size: 1rem; 
             font-weight: 700; 
             margin: 20px 5px 10px 5px; 
-            padding: 8px 12px;         /* 增加內距讓色塊變大 */
-            border-radius: 6px;        /* 圓角 */
-            border-left: 5px solid #6c757d; /* 左側深灰邊條 */
+            padding: 8px 12px;         
+            border-radius: 6px;        
+            border-left: 5px solid #6c757d; 
             display: flex;
             align-items: center;
         }
@@ -57,11 +55,18 @@
 
         #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
         
-        /* 購物車分類樣式 */
         .cart-main-cat { background: #f8f9fa; color: var(--dark); padding: 8px 10px; font-weight: bold; border-left: 4px solid var(--primary); margin-top: 15px; border-radius: 4px; }
         .cart-sub-cat { font-size: 0.85rem; color: #6c757d; margin: 8px 0 4px 10px; font-weight: bold; display: flex; align-items: center; }
         .cart-sub-cat::before { content: ''; display: inline-block; width: 6px; height: 6px; background: #ccc; border-radius: 50%; margin-right: 6px; }
-        .cart-item-row { padding-left: 10px; border-bottom: 1px dashed #eee; padding-bottom: 8px; margin-bottom: 8px; }
+        
+        /* 🟢 修改購物車單行樣式：對齊方式改為 top */
+        .cart-item-row { 
+            padding-left: 10px; 
+            border-bottom: 1px dashed #eee; 
+            padding-bottom: 12px; 
+            margin-bottom: 8px; 
+            align-items: flex-start !important; /* 讓內容靠上對齊，適應換行 */
+        }
     </style>
 </head>
 <body>
@@ -176,7 +181,6 @@
             });
     }
 
-    // 🟢 渲染菜單 (含新的中分類色塊)
     function renderMenu() {
         const nav = document.getElementById('cat-nav');
         const container = document.getElementById('product-container');
@@ -200,13 +204,10 @@
                 groupedBySub[sub].push(p);
             });
 
-            // 大分類標題
             let html = `<div id="cat-${cat}" class="section-title">${cat}</div>`;
 
-            // 中分類與商品
             for (const [subName, subItems] of Object.entries(groupedBySub)) {
                 if(subName && subName !== '') {
-                    // 🟢 這裡套用新的色塊樣式
                     html += `<div class="sub-cat-title">${subName}</div>`;
                 }
 
@@ -298,13 +299,14 @@
                     html += `<div class="cart-sub-cat">${subCat}</div>`;
                 }
                 items.forEach(i => {
+                    // 🟢 關鍵修正：這裡的 HTML 結構與 Style 確保了文字長時會換行
                     html += `
-                    <div class="d-flex justify-content-between align-items-center cart-item-row">
-                        <div>
-                            <div class="fw-bold">${i.name}</div>
-                            <small class="text-muted">$${i.price}</small>
+                    <div class="d-flex justify-content-between align-items-start cart-item-row">
+                        <div style="flex: 1; padding-right: 10px;">
+                            <div class="fw-bold" style="word-wrap: break-word; white-space: normal; line-height:1.4;">${i.name}</div>
+                            <small class="text-muted d-block mt-1">$${i.price}</small>
                         </div>
-                        <div class="d-flex align-items-center border rounded-pill bg-white">
+                        <div class="d-flex align-items-center border rounded-pill bg-white" style="flex-shrink: 0; margin-top: 2px;">
                             <button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',-1)">-</button>
                             <span class="px-2 fw-bold text-dark">${i.count}</span>
                             <button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',1)">+</button>
