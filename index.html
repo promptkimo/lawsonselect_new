@@ -59,14 +59,11 @@
         .cart-sub-cat { font-size: 0.85rem; color: #6c757d; margin: 8px 0 4px 10px; font-weight: bold; display: flex; align-items: center; }
         .cart-sub-cat::before { content: ''; display: inline-block; width: 6px; height: 6px; background: #ccc; border-radius: 50%; margin-right: 6px; }
         
-        /* 🟢 修改購物車單行樣式：對齊方式改為 top */
-        .cart-item-row { 
-            padding-left: 10px; 
-            border-bottom: 1px dashed #eee; 
-            padding-bottom: 12px; 
-            margin-bottom: 8px; 
-            align-items: flex-start !important; /* 讓內容靠上對齊，適應換行 */
-        }
+        .cart-item-row { padding-left: 10px; border-bottom: 1px dashed #eee; padding-bottom: 12px; margin-bottom: 8px; align-items: flex-start !important; }
+
+        /* 🟢 公告彈窗樣式 */
+        #announceModal img { width: 100%; border-radius: 8px; margin-bottom: 10px; }
+        #announce-content { white-space: pre-line; color: #333; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -122,6 +119,24 @@
     </div>
 </div>
 
+<div class="modal fade" id="announceModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light border-0">
+                <h5 class="modal-title fw-bold">📢 商店公告</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="announce-img-container"></div>
+                <div id="announce-content" class="mt-2"></div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-primary w-100 rounded-pill" data-bs-dismiss="modal">我知道了</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="myOrdersModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -146,6 +161,7 @@
     
     const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
     const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
+    const announceModal = new bootstrap.Modal(document.getElementById('announceModal'));
 
     window.onload = function() {
         fetchMenu();
@@ -173,12 +189,31 @@
                 allData = data;
                 document.getElementById('store-title').innerText = data.appTitle || '線上點餐';
                 renderMenu();
+                // 🟢 檢查是否有公告，有的話跳出彈窗
+                checkAnnouncement(data);
                 document.getElementById('loader').style.display = 'none';
             })
             .catch(err => {
                 alert("載入失敗");
                 document.getElementById('loader').innerHTML = '<div class="text-danger">載入失敗</div>';
             });
+    }
+
+    // 🟢 檢查並顯示公告
+    function checkAnnouncement(data) {
+        const hasText = data.announcementText && data.announcementText.trim() !== "";
+        const hasImg = data.announcementImg && data.announcementImg.trim() !== "";
+
+        if (hasText || hasImg) {
+            document.getElementById('announce-content').innerText = data.announcementText || "";
+            const imgContainer = document.getElementById('announce-img-container');
+            if (hasImg) {
+                imgContainer.innerHTML = `<img src="${data.announcementImg}" referrerpolicy="no-referrer">`;
+            } else {
+                imgContainer.innerHTML = '';
+            }
+            announceModal.show();
+        }
     }
 
     function renderMenu() {
@@ -299,7 +334,6 @@
                     html += `<div class="cart-sub-cat">${subCat}</div>`;
                 }
                 items.forEach(i => {
-                    // 🟢 關鍵修正：這裡的 HTML 結構與 Style 確保了文字長時會換行
                     html += `
                     <div class="d-flex justify-content-between align-items-start cart-item-row">
                         <div style="flex: 1; padding-right: 10px;">
