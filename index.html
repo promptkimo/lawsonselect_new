@@ -21,7 +21,21 @@
 
         .cat-nav { display: flex; overflow-x: auto; white-space: nowrap; padding-bottom: 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
         .cat-nav::-webkit-scrollbar { display: none; }
-        .cat-pill { padding: 6px 14px; background: #eee; color: #555; border-radius: 20px; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: 0.2s; border: 1px solid transparent; }
+        
+        /* 🟢 修改：分類按鈕樣式優化，讓點擊區域明確 */
+        .cat-pill { 
+            padding: 6px 14px; 
+            background: #eee; 
+            color: #555; 
+            border-radius: 20px; 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            text-decoration: none; 
+            transition: 0.2s; 
+            border: 1px solid transparent; 
+            cursor: pointer;
+            user-select: none;
+        }
         .cat-pill.active { background: var(--dark); color: white; }
 
         .section-title { font-weight: 800; margin: 30px 0 15px 0; padding-left: 12px; border-left: 6px solid var(--primary); font-size: 1.4rem; color: #222; background: #fff; padding-top:8px; padding-bottom:8px; border-radius: 0 8px 8px 0; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
@@ -32,34 +46,14 @@
         .product-body { padding: 12px; position: relative; }
         
         .stock-info { font-size: 0.75rem; color: #666; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
-        
-        /* 🟢 預計到貨日樣式 (增強版) */
-        .arrival-info { 
-            font-size: 0.8rem; 
-            color: #fff; 
-            background: #dc3545; /* 鮮紅色 */
-            padding: 4px 8px; 
-            border-radius: 4px; 
-            display: inline-block; 
-            margin-top: 6px; 
-            font-weight: bold; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* 加點陰影 */
-            border: 1px solid white; /* 白邊增加對比 */
-        }
+        .arrival-info { font-size: 0.8rem; color: #fff; background: #dc3545; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 1px solid white; }
 
-        /* 🟢 缺貨模式樣式 (取代原本的 opacity-50) */
+        /* 缺貨模式 */
         .product-card.oos-mode .product-img,
         .product-card.oos-mode .product-name,
         .product-card.oos-mode .product-price,
-        .product-card.oos-mode .stock-info {
-            opacity: 0.4; /* 只有這些元素變淡 */
-            filter: grayscale(80%); /* 稍微變灰，增加缺貨感 */
-        }
-        /* 確保到貨日完全不透明 */
-        .product-card.oos-mode .arrival-info {
-            opacity: 1 !important; 
-            filter: none !important;
-        }
+        .product-card.oos-mode .stock-info { opacity: 0.4; filter: grayscale(80%); }
+        .product-card.oos-mode .arrival-info { opacity: 1 !important; filter: none !important; }
 
         .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: white; border: 1px solid #ddd; color: var(--primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: white; border-radius: 50px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid #eee; }
@@ -100,8 +94,10 @@
             <img src="https://placehold.co/100x100?text=U" class="user-avatar" id="user-avatar">
         </div>
     </div>
+    
     <div class="d-flex justify-content-between align-items-center">
-         <div class="cat-nav w-75" id="cat-nav"></div>
+         <div class="cat-nav w-75" id="cat-nav">
+             </div>
          <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="openMyOrders()">
              <i class="bi bi-receipt"></i> 查單
          </button>
@@ -153,6 +149,7 @@
     let allData = {};
     let cart = [];
     let userProfile = { userId: 'guest', displayName: '訪客' };
+    let currentCategory = 'all'; // 🟢 新增：記錄目前選中的分類 (預設全部)
     
     const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
     const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
@@ -187,16 +184,37 @@
         }
     }
 
+    // 🟢 新增：切換分類函式
+    function setCategory(cat) {
+        currentCategory = cat;
+        renderMenu(); // 重新渲染列表
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // 捲回頂部
+    }
+
     function renderMenu() {
         const nav = document.getElementById('cat-nav');
         const container = document.getElementById('product-container');
-        nav.innerHTML = '<a href="#" class="cat-pill active">全部</a>';
-        container.innerHTML = '';
+        
+        // 🟢 渲染導覽列 (加入點擊事件)
+        // 1. 全部按鈕
+        let navHtml = `<span class="cat-pill ${currentCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">全部</span>`;
+        
+        // 2. 各大分類按鈕
+        if (allData.categories) {
+            allData.categories.forEach(cat => {
+                navHtml += `<span class="cat-pill ${currentCategory === cat ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</span>`;
+            });
+        }
+        nav.innerHTML = navHtml;
 
+        // 🟢 渲染商品列表 (加入篩選邏輯)
+        container.innerHTML = '';
         if (!allData.categories || allData.categories.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前沒有商品</div>'; return; }
 
         allData.categories.forEach(cat => {
-            nav.innerHTML += `<a href="#cat-${cat}" class="cat-pill">${cat}</a>`;
+            // 🟢 關鍵篩選：如果目前不是選 'all' 且 不是選這個分類，就跳過
+            if (currentCategory !== 'all' && currentCategory !== cat) return;
+
             const items = allData.products.filter(p => p.cat === cat);
             if(items.length === 0) return;
 
@@ -225,7 +243,6 @@
                     let btnHtml = isOOS ? `<span class="badge bg-secondary position-absolute bottom-0 end-0 m-2">售完</span>` :
                         (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${p.name}', '${cat}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${p.name}', '${cat}', 1)">+</button></div>` : `<div class="btn-add-only" onclick="updateQty('${p.name}', '${cat}', 1)"><i class="bi bi-plus-lg"></i></div>`);
 
-                    // 🟢 套用 oos-mode Class (實現商品變淡，但到貨日清楚)
                     const cardClass = isOOS ? 'oos-mode' : '';
 
                     html += `<div class="col-6 col-md-4"><div class="product-card ${cardClass}"><div class="position-relative">${imgHtml}</div><div class="product-body"><div class="product-name text-truncate small fw-bold">${p.name}</div><div class="product-price text-danger">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
