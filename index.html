@@ -11,50 +11,35 @@
     <style>
         :root { --primary: #e23744; --light-bg: #f8f9fa; --dark: #2d2d2d; }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--light-bg); padding-bottom: 90px; }
-        
-        #update-time-banner { 
-            background: #333; color: #fff; font-size: 0.85rem; text-align: center; padding: 8px 0;
-            position: sticky; top: 0; z-index: 1030; letter-spacing: 1px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        #update-time-banner { background: #333; color: #fff; font-size: 0.85rem; text-align: center; padding: 8px 0; position: sticky; top: 0; z-index: 1030; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         #stock-time { margin-left: 15px; font-weight: bold; color: #ffc107; font-family: monospace; font-size: 0.9rem; }
-
         .hero-section { background: white; padding: 10px 15px 5px 15px; position: sticky; top:35px; z-index: 1020; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .user-block { display: flex; align-items: center; gap: 8px; }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
         .user-name { font-size: 0.9rem; font-weight: bold; color: #555; }
-
         .cat-nav { display: flex; overflow-x: auto; white-space: nowrap; padding-bottom: 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
         .cat-nav::-webkit-scrollbar { display: none; }
-        
         .cat-pill { padding: 6px 14px; background: #eee; color: #555; border-radius: 20px; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: 0.2s; border: 1px solid transparent; cursor: pointer; user-select: none; }
         .cat-pill.active { background: var(--dark); color: white; }
-
         .section-title { font-weight: 800; margin: 30px 0 15px 0; padding-left: 12px; border-left: 6px solid var(--primary); font-size: 1.4rem; color: #222; background: #fff; padding-top:8px; padding-bottom:8px; border-radius: 0 8px 8px 0; }
         .sub-cat-title { background-color: #e9ecef; color: #495057; font-size: 1rem; font-weight: 700; margin: 20px 5px 10px 5px; padding: 8px 12px; border-radius: 6px; border-left: 5px solid #6c757d; display: flex; align-items: center; }
-
         .product-card { background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: none; position: relative; }
         .product-img { width: 100%; height: 140px; object-fit: cover; background: #e9ecef; cursor: zoom-in; }
         .product-body { padding: 12px; position: relative; }
-        
         .stock-info { font-size: 0.75rem; color: #666; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
         .arrival-info { font-size: 0.8rem; color: #fff; background: #dc3545; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px; font-weight: bold; }
-
         .product-card.oos-mode .product-img, .product-card.oos-mode .product-name, .product-card.oos-mode .product-price, .product-card.oos-mode .stock-info { opacity: 0.4; filter: grayscale(80%); }
         .product-card.oos-mode .arrival-info { opacity: 1 !important; filter: none !important; }
-
         .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: white; border: 1px solid #ddd; color: var(--primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: white; border-radius: 50px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid #eee; }
         .qty-btn { width: 30px; height: 30px; border: none; background: white; color: var(--primary); font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .qty-val { font-size: 0.9rem; font-weight: bold; width: 20px; text-align: center; color: #333; }
-        
         .cart-bar { position: fixed; bottom: 20px; left: 5%; width: 90%; background: var(--primary); color: white; border-radius: 50px; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(226, 55, 68, 0.4); z-index: 1050; cursor: pointer; transition: 0.3s; transform: translateY(150%); }
         .cart-bar.show { transform: translateY(0); }
         #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 9999; cursor: zoom-out; }
         #lightbox img { max-width: 90%; max-height: 80%; border-radius: 8px; transform: scale(0.9); transition: 0.3s; }
         #lightbox.show img { transform: scale(1); }
         #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        
         .cart-main-cat { background: #f8f9fa; color: var(--dark); padding: 8px 10px; font-weight: bold; border-left: 4px solid var(--primary); margin-top: 15px; border-radius: 4px; }
         .cart-sub-cat { font-size: 0.85rem; color: #6c757d; margin: 8px 0 4px 10px; font-weight: bold; display: flex; align-items: center; }
         .cart-item-row { padding-left: 10px; border-bottom: 1px dashed #eee; padding-bottom: 12px; margin-bottom: 8px; align-items: flex-start !important; }
@@ -68,11 +53,7 @@
     <div class="spinner-border text-danger mb-3"></div>
     <div class="fw-bold text-secondary">載入菜單中...</div>
 </div>
-
-<div id="update-time-banner" style="display:none">
-    庫存更新時間：<span id="stock-time"></span>
-</div>
-
+<div id="update-time-banner" style="display:none">庫存更新時間：<span id="stock-time"></span></div>
 <div class="hero-section">
     <div class="d-flex justify-content-between align-items-center mb-2">
         <div class="fw-bold fs-5 text-dark" id="store-title">線上點餐</div>
@@ -81,21 +62,16 @@
             <img src="https://placehold.co/100x100?text=U" class="user-avatar" id="user-avatar">
         </div>
     </div>
-    
     <div class="d-flex justify-content-between align-items-center">
          <div class="cat-nav w-75" id="cat-nav"></div>
-         <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="openMyOrders()">
-             <i class="bi bi-receipt"></i> 查單
-         </button>
+         <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="openMyOrders()"><i class="bi bi-receipt"></i> 查單</button>
     </div>
 </div>
-
 <div class="container mt-2" id="product-container"></div>
 <div class="cart-bar" id="cart-bar" onclick="openCartModal()">
     <div class="d-flex align-items-center"><span class="badge bg-white text-danger me-2 rounded-pill" id="cart-count">0</span><span class="fw-bold">去結帳</span></div>
     <span class="fw-bold" id="cart-total">$0</span>
 </div>
-
 <div class="modal fade" id="cartModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
@@ -105,7 +81,6 @@
         </div>
     </div>
 </div>
-
 <div class="modal fade" id="announceModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -115,7 +90,6 @@
         </div>
     </div>
 </div>
-
 <div class="modal fade" id="myOrdersModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -124,183 +98,69 @@
         </div>
     </div>
 </div>
-
 <div id="lightbox" onclick="closeLightbox()"><img id="lightbox-img" src="" alt="放大圖片"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ============================================
-    // ⚠️ 請確認您的設定 (如果有變動，請記得修改)
-    // ============================================
+    // ⚠️⚠️⚠️ 務必確認這裡的 GAS_URL 是最新的 ⚠️⚠️⚠️
     const LIFF_ID = "2009014517-qshUmlAc"; 
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
-    // ============================================
 
-    let allData = {};
-    let cart = [];
-    let userProfile = { userId: 'guest', displayName: '訪客' };
-    let currentCategory = 'all'; 
-    
+    let allData = {}; let cart = []; let userProfile = { userId: 'guest', displayName: '訪客' }; let currentCategory = 'all'; 
     const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
     const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
     const announceModal = new bootstrap.Modal(document.getElementById('announceModal'));
 
     window.onload = function() { fetchMenu(); initLiff(); };
-    
-    async function initLiff() {
-        try { 
-            await liff.init({ liffId: LIFF_ID }); 
-            if (liff.isLoggedIn()) { 
-                const p = await liff.getProfile(); 
-                userProfile = p; 
-                document.getElementById('user-name').innerText = p.displayName; 
-                if(p.pictureUrl) document.getElementById('user-avatar').src = p.pictureUrl; 
-            } else { 
-                liff.login(); 
-            } 
-        } catch (e) { 
-            console.error("LIFF Error:", e); 
-        }
-    }
-
+    async function initLiff() { try { await liff.init({ liffId: LIFF_ID }); if (liff.isLoggedIn()) { const p = await liff.getProfile(); userProfile = p; document.getElementById('user-name').innerText = p.displayName; if(p.pictureUrl) document.getElementById('user-avatar').src = p.pictureUrl; } else { liff.login(); } } catch (e) { console.error("LIFF Error:", e); } }
     function fetchMenu() {
-        // 🟢 加入 t=Date.now() 強制抓最新菜單
-        fetch(GAS_URL + "?page=json&t=" + Date.now())
-            .then(res => res.json())
-            .then(data => {
-                allData = data;
-                document.getElementById('store-title').innerText = data.appTitle || '線上點餐';
+        // 🔥 加入時間戳記 &t=
+        fetch(GAS_URL + "?page=json&t=" + Date.now()).then(res => res.json()).then(data => {
+                allData = data; document.getElementById('store-title').innerText = data.appTitle || '線上點餐';
                 if(data.lastUpdateTime) { document.getElementById('stock-time').innerText = data.lastUpdateTime; document.getElementById('update-time-banner').style.display = 'block'; }
-                renderMenu();
-                checkAnnouncement(data);
-                document.getElementById('loader').style.display = 'none';
-            })
-            .catch(err => { 
-                console.log("載入失敗");
-                document.getElementById('loader').innerHTML = '<div class="text-danger">載入失敗</div>'; 
-            });
+                renderMenu(); checkAnnouncement(data); document.getElementById('loader').style.display = 'none';
+        }).catch(err => { console.log("載入失敗"); document.getElementById('loader').innerHTML = '<div class="text-danger">載入失敗</div>'; });
     }
-
-    function checkAnnouncement(data) {
-        const hasText = data.announcementText && data.announcementText.trim() !== "";
-        const hasImg = data.announcementImg && data.announcementImg.trim() !== "";
-        if (hasText || hasImg) {
-            document.getElementById('announce-content').innerText = data.announcementText || "";
-            document.getElementById('announce-img-container').innerHTML = hasImg ? `<img src="${data.announcementImg}" referrerpolicy="no-referrer">` : '';
-            announceModal.show();
-        }
-    }
-
-    function setCategory(cat) {
-        currentCategory = cat;
-        renderMenu(); 
-        window.scrollTo({ top: 0, behavior: 'smooth' }); 
-    }
-
+    function checkAnnouncement(data) { const hasText = data.announcementText && data.announcementText.trim() !== ""; const hasImg = data.announcementImg && data.announcementImg.trim() !== ""; if (hasText || hasImg) { document.getElementById('announce-content').innerText = data.announcementText || ""; document.getElementById('announce-img-container').innerHTML = hasImg ? `<img src="${data.announcementImg}" referrerpolicy="no-referrer">` : ''; announceModal.show(); } }
+    function setCategory(cat) { currentCategory = cat; renderMenu(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
     function renderMenu() {
-        const nav = document.getElementById('cat-nav');
-        const container = document.getElementById('product-container');
+        const nav = document.getElementById('cat-nav'); const container = document.getElementById('product-container');
         let navHtml = `<span class="cat-pill ${currentCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">全部</span>`;
         if (allData.categories) { allData.categories.forEach(cat => { navHtml += `<span class="cat-pill ${currentCategory === cat ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</span>`; }); }
-        nav.innerHTML = navHtml;
-
-        container.innerHTML = '';
+        nav.innerHTML = navHtml; container.innerHTML = '';
         if (!allData.categories || allData.categories.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前沒有商品</div>'; return; }
-
         allData.categories.forEach(cat => {
             if (currentCategory !== 'all' && currentCategory !== cat) return;
-            const items = allData.products.filter(p => p.cat === cat);
-            if(items.length === 0) return;
-
-            let grouped = {};
-            items.forEach(p => { const sub = p.subCat || '其他'; if(!grouped[sub]) grouped[sub] = []; grouped[sub].push(p); });
-
+            const items = allData.products.filter(p => p.cat === cat); if(items.length === 0) return;
+            let grouped = {}; items.forEach(p => { const sub = p.subCat || '其他'; if(!grouped[sub]) grouped[sub] = []; grouped[sub].push(p); });
             let html = `<div id="cat-${cat}" class="section-title">${cat}</div>`;
             for (const [subName, subItems] of Object.entries(grouped)) {
-                if(subName && subName !== '') html += `<div class="sub-cat-title">${subName}</div>`;
-                html += `<div class="row g-3">`; 
+                if(subName && subName !== '') html += `<div class="sub-cat-title">${subName}</div>`; html += `<div class="row g-3">`; 
                 subItems.forEach(p => {
-                    const inCart = cart.find(c => c.name === p.name && c.cat === cat);
-                    const count = inCart ? inCart.count : 0;
-                    const isOOS = p.status === 'oos' || p.stock <= 0;
+                    const inCart = cart.find(c => c.name === p.name && c.cat === cat); const count = inCart ? inCart.count : 0; const isOOS = p.status === 'oos' || p.stock <= 0;
                     const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
-
                     let stockHtml = `<span class="stock-info">剩餘: ${p.stock}</span>`;
-                    if (p.stock <= 0 && p.arrivalDate) {
-                        let shortDate = p.arrivalDate;
-                        const d = new Date(p.arrivalDate);
-                        if (!isNaN(d.getTime())) { shortDate = (d.getMonth() + 1) + '/' + d.getDate(); }
-                        stockHtml += `<div class="arrival-info">預計 ${shortDate} 到貨</div>`;
-                    }
-
-                    let btnHtml = isOOS ? `<span class="badge bg-secondary position-absolute bottom-0 end-0 m-2">售完</span>` :
-                        (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${p.name}', '${cat}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${p.name}', '${cat}', 1)">+</button></div>` : `<div class="btn-add-only" onclick="updateQty('${p.name}', '${cat}', 1)"><i class="bi bi-plus-lg"></i></div>`);
-
-                    const cardClass = isOOS ? 'oos-mode' : '';
-                    html += `<div class="col-6 col-md-4"><div class="product-card ${cardClass}"><div class="position-relative">${imgHtml}</div><div class="product-body"><div class="product-name text-truncate small fw-bold">${p.name}</div><div class="product-price text-danger">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
-                });
-                html += `</div>`; 
-            }
-            container.innerHTML += html;
+                    if (p.stock <= 0 && p.arrivalDate) { let shortDate = p.arrivalDate; const d = new Date(p.arrivalDate); if (!isNaN(d.getTime())) { shortDate = (d.getMonth() + 1) + '/' + d.getDate(); } stockHtml += `<div class="arrival-info">預計 ${shortDate} 到貨</div>`; }
+                    let btnHtml = isOOS ? `<span class="badge bg-secondary position-absolute bottom-0 end-0 m-2">售完</span>` : (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${p.name}', '${cat}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${p.name}', '${cat}', 1)">+</button></div>` : `<div class="btn-add-only" onclick="updateQty('${p.name}', '${cat}', 1)"><i class="bi bi-plus-lg"></i></div>`);
+                    const cardClass = isOOS ? 'oos-mode' : ''; html += `<div class="col-6 col-md-4"><div class="product-card ${cardClass}"><div class="position-relative">${imgHtml}</div><div class="product-body"><div class="product-name text-truncate small fw-bold">${p.name}</div><div class="product-price text-danger">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
+                }); html += `</div>`; 
+            } container.innerHTML += html;
         });
     }
-
-    function updateQty(name, cat, delta) {
-        const product = allData.products.find(p => p.name === name && p.cat === cat);
-        const idx = cart.findIndex(c => c.name === name && c.cat === cat);
-        if (idx > -1) { cart[idx].count += delta; if (cart[idx].count <= 0) cart.splice(idx, 1); } else if (delta > 0) { cart.push({ name, price: product.price, cat, count: 1 }); }
-        renderMenu(); updateCartUI(); if(document.getElementById('cartModal').classList.contains('show')) renderCartModal();
-    }
-    function updateCartUI() {
-        const total = cart.reduce((s, i) => s + (i.price * i.count), 0);
-        const count = cart.reduce((s, i) => s + i.count, 0);
-        document.getElementById('cart-count').innerText = count; document.getElementById('cart-total').innerText = '$' + total; document.getElementById('modal-cart-total').innerText = '$' + total;
-        document.getElementById('cart-bar').classList.toggle('show', count > 0); if (count === 0) cartModal.hide();
-    }
+    function updateQty(name, cat, delta) { const product = allData.products.find(p => p.name === name && p.cat === cat); const idx = cart.findIndex(c => c.name === name && c.cat === cat); if (idx > -1) { cart[idx].count += delta; if (cart[idx].count <= 0) cart.splice(idx, 1); } else if (delta > 0) { cart.push({ name, price: product.price, cat, count: 1 }); } renderMenu(); updateCartUI(); if(document.getElementById('cartModal').classList.contains('show')) renderCartModal(); }
+    function updateCartUI() { const total = cart.reduce((s, i) => s + (i.price * i.count), 0); const count = cart.reduce((s, i) => s + i.count, 0); document.getElementById('cart-count').innerText = count; document.getElementById('cart-total').innerText = '$' + total; document.getElementById('modal-cart-total').innerText = '$' + total; document.getElementById('cart-bar').classList.toggle('show', count > 0); if (count === 0) cartModal.hide(); }
     function openCartModal() { renderCartModal(); cartModal.show(); }
-    function renderCartModal() {
-        const body = document.getElementById('cart-modal-body');
-        if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; }
-        let grouped = {}; cart.forEach(i => { const p = allData.products.find(x => x.name === i.name && x.cat === i.cat); const s = p ? (p.subCat || '其他') : '其他'; if (!grouped[i.cat]) grouped[i.cat] = {}; if (!grouped[i.cat][s]) grouped[i.cat][s] = []; grouped[i.cat][s].push(i); });
-        let html = '';
-        for (const [cat, subCats] of Object.entries(grouped)) {
-            html += `<div class="cart-main-cat">${cat}</div>`;
-            for (const [s, items] of Object.entries(subCats)) {
-                if (s && s !== '') html += `<div class="cart-sub-cat">${s}</div>`;
-                items.forEach(i => { html += `<div class="d-flex justify-content-between align-items-start cart-item-row"><div style="flex: 1; padding-right: 10px;"><div class="fw-bold" style="word-wrap: break-word; white-space: normal; line-height:1.4;">${i.name}</div><small class="text-muted d-block mt-1">$${i.price}</small></div><div class="d-flex align-items-center border rounded-pill bg-white" style="flex-shrink: 0; margin-top: 2px;"><button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',-1)">-</button><span class="px-2 fw-bold text-dark">${i.count}</span><button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',1)">+</button></div></div>`; });
-            }
-        }
-        body.innerHTML = html;
-    }
-    function submitOrder() {
-        if(!confirm("確認送出訂單？")) return;
-        document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "訂單傳送中..."; cartModal.hide();
-        const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: cart.map(i => `${i.name} x${i.count}`).join(', '), total: cart.reduce((s, i) => s + (i.price * i.count), 0), cartItems: cart } };
-        fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' }).then(() => { alert("🎉 訂單已送出！"); cart = []; updateCartUI(); renderMenu(); document.getElementById('loader').style.display = 'none'; }).catch(e => alert("錯誤: " + e));
-    }
+    function renderCartModal() { const body = document.getElementById('cart-modal-body'); if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } let grouped = {}; cart.forEach(i => { const p = allData.products.find(x => x.name === i.name && x.cat === i.cat); const s = p ? (p.subCat || '其他') : '其他'; if (!grouped[i.cat]) grouped[i.cat] = {}; if (!grouped[i.cat][s]) grouped[i.cat][s] = []; grouped[i.cat][s].push(i); }); let html = ''; for (const [cat, subCats] of Object.entries(grouped)) { html += `<div class="cart-main-cat">${cat}</div>`; for (const [s, items] of Object.entries(subCats)) { if (s && s !== '') html += `<div class="cart-sub-cat">${s}</div>`; items.forEach(i => { html += `<div class="d-flex justify-content-between align-items-start cart-item-row"><div style="flex: 1; padding-right: 10px;"><div class="fw-bold" style="word-wrap: break-word; white-space: normal; line-height:1.4;">${i.name}</div><small class="text-muted d-block mt-1">$${i.price}</small></div><div class="d-flex align-items-center border rounded-pill bg-white" style="flex-shrink: 0; margin-top: 2px;"><button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',-1)">-</button><span class="px-2 fw-bold text-dark">${i.count}</span><button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',1)">+</button></div></div>`; }); } } body.innerHTML = html; }
+    function submitOrder() { if(!confirm("確認送出訂單？")) return; document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "訂單傳送中..."; cartModal.hide(); const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: cart.map(i => `${i.name} x${i.count}`).join(', '), total: cart.reduce((s, i) => s + (i.price * i.count), 0), cartItems: cart } }; fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' }).then(() => { alert("🎉 訂單已送出！"); cart = []; updateCartUI(); renderMenu(); document.getElementById('loader').style.display = 'none'; }).catch(e => alert("錯誤: " + e)); }
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
     
-    // 🟢 修正：加入時間戳記，解決狀態不更新的問題
     function openMyOrders() {
-        myOrdersModal.show(); 
-        document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-3">載入中...</div>';
-        
-        // 關鍵在這裡： &t=Date.now()
-        fetch(GAS_URL + "?page=myOrders&uid=" + userProfile.userId + "&t=" + Date.now())
-            .then(res => res.json())
-            .then(orders => {
-                document.getElementById('my-orders-list').innerHTML = orders.map(o => `
-                    <div class="card mb-2 border-0 shadow-sm p-3">
-                        <div class="d-flex justify-content-between">
-                            <span class="badge bg-warning text-dark">${o.status}</span>
-                            <small>${o.date}</small>
-                        </div>
-                        <div class="fw-bold mt-1">#${o.id}</div>
-                        <div class="small text-secondary">${o.items}</div>
-                        <div class="text-end fw-bold text-danger mt-1">$${o.total}</div>
-                    </div>`).join('') || '<div class="text-center py-3">尚無訂單紀錄</div>';
-            });
+        myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-3">載入中...</div>';
+        // 🔥 加入時間戳記 &t=
+        fetch(GAS_URL + "?page=myOrders&uid=" + userProfile.userId + "&t=" + Date.now()).then(res => res.json()).then(orders => {
+            document.getElementById('my-orders-list').innerHTML = orders.map(o => `<div class="card mb-2 border-0 shadow-sm p-3"><div class="d-flex justify-content-between"><span class="badge bg-warning text-dark">${o.status}</span><small>${o.date}</small></div><div class="fw-bold mt-1">#${o.id}</div><div class="small text-secondary">${o.items}</div><div class="text-end fw-bold text-danger mt-1">$${o.total}</div></div>`).join('') || '<div class="text-center py-3">尚無訂單紀錄</div>';
+        });
     }
 </script>
 </body>
