@@ -12,26 +12,12 @@
         :root { --primary: #e23744; --light-bg: #f8f9fa; --dark: #2d2d2d; }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--light-bg); padding-bottom: 90px; }
         
-        /* 更新時間橫幅樣式 */
         #update-time-banner { 
-            background: #333; 
-            color: #fff; 
-            font-size: 0.85rem; 
-            text-align: center; 
-            padding: 8px 0;
-            position: sticky; 
-            top: 0; 
-            z-index: 1030; 
-            letter-spacing: 1px;
+            background: #333; color: #fff; font-size: 0.85rem; text-align: center; padding: 8px 0;
+            position: sticky; top: 0; z-index: 1030; letter-spacing: 1px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        #stock-time {
-            margin-left: 15px;
-            font-weight: bold;
-            color: #ffc107;
-            font-family: monospace;
-            font-size: 0.9rem;
-        }
+        #stock-time { margin-left: 15px; font-weight: bold; color: #ffc107; font-family: monospace; font-size: 0.9rem; }
 
         .hero-section { background: white; padding: 10px 15px 5px 15px; position: sticky; top:35px; z-index: 1020; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .user-block { display: flex; align-items: center; gap: 8px; }
@@ -44,7 +30,7 @@
         .cat-pill { padding: 6px 14px; background: #eee; color: #555; border-radius: 20px; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: 0.2s; border: 1px solid transparent; cursor: pointer; user-select: none; }
         .cat-pill.active { background: var(--dark); color: white; }
 
-        .section-title { font-weight: 800; margin: 30px 0 15px 0; padding-left: 12px; border-left: 6px solid var(--primary); font-size: 1.4rem; color: #222; background: #fff; padding-top:8px; padding-bottom:8px; border-radius: 0 8px 8px 0; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+        .section-title { font-weight: 800; margin: 30px 0 15px 0; padding-left: 12px; border-left: 6px solid var(--primary); font-size: 1.4rem; color: #222; background: #fff; padding-top:8px; padding-bottom:8px; border-radius: 0 8px 8px 0; }
         .sub-cat-title { background-color: #e9ecef; color: #495057; font-size: 1rem; font-weight: 700; margin: 20px 5px 10px 5px; padding: 8px 12px; border-radius: 6px; border-left: 5px solid #6c757d; display: flex; align-items: center; }
 
         .product-card { background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: none; position: relative; }
@@ -52,12 +38,9 @@
         .product-body { padding: 12px; position: relative; }
         
         .stock-info { font-size: 0.75rem; color: #666; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
-        .arrival-info { font-size: 0.8rem; color: #fff; background: #dc3545; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 1px solid white; }
+        .arrival-info { font-size: 0.8rem; color: #fff; background: #dc3545; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px; font-weight: bold; }
 
-        .product-card.oos-mode .product-img,
-        .product-card.oos-mode .product-name,
-        .product-card.oos-mode .product-price,
-        .product-card.oos-mode .stock-info { opacity: 0.4; filter: grayscale(80%); }
+        .product-card.oos-mode .product-img, .product-card.oos-mode .product-name, .product-card.oos-mode .product-price, .product-card.oos-mode .stock-info { opacity: 0.4; filter: grayscale(80%); }
         .product-card.oos-mode .arrival-info { opacity: 1 !important; filter: none !important; }
 
         .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: white; border: 1px solid #ddd; color: var(--primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
@@ -74,7 +57,6 @@
         
         .cart-main-cat { background: #f8f9fa; color: var(--dark); padding: 8px 10px; font-weight: bold; border-left: 4px solid var(--primary); margin-top: 15px; border-radius: 4px; }
         .cart-sub-cat { font-size: 0.85rem; color: #6c757d; margin: 8px 0 4px 10px; font-weight: bold; display: flex; align-items: center; }
-        .cart-sub-cat::before { content: ''; display: inline-block; width: 6px; height: 6px; background: #ccc; border-radius: 50%; margin-right: 6px; }
         .cart-item-row { padding-left: 10px; border-bottom: 1px dashed #eee; padding-bottom: 12px; margin-bottom: 8px; align-items: flex-start !important; }
         #announceModal img { width: 100%; border-radius: 8px; margin-bottom: 10px; }
         #announce-content { white-space: pre-line; color: #333; line-height: 1.6; }
@@ -147,11 +129,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ⚠️ 請確認這個 LIFF ID 是正確的
+    // ============================================
+    // ⚠️ 請填入您的資訊
+    // ============================================
+    
+    // 1. LIFF ID
     const LIFF_ID = "2009014517-qshUmlAc"; 
     
-    // ⚠️ 請確認這串 GAS URL 是您「管理部署」裡最新的網址
+    // 2. GAS URL (請確認是管理部署後最新的網址)
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
+
+    // ============================================
 
     let allData = {};
     let cart = [];
@@ -170,10 +158,7 @@
             if (liff.isLoggedIn()) { 
                 const p = await liff.getProfile(); 
                 userProfile = p; 
-                
-                // 🟢 這裡會彈出您的 ID，抄下來後，記得把這行刪掉！
-                alert("✅ 抓到了！\n您的 User ID 是：\n" + p.userId); 
-                
+                // 恢復正常的顯示
                 document.getElementById('user-name').innerText = p.displayName; 
                 if(p.pictureUrl) document.getElementById('user-avatar').src = p.pictureUrl; 
             } else { 
@@ -195,7 +180,10 @@
                 checkAnnouncement(data);
                 document.getElementById('loader').style.display = 'none';
             })
-            .catch(err => { alert("載入失敗"); document.getElementById('loader').innerHTML = '<div class="text-danger">載入失敗</div>'; });
+            .catch(err => { 
+                console.log("載入失敗");
+                document.getElementById('loader').innerHTML = '<div class="text-danger">載入失敗</div>'; 
+            });
     }
 
     function checkAnnouncement(data) {
