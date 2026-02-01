@@ -12,7 +12,10 @@
         :root { --primary: #e23744; --light-bg: #f8f9fa; --dark: #2d2d2d; }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--light-bg); padding-bottom: 90px; }
         
-        .hero-section { background: white; padding: 15px 15px 5px 15px; position: sticky; top:0; z-index: 1020; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        /* 更新時間橫幅 */
+        #update-time-banner { background: #333; color: #fff; font-size: 0.75rem; text-align: center; padding: 2px 0; position: sticky; top:0; z-index: 1030; }
+
+        .hero-section { background: white; padding: 10px 15px 5px 15px; position: sticky; top:20px; z-index: 1020; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .user-block { display: flex; align-items: center; gap: 8px; }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
         .user-name { font-size: 0.9rem; font-weight: bold; color: #555; }
@@ -24,23 +27,16 @@
 
         .section-title { font-weight: 800; margin: 30px 0 15px 0; padding-left: 12px; border-left: 6px solid var(--primary); font-size: 1.4rem; color: #222; background: #fff; padding-top:8px; padding-bottom:8px; border-radius: 0 8px 8px 0; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
         
-        .sub-cat-title { 
-            background-color: #e9ecef; 
-            color: #495057;            
-            font-size: 1rem; 
-            font-weight: 700; 
-            margin: 20px 5px 10px 5px; 
-            padding: 8px 12px;         
-            border-radius: 6px;        
-            border-left: 5px solid #6c757d; 
-            display: flex;
-            align-items: center;
-        }
+        .sub-cat-title { background-color: #e9ecef; color: #495057; font-size: 1rem; font-weight: 700; margin: 20px 5px 10px 5px; padding: 8px 12px; border-radius: 6px; border-left: 5px solid #6c757d; display: flex; align-items: center; }
 
         .product-card { background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: none; }
         .product-img { width: 100%; height: 140px; object-fit: cover; background: #e9ecef; cursor: zoom-in; }
         .product-body { padding: 12px; position: relative; }
         
+        /* 🟢 庫存標示 */
+        .stock-info { font-size: 0.75rem; color: #666; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
+        .arrival-info { font-size: 0.75rem; color: #d63384; font-weight: bold; display: block; margin-top: 2px; }
+
         .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: white; border: 1px solid #ddd; color: var(--primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: white; border-radius: 50px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid #eee; }
         .qty-btn { width: 30px; height: 30px; border: none; background: white; color: var(--primary); font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -58,10 +54,8 @@
         .cart-main-cat { background: #f8f9fa; color: var(--dark); padding: 8px 10px; font-weight: bold; border-left: 4px solid var(--primary); margin-top: 15px; border-radius: 4px; }
         .cart-sub-cat { font-size: 0.85rem; color: #6c757d; margin: 8px 0 4px 10px; font-weight: bold; display: flex; align-items: center; }
         .cart-sub-cat::before { content: ''; display: inline-block; width: 6px; height: 6px; background: #ccc; border-radius: 50%; margin-right: 6px; }
-        
         .cart-item-row { padding-left: 10px; border-bottom: 1px dashed #eee; padding-bottom: 12px; margin-bottom: 8px; align-items: flex-start !important; }
 
-        /* 🟢 公告彈窗樣式 */
         #announceModal img { width: 100%; border-radius: 8px; margin-bottom: 10px; }
         #announce-content { white-space: pre-line; color: #333; line-height: 1.6; }
     </style>
@@ -71,6 +65,10 @@
 <div id="loader">
     <div class="spinner-border text-danger mb-3"></div>
     <div class="fw-bold text-secondary">載入菜單中...</div>
+</div>
+
+<div id="update-time-banner" style="display:none">
+    庫存更新時間：<span id="stock-time"></span>
 </div>
 
 <div class="hero-section">
@@ -188,8 +186,14 @@
             .then(data => {
                 allData = data;
                 document.getElementById('store-title').innerText = data.appTitle || '線上點餐';
+                
+                // 🟢 顯示最後更新時間
+                if(data.lastUpdateTime) {
+                    document.getElementById('stock-time').innerText = data.lastUpdateTime;
+                    document.getElementById('update-time-banner').style.display = 'block';
+                }
+
                 renderMenu();
-                // 🟢 檢查是否有公告，有的話跳出彈窗
                 checkAnnouncement(data);
                 document.getElementById('loader').style.display = 'none';
             })
@@ -199,19 +203,13 @@
             });
     }
 
-    // 🟢 檢查並顯示公告
     function checkAnnouncement(data) {
         const hasText = data.announcementText && data.announcementText.trim() !== "";
         const hasImg = data.announcementImg && data.announcementImg.trim() !== "";
-
         if (hasText || hasImg) {
             document.getElementById('announce-content').innerText = data.announcementText || "";
             const imgContainer = document.getElementById('announce-img-container');
-            if (hasImg) {
-                imgContainer.innerHTML = `<img src="${data.announcementImg}" referrerpolicy="no-referrer">`;
-            } else {
-                imgContainer.innerHTML = '';
-            }
+            if (hasImg) { imgContainer.innerHTML = `<img src="${data.announcementImg}" referrerpolicy="no-referrer">`; } else { imgContainer.innerHTML = ''; }
             announceModal.show();
         }
     }
@@ -257,6 +255,12 @@
                         ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` 
                         : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
 
+                    // 🟢 庫存與到貨日顯示
+                    let stockHtml = `<span class="stock-info">剩餘: ${p.stock}</span>`;
+                    if (p.arrivalDate) {
+                        stockHtml += `<span class="arrival-info">預計: ${p.arrivalDate} 到貨</span>`;
+                    }
+
                     let btnHtml = isOOS ? `<span class="badge bg-secondary position-absolute bottom-0 end-0 m-2">售完</span>` :
                         (count > 0 ? `
                         <div class="qty-group">
@@ -273,7 +277,7 @@
                             <div class="product-body">
                                 <div class="product-name text-truncate small fw-bold">${p.name}</div>
                                 <div class="product-price text-danger">$${p.price}</div>
-                                ${btnHtml}
+                                ${stockHtml} ${btnHtml}
                             </div>
                         </div>
                     </div>`;
@@ -284,6 +288,7 @@
         });
     }
 
+    // ... (後面的 updateQty, updateCartUI, submitOrder 等函式保持不變) ...
     function updateQty(name, cat, delta) {
         const product = allData.products.find(p => p.name === name && p.cat === cat);
         const idx = cart.findIndex(c => c.name === name && c.cat === cat);
@@ -312,11 +317,7 @@
 
     function renderCartModal() {
         const body = document.getElementById('cart-modal-body');
-        if (cart.length === 0) {
-            body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>';
-            return;
-        }
-
+        if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; }
         let grouped = {};
         cart.forEach(item => {
             const originProd = allData.products.find(p => p.name === item.name && p.cat === item.cat);
@@ -325,27 +326,13 @@
             if (!grouped[item.cat][subCat]) grouped[item.cat][subCat] = [];
             grouped[item.cat][subCat].push(item);
         });
-
         let html = '';
         for (const [cat, subCats] of Object.entries(grouped)) {
             html += `<div class="cart-main-cat">${cat}</div>`;
             for (const [subCat, items] of Object.entries(subCats)) {
-                if (subCat && subCat !== '') {
-                    html += `<div class="cart-sub-cat">${subCat}</div>`;
-                }
+                if (subCat && subCat !== '') { html += `<div class="cart-sub-cat">${subCat}</div>`; }
                 items.forEach(i => {
-                    html += `
-                    <div class="d-flex justify-content-between align-items-start cart-item-row">
-                        <div style="flex: 1; padding-right: 10px;">
-                            <div class="fw-bold" style="word-wrap: break-word; white-space: normal; line-height:1.4;">${i.name}</div>
-                            <small class="text-muted d-block mt-1">$${i.price}</small>
-                        </div>
-                        <div class="d-flex align-items-center border rounded-pill bg-white" style="flex-shrink: 0; margin-top: 2px;">
-                            <button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',-1)">-</button>
-                            <span class="px-2 fw-bold text-dark">${i.count}</span>
-                            <button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',1)">+</button>
-                        </div>
-                    </div>`;
+                    html += `<div class="d-flex justify-content-between align-items-start cart-item-row"><div style="flex: 1; padding-right: 10px;"><div class="fw-bold" style="word-wrap: break-word; white-space: normal; line-height:1.4;">${i.name}</div><small class="text-muted d-block mt-1">$${i.price}</small></div><div class="d-flex align-items-center border rounded-pill bg-white" style="flex-shrink: 0; margin-top: 2px;"><button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',-1)">-</button><span class="px-2 fw-bold text-dark">${i.count}</span><button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',1)">+</button></div></div>`;
                 });
             }
         }
@@ -357,58 +344,18 @@
         document.getElementById('loader').style.display = 'flex';
         document.querySelector('#loader .fw-bold').innerText = "訂單傳送中...";
         cartModal.hide();
-
-        const orderData = {
-            action: 'createOrder',
-            order: {
-                userId: userProfile.userId,
-                displayName: userProfile.displayName,
-                itemsStr: cart.map(i => `${i.name} x${i.count}`).join(', '),
-                total: cart.reduce((s, i) => s + (i.price * i.count), 0),
-                cartItems: cart 
-            }
-        };
-
-        fetch(GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify(orderData),
-            mode: 'no-cors'
-        }).then(() => {
-            alert("🎉 訂單已送出！");
-            cart = []; updateCartUI(); renderMenu();
-            document.getElementById('loader').style.display = 'none';
-        }).catch(e => alert("錯誤: " + e));
+        const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: cart.map(i => `${i.name} x${i.count}`).join(', '), total: cart.reduce((s, i) => s + (i.price * i.count), 0), cartItems: cart } };
+        fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' }).then(() => { alert("🎉 訂單已送出！"); cart = []; updateCartUI(); renderMenu(); document.getElementById('loader').style.display = 'none'; }).catch(e => alert("錯誤: " + e));
     }
 
-    function zoomImg(e, url) {
-        e.stopPropagation();
-        const lb = document.getElementById('lightbox');
-        document.getElementById('lightbox-img').src = url;
-        lb.style.display = 'flex';
-        setTimeout(() => lb.classList.add('show'), 10);
-    }
-    function closeLightbox() {
-        const lb = document.getElementById('lightbox');
-        lb.classList.remove('show');
-        setTimeout(() => lb.style.display = 'none', 300);
-    }
-
+    function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
+    function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
     function openMyOrders() {
         myOrdersModal.show();
-        const list = document.getElementById('my-orders-list');
-        list.innerHTML = '載入中...';
-        fetch(GAS_URL + "?page=myOrders&uid=" + userProfile.userId)
-            .then(res => res.json())
-            .then(orders => {
-                list.innerHTML = orders.map(o => `
-                    <div class="card mb-2 border-0 shadow-sm p-3">
-                        <div class="d-flex justify-content-between"><span class="badge bg-warning text-dark">${o.status}</span><small>${o.date}</small></div>
-                        <div class="fw-bold mt-1">#${o.id}</div>
-                        <div class="small text-secondary">${o.items}</div>
-                        <div class="text-end fw-bold text-danger mt-1">$${o.total}</div>
-                    </div>
-                `).join('') || '<div class="text-center py-3">尚無訂單紀錄</div>';
-            });
+        const list = document.getElementById('my-orders-list'); list.innerHTML = '載入中...';
+        fetch(GAS_URL + "?page=myOrders&uid=" + userProfile.userId).then(res => res.json()).then(orders => {
+            list.innerHTML = orders.map(o => `<div class="card mb-2 border-0 shadow-sm p-3"><div class="d-flex justify-content-between"><span class="badge bg-warning text-dark">${o.status}</span><small>${o.date}</small></div><div class="fw-bold mt-1">#${o.id}</div><div class="small text-secondary">${o.items}</div><div class="text-end fw-bold text-danger mt-1">$${o.total}</div></div>`).join('') || '<div class="text-center py-3">尚無訂單紀錄</div>';
+        });
     }
 </script>
 </body>
