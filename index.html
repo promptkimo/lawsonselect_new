@@ -187,12 +187,16 @@
 
                     const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
 
-                    // 🟢 庫存與日期格式優化
+                    // 🟢 強力日期格式化 (不管後台傳來什麼，都轉成 M/D)
                     let stockHtml = `<span class="stock-info">剩餘: ${p.stock}</span>`;
                     if (p.stock <= 0 && p.arrivalDate) {
-                        // 將 YYYY-MM-DD 轉為 M/D
-                        const dateParts = p.arrivalDate.split('-');
-                        const shortDate = dateParts.length === 3 ? `${parseInt(dateParts[1])}/${parseInt(dateParts[2])}` : p.arrivalDate;
+                        let shortDate = p.arrivalDate;
+                        // 嘗試將字串轉為日期物件
+                        const d = new Date(p.arrivalDate);
+                        if (!isNaN(d.getTime())) {
+                            // 如果是有效日期，格式化為 M/D (月份要+1)
+                            shortDate = (d.getMonth() + 1) + '/' + d.getDate();
+                        }
                         stockHtml += `<div class="arrival-info">預計 ${shortDate} 到貨</div>`;
                     }
 
