@@ -27,12 +27,39 @@
         .section-title { font-weight: 800; margin: 30px 0 15px 0; padding-left: 12px; border-left: 6px solid var(--primary); font-size: 1.4rem; color: #222; background: #fff; padding-top:8px; padding-bottom:8px; border-radius: 0 8px 8px 0; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
         .sub-cat-title { background-color: #e9ecef; color: #495057; font-size: 1rem; font-weight: 700; margin: 20px 5px 10px 5px; padding: 8px 12px; border-radius: 6px; border-left: 5px solid #6c757d; display: flex; align-items: center; }
 
-        .product-card { background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: none; }
+        .product-card { background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: none; position: relative; }
         .product-img { width: 100%; height: 140px; object-fit: cover; background: #e9ecef; cursor: zoom-in; }
         .product-body { padding: 12px; position: relative; }
         
         .stock-info { font-size: 0.75rem; color: #666; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
-        .arrival-info { font-size: 0.75rem; color: #fff; background: #d63384; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; font-weight: bold; }
+        
+        /* 🟢 預計到貨日樣式 (增強版) */
+        .arrival-info { 
+            font-size: 0.8rem; 
+            color: #fff; 
+            background: #dc3545; /* 鮮紅色 */
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            display: inline-block; 
+            margin-top: 6px; 
+            font-weight: bold; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* 加點陰影 */
+            border: 1px solid white; /* 白邊增加對比 */
+        }
+
+        /* 🟢 缺貨模式樣式 (取代原本的 opacity-50) */
+        .product-card.oos-mode .product-img,
+        .product-card.oos-mode .product-name,
+        .product-card.oos-mode .product-price,
+        .product-card.oos-mode .stock-info {
+            opacity: 0.4; /* 只有這些元素變淡 */
+            filter: grayscale(80%); /* 稍微變灰，增加缺貨感 */
+        }
+        /* 確保到貨日完全不透明 */
+        .product-card.oos-mode .arrival-info {
+            opacity: 1 !important; 
+            filter: none !important;
+        }
 
         .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: white; border: 1px solid #ddd; color: var(--primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: white; border-radius: 50px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid #eee; }
@@ -187,23 +214,21 @@
 
                     const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
 
-                    // 🟢 強力日期格式化 (不管後台傳來什麼，都轉成 M/D)
                     let stockHtml = `<span class="stock-info">剩餘: ${p.stock}</span>`;
                     if (p.stock <= 0 && p.arrivalDate) {
                         let shortDate = p.arrivalDate;
-                        // 嘗試將字串轉為日期物件
                         const d = new Date(p.arrivalDate);
-                        if (!isNaN(d.getTime())) {
-                            // 如果是有效日期，格式化為 M/D (月份要+1)
-                            shortDate = (d.getMonth() + 1) + '/' + d.getDate();
-                        }
+                        if (!isNaN(d.getTime())) { shortDate = (d.getMonth() + 1) + '/' + d.getDate(); }
                         stockHtml += `<div class="arrival-info">預計 ${shortDate} 到貨</div>`;
                     }
 
                     let btnHtml = isOOS ? `<span class="badge bg-secondary position-absolute bottom-0 end-0 m-2">售完</span>` :
                         (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${p.name}', '${cat}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${p.name}', '${cat}', 1)">+</button></div>` : `<div class="btn-add-only" onclick="updateQty('${p.name}', '${cat}', 1)"><i class="bi bi-plus-lg"></i></div>`);
 
-                    html += `<div class="col-6 col-md-4"><div class="product-card ${isOOS ? 'opacity-50' : ''}"><div class="position-relative">${imgHtml}</div><div class="product-body"><div class="product-name text-truncate small fw-bold">${p.name}</div><div class="product-price text-danger">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
+                    // 🟢 套用 oos-mode Class (實現商品變淡，但到貨日清楚)
+                    const cardClass = isOOS ? 'oos-mode' : '';
+
+                    html += `<div class="col-6 col-md-4"><div class="product-card ${cardClass}"><div class="position-relative">${imgHtml}</div><div class="product-body"><div class="product-name text-truncate small fw-bold">${p.name}</div><div class="product-price text-danger">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
                 });
                 html += `</div>`; 
             }
