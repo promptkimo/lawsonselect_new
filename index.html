@@ -32,7 +32,6 @@
         .product-body { padding: 12px; position: relative; }
         
         .stock-info { font-size: 0.75rem; color: #666; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
-        /* 🟢 到貨日樣式 */
         .arrival-info { font-size: 0.75rem; color: #fff; background: #d63384; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; font-weight: bold; }
 
         .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: white; border: 1px solid #ddd; color: var(--primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
@@ -188,10 +187,13 @@
 
                     const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
 
-                    // 🟢 邏輯修改：只有當庫存 <= 0 且有設定到貨日才顯示
+                    // 🟢 庫存與日期格式優化
                     let stockHtml = `<span class="stock-info">剩餘: ${p.stock}</span>`;
                     if (p.stock <= 0 && p.arrivalDate) {
-                        stockHtml += `<div class="arrival-info">預計 ${p.arrivalDate} 到貨</div>`;
+                        // 將 YYYY-MM-DD 轉為 M/D
+                        const dateParts = p.arrivalDate.split('-');
+                        const shortDate = dateParts.length === 3 ? `${parseInt(dateParts[1])}/${parseInt(dateParts[2])}` : p.arrivalDate;
+                        stockHtml += `<div class="arrival-info">預計 ${shortDate} 到貨</div>`;
                     }
 
                     let btnHtml = isOOS ? `<span class="badge bg-secondary position-absolute bottom-0 end-0 m-2">售完</span>` :
