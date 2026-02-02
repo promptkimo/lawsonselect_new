@@ -44,15 +44,7 @@
         .cart-sub-cat { font-size: 0.85rem; color: #6c757d; margin: 8px 0 4px 10px; font-weight: bold; display: flex; align-items: center; }
         .cart-item-row { padding-left: 10px; border-bottom: 1px dashed #eee; padding-bottom: 12px; margin-bottom: 8px; align-items: flex-start !important; }
         #announceModal img { width: 100%; border-radius: 8px; margin-bottom: 10px; }
-        
-        /* 🔥 優化文字公告的樣式 */
-        #announce-content { 
-            white-space: pre-line; 
-            color: #333; 
-            line-height: 1.6; 
-            font-size: 1rem;
-            text-align: center; /* 純文字時置中比較好看 */
-        }
+        #announce-content { white-space: pre-line; color: #333; line-height: 1.6; font-size: 1rem; text-align: center; }
     </style>
 </head>
 <body>
@@ -80,11 +72,24 @@
     <div class="d-flex align-items-center"><span class="badge bg-white text-danger me-2 rounded-pill" id="cart-count">0</span><span class="fw-bold">去結帳</span></div>
     <span class="fw-bold" id="cart-total">$0</span>
 </div>
+
 <div class="modal fade" id="cartModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-0 bg-light"><h5 class="modal-title fw-bold">🛒 購物清單</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body" id="cart-modal-body"></div>
+            
+            <div class="px-3 pb-2 bg-white border-top">
+                <div class="mt-3">
+                    <label class="form-label small fw-bold text-secondary">取餐聯絡人 <span class="text-danger">*</span></label>
+                    <input type="text" id="order-contact-name" class="form-control" placeholder="請輸入姓名">
+                </div>
+                <div class="mt-2">
+                    <label class="form-label small fw-bold text-secondary">聯絡電話 <span class="text-danger">*</span></label>
+                    <input type="tel" id="order-contact-phone" class="form-control" placeholder="請輸入手機號碼">
+                </div>
+            </div>
+
             <div class="modal-footer border-0 pt-0 d-block"><hr><div class="d-flex justify-content-between align-items-center mb-3"><span class="text-secondary">總計金額</span><span class="h4 fw-bold text-danger m-0" id="modal-cart-total">$0</span></div><button class="btn btn-danger w-100 py-2 rounded-pill fw-bold" onclick="submitOrder()">確認送出訂單</button></div>
         </div>
     </div>
@@ -94,15 +99,11 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold">📢 商店公告</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
-                <div id="announce-img-container" style="display:none;"></div>
-                <div id="announce-content" class="mt-2"></div>
-            </div>
+            <div class="modal-body"><div id="announce-img-container" style="display:none;"></div><div id="announce-content" class="mt-2"></div></div>
             <div class="modal-footer border-0"><button type="button" class="btn btn-primary w-100 rounded-pill" data-bs-dismiss="modal">我知道了</button></div>
         </div>
     </div>
 </div>
-
 <div class="modal fade" id="myOrdersModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -135,25 +136,14 @@
         }).catch(err => { console.log("載入失敗"); document.getElementById('loader').innerHTML = '<div class="text-danger">載入失敗</div>'; });
     }
 
-    // 🟢 優化後的公告檢查函式
     function checkAnnouncement(data) {
         const hasText = data.announcementText && data.announcementText.trim() !== "";
-        // 檢查圖片網址是否有效
         const hasImg = data.announcementImg && data.announcementImg.trim() !== "";
-        
         if (hasText || hasImg) {
             document.getElementById('announce-content').innerText = data.announcementText || "";
-            
             const imgDiv = document.getElementById('announce-img-container');
-            if (hasImg) {
-                // 如果有圖：插入圖片並顯示容器
-                imgDiv.innerHTML = `<img src="${data.announcementImg}" referrerpolicy="no-referrer" style="width:100%; border-radius:8px;">`;
-                imgDiv.style.display = "block";
-            } else {
-                // 如果沒圖：清空並隱藏容器 (這樣就不會佔空間)
-                imgDiv.innerHTML = "";
-                imgDiv.style.display = "none";
-            }
+            if (hasImg) { imgDiv.innerHTML = `<img src="${data.announcementImg}" referrerpolicy="no-referrer" style="width:100%; border-radius:8px;">`; imgDiv.style.display = "block"; } 
+            else { imgDiv.innerHTML = ""; imgDiv.style.display = "none"; }
             announceModal.show();
         }
     }
@@ -187,16 +177,36 @@
     function updateCartUI() { const total = cart.reduce((s, i) => s + (i.price * i.count), 0); const count = cart.reduce((s, i) => s + i.count, 0); document.getElementById('cart-count').innerText = count; document.getElementById('cart-total').innerText = '$' + total; document.getElementById('modal-cart-total').innerText = '$' + total; document.getElementById('cart-bar').classList.toggle('show', count > 0); if (count === 0) cartModal.hide(); }
     function openCartModal() { renderCartModal(); cartModal.show(); }
     function renderCartModal() { const body = document.getElementById('cart-modal-body'); if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } let grouped = {}; cart.forEach(i => { const p = allData.products.find(x => x.name === i.name && x.cat === i.cat); const s = p ? (p.subCat || '其他') : '其他'; if (!grouped[i.cat]) grouped[i.cat] = {}; if (!grouped[i.cat][s]) grouped[i.cat][s] = []; grouped[i.cat][s].push(i); }); let html = ''; for (const [cat, subCats] of Object.entries(grouped)) { html += `<div class="cart-main-cat">${cat}</div>`; for (const [s, items] of Object.entries(subCats)) { if (s && s !== '') html += `<div class="cart-sub-cat">${s}</div>`; items.forEach(i => { html += `<div class="d-flex justify-content-between align-items-start cart-item-row"><div style="flex: 1; padding-right: 10px;"><div class="fw-bold" style="word-wrap: break-word; white-space: normal; line-height:1.4;">${i.name}</div><small class="text-muted d-block mt-1">$${i.price}</small></div><div class="d-flex align-items-center border rounded-pill bg-white" style="flex-shrink: 0; margin-top: 2px;"><button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',-1)">-</button><span class="px-2 fw-bold text-dark">${i.count}</span><button class="btn btn-sm px-2" onclick="updateQty('${i.name}','${i.cat}',1)">+</button></div></div>`; }); } } body.innerHTML = html; }
-    function submitOrder() { if(!confirm("確認送出訂單？")) return; document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "訂單傳送中..."; cartModal.hide(); const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: cart.map(i => `${i.name} x${i.count}`).join(', '), total: cart.reduce((s, i) => s + (i.price * i.count), 0), cartItems: cart } }; fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' }).then(() => { alert("🎉 訂單已送出！"); cart = []; updateCartUI(); renderMenu(); document.getElementById('loader').style.display = 'none'; }).catch(e => alert("錯誤: " + e)); }
+    
+    // 🔥 修改：submitOrder 函式，加入檢查與傳送聯絡資訊
+    function submitOrder() {
+        const cName = document.getElementById('order-contact-name').value.trim();
+        const cPhone = document.getElementById('order-contact-phone').value.trim();
+
+        if (!cName) { alert("請輸入聯絡人姓名"); return; }
+        if (!cPhone) { alert("請輸入聯絡電話"); return; }
+        if(!confirm("確認送出訂單？")) return;
+
+        document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "訂單傳送中..."; cartModal.hide();
+        
+        const orderData = { 
+            action: 'createOrder', 
+            order: { 
+                userId: userProfile.userId, 
+                displayName: userProfile.displayName, 
+                itemsStr: cart.map(i => `${i.name} x${i.count}`).join(', '), 
+                total: cart.reduce((s, i) => s + (i.price * i.count), 0), 
+                cartItems: cart,
+                contactName: cName, // 🟢 傳送姓名
+                contactPhone: cPhone // 🟢 傳送電話
+            } 
+        };
+        fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' }).then(() => { alert("🎉 訂單已送出！"); cart = []; updateCartUI(); renderMenu(); document.getElementById('loader').style.display = 'none'; }).catch(e => alert("錯誤: " + e));
+    }
+    
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
-    
-    function openMyOrders() {
-        myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-3">載入中...</div>';
-        fetch(GAS_URL + "?page=myOrders&uid=" + userProfile.userId + "&t=" + Date.now()).then(res => res.json()).then(orders => {
-            document.getElementById('my-orders-list').innerHTML = orders.map(o => `<div class="card mb-2 border-0 shadow-sm p-3"><div class="d-flex justify-content-between"><span class="badge bg-warning text-dark">${o.status}</span><small>${o.date}</small></div><div class="fw-bold mt-1">#${o.id}</div><div class="small text-secondary">${o.items}</div><div class="text-end fw-bold text-danger mt-1">$${o.total}</div></div>`).join('') || '<div class="text-center py-3">尚無訂單紀錄</div>';
-        });
-    }
+    function openMyOrders() { myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-3">載入中...</div>'; fetch(GAS_URL + "?page=myOrders&uid=" + userProfile.userId + "&t=" + Date.now()).then(res => res.json()).then(orders => { document.getElementById('my-orders-list').innerHTML = orders.map(o => `<div class="card mb-2 border-0 shadow-sm p-3"><div class="d-flex justify-content-between"><span class="badge bg-warning text-dark">${o.status}</span><small>${o.date}</small></div><div class="fw-bold mt-1">#${o.id}</div><div class="small text-secondary">${o.items}</div><div class="text-end fw-bold text-danger mt-1">$${o.total}</div></div>`).join('') || '<div class="text-center py-3">尚無訂單紀錄</div>'; }); }
 </script>
 </body>
 </html>
