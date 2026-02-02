@@ -31,9 +31,9 @@
             display: flex; justify-content: center; align-items: center; flex-direction: column; 
         }
         .loader-img {
-            width: 150px; /* 載入圖大小 */
+            width: 150px; 
             height: 150px;
-            object-fit: contain; /* 保持圖片比例 */
+            object-fit: contain; 
             margin-bottom: 20px;
             animation: bounce 2s infinite;
         }
@@ -67,8 +67,6 @@
             height: 60px; 
             object-fit: contain; 
             margin-right: 12px;
-            /* 移除邊框讓去背圖更自然 */
-            /* border-radius: 50%; border: 2px solid var(--accent); */
         }
 
         .store-title {
@@ -102,12 +100,11 @@
         .menu-item:active { transform: scale(0.95); opacity: 0.8; }
 
         .menu-btn-img {
-            width: 80px; /* 按鈕圖片大小 */
+            width: 80px; 
             height: 80px;
-            object-fit: contain; /* 確保圖片不變形 */
-            /* border-radius: 50%;  如果您提供的圖已經是圓形，可以把這行註解掉 */
+            object-fit: contain; 
             margin-bottom: 5px;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); /* 增加一點陰影立體感 */
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); 
         }
         
         .menu-label {
@@ -178,7 +175,7 @@
 <body>
 
 <div id="loader">
-    <img src="https://drive.google.com/uc?export=view&id=1aEOQvdpcOhwFaIYBZocUONmsGWgAbjuG" class="loader-img" alt="Loading">
+    <img src="https://drive.google.com/thumbnail?id=1aEOQvdpcOhwFaIYBZocUONmsGWgAbjuG&sz=w1000" class="loader-img" alt="Loading" referrerpolicy="no-referrer">
     <div class="spinner-border text-warning" role="status"></div>
     <div class="mt-2 text-secondary fw-bold small">Loading...</div>
 </div>
@@ -187,7 +184,7 @@
 
 <div class="hero-section">
     <div class="header-left">
-        <img src="https://drive.google.com/uc?export=view&id=1aEOQvdpcOhwFaIYBZocUONmsGWgAbjuG" class="header-logo" alt="Logo">
+        <img src="https://drive.google.com/thumbnail?id=1aEOQvdpcOhwFaIYBZocUONmsGWgAbjuG&sz=w1000" class="header-logo" alt="Logo" referrerpolicy="no-referrer">
         <div>
             <div class="store-title" id="store-title">樂森良選<br>Lifestyle Select</div>
         </div>
@@ -201,17 +198,17 @@
 
 <div class="quick-menu">
     <div class="menu-item" onclick="openCartModal()">
-        <img src="https://drive.google.com/uc?export=view&id=1orrVRlifzggHUaqmGVk1kZXlQMPiE4LJ" class="menu-btn-img">
+        <img src="https://drive.google.com/thumbnail?id=1orrVRlifzggHUaqmGVk1kZXlQMPiE4LJ&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
         <div class="menu-label">立即結帳</div>
     </div>
 
     <div class="menu-item" onclick="openMyOrders()">
-        <img src="https://drive.google.com/uc?export=view&id=1es0kvRG1S6NAswcGU1zLj7UqtGpm3701" class="menu-btn-img">
+        <img src="https://drive.google.com/thumbnail?id=1es0kvRG1S6NAswcGU1zLj7UqtGpm3701&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
         <div class="menu-label">查詢訂單</div>
     </div>
 
     <div class="menu-item" onclick="openSupport()">
-        <img src="https://drive.google.com/uc?export=view&id=11citnr98aeLlOKeqN27AeMks4d4YiBDo" class="menu-btn-img">
+        <img src="https://drive.google.com/thumbnail?id=11citnr98aeLlOKeqN27AeMks4d4YiBDo&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
         <div class="menu-label">聯絡客服</div>
     </div>
 </div>
@@ -286,9 +283,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ⚠️ 請確認您的 LIFF ID
     const LIFF_ID = "2009014517-qshUmlAc"; 
-    // ⚠️ 請確認您的 GAS URL
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
 
     let allData = {}; let cart = []; let userProfile = { userId: 'guest', displayName: '訪客' }; 
