@@ -9,15 +9,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     
     <style>
-        /* 🎨 提取自狗狗圖片的暖色調配色 */
+        /* 🎨 溫暖配色系統 */
         :root { 
-            --primary: #d32f2f;   /* 深紅 (結帳/標題) */
-            --yellow: #fdd835;    /* 亮黃 (購物/狗狗主色) */
-            --pink: #f48fb1;      /* 粉紅 (最愛) */
-            --blue: #90caf9;      /* 天藍 (客服) */
-            --orange: #ffb74d;    /* 橘色 (優惠) */
+            --primary: #d32f2f;   /* 紅色 */
+            --accent: #ffb300;    /* 溫暖黃 */
             --bg-warm: #fffdf5;   /* 奶油底色 */
-            --text-dark: #3e2723; /* 深咖啡色文字 */
+            --text-dark: #3e2723; /* 深咖文字 */
         }
 
         body { 
@@ -27,50 +24,72 @@
             padding-bottom: 100px; 
         }
 
-        /* 頂部吉祥物區塊 */
-        .hero-section { 
-            background: #fff; 
-            padding: 20px 15px 5px 15px; 
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            text-align: center;
+        /* 🟢 1. 載入畫面樣式 */
+        #loader { 
+            position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: #fff; z-index: 9999; 
+            display: flex; justify-content: center; align-items: center; flex-direction: column; 
+        }
+        .loader-img {
+            width: 150px; /* 載入圖大小 */
+            height: 150px;
+            object-fit: contain; /* 保持圖片比例 */
             margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        /* 頂部更新時間條 */
+        #update-time-banner { 
+            background: var(--text-dark); color: #fff; font-size: 0.8rem; 
+            text-align: center; padding: 6px 0; position: sticky; top: 0; z-index: 1030; 
+        }
+        #stock-time { color: var(--accent); font-weight: bold; margin-left: 10px; }
+
+        /* 🟢 2. 頂部標題區塊 (Header) */
+        .hero-section { 
+            background: white; 
+            padding: 15px 20px; 
+            position: sticky; top: 30px; z-index: 1020; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         
-        /* 您的狗狗推車大圖 */
-        .mascot-logo {
-            width: 160px; /* 調整吉祥物大小 */
-            height: auto;
-            margin-bottom: 10px;
-            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
+        .header-left { display: flex; align-items: center; }
+        
+        /* 首頁圖 (Logo) */
+        .header-logo {
+            width: 60px; 
+            height: 60px; 
+            object-fit: contain; 
+            margin-right: 12px;
+            /* 移除邊框讓去背圖更自然 */
+            /* border-radius: 50%; border: 2px solid var(--accent); */
         }
 
         .store-title {
-            font-weight: 900;
-            font-size: 1.5rem;
-            color: var(--primary);
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-        
-        .user-welcome {
-            font-size: 0.9rem;
-            color: #8d6e63;
-            background: #efebe9;
-            display: inline-block;
-            padding: 4px 15px;
-            border-radius: 20px;
-            margin-bottom: 15px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            line-height: 1.2;
         }
 
-        /* 🔥 六宮格快速選單 (模仿您的按鈕圖) */
+        .user-block { 
+            display: flex; flex-direction: column; align-items: center; 
+            font-size: 0.75rem; color: #888; cursor: pointer;
+        }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; margin-bottom: 2px;}
+
+        /* 🟢 3. 三功能圓形選單 */
         .quick-menu {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, 1fr); /* 切成三等份 */
             gap: 15px;
-            padding: 0 15px;
-            margin-bottom: 25px;
+            padding: 20px 15px 10px 15px;
         }
         
         .menu-item {
@@ -80,118 +99,77 @@
             cursor: pointer;
             transition: transform 0.1s;
         }
-        .menu-item:active { transform: scale(0.95); }
+        .menu-item:active { transform: scale(0.95); opacity: 0.8; }
 
-        .menu-icon-circle {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            color: var(--text-dark);
-            border: 2px solid #fff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        .menu-btn-img {
+            width: 80px; /* 按鈕圖片大小 */
+            height: 80px;
+            object-fit: contain; /* 確保圖片不變形 */
+            /* border-radius: 50%;  如果您提供的圖已經是圓形，可以把這行註解掉 */
             margin-bottom: 5px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); /* 增加一點陰影立體感 */
         }
         
         .menu-label {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: var(--text-dark);
-            background: #fff;
-            padding: 2px 10px;
-            border-radius: 10px;
-            border: 1px solid #eee;
         }
 
-        /* 各個按鈕的顏色設定 (對應您的圖片) */
-        .bg-shop { background-color: #ffe082; } /* 購物去 - 黃 */
-        .bg-love { background-color: #f8bbd0; } /* 最愛 - 粉 */
-        .bg-pay  { background-color: #ffcc80; } /* 結帳 - 橘黃 */
-        .bg-svc  { background-color: #bbdefb; } /* 客服 - 藍 */
-        .bg-mem  { background-color: #fff59d; } /* 會員 - 亮黃 */
-        .bg-sale { background-color: #ffab91; } /* 優惠 - 橘紅 */
-
-        /* 分類導航 pills */
+        /* 分類導航 */
         .cat-nav { 
             display: flex; overflow-x: auto; white-space: nowrap; padding: 10px 15px; gap: 8px; 
-            background: white; position: sticky; top: 0; z-index: 1010;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: sticky; top: 0; 
         }
         .cat-nav::-webkit-scrollbar { display: none; }
         .cat-pill { 
-            padding: 6px 16px; 
-            background: #fff; 
-            color: var(--text-dark); 
-            border: 2px solid #eee;
-            border-radius: 20px; 
-            font-size: 0.9rem; 
-            font-weight: 700; 
-            transition: 0.2s; 
+            padding: 6px 16px; background: #fff; color: var(--text-dark); 
+            border: 1px solid #e0e0e0; border-radius: 20px; 
+            font-size: 0.9rem; font-weight: 700; transition: 0.2s; 
         }
         .cat-pill.active { 
-            background: var(--primary); 
-            color: white; 
-            border-color: var(--primary);
+            background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
-        /* 商品卡片優化 */
+        /* 商品卡片 */
         .section-title { 
             font-weight: 800; margin: 20px 0 10px 0; padding-left: 15px; 
-            border-left: 5px solid var(--primary); 
+            border-left: 5px solid var(--accent); 
             font-size: 1.2rem; color: var(--text-dark); 
         }
         .product-card { 
             background: white; border-radius: 15px; overflow: hidden; border: none; 
-            box-shadow: 0 3px 10px rgba(0,0,0,0.05); 
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05); margin-bottom: 15px;
         }
         .product-img { width: 100%; height: 140px; object-fit: cover; background: #eee; }
-        .product-body { padding: 10px; position: relative; }
-        .product-name { font-size: 0.95rem; font-weight: bold; margin-bottom: 5px; line-height: 1.3; }
+        .product-body { padding: 12px; position: relative; }
+        .product-name { font-size: 0.95rem; font-weight: bold; margin-bottom: 5px; color: #4e342e; }
         .product-price { color: var(--primary); font-size: 1.1rem; font-weight: 900; }
         
-        /* 數量按鈕 (圓形風格) */
-        .qty-group { 
-            position: absolute; bottom: 10px; right: 10px; 
-            display: flex; align-items: center; 
-            background: #fff; border-radius: 20px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15); 
-            border: 1px solid var(--yellow);
-        }
-        .qty-btn { 
-            width: 26px; height: 26px; border: none; 
-            background: var(--yellow); color: var(--text-dark); 
-            font-weight: bold; display: flex; align-items: center; justify-content: center; 
-            border-radius: 50%; cursor: pointer;
-        }
-        .qty-val { font-size: 0.9rem; font-weight: bold; width: 22px; text-align: center; }
-        .btn-add-only {
-            position: absolute; bottom: 10px; right: 10px; width: 30px; height: 30px;
-            background: var(--primary); color: white; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 3px 6px rgba(211, 47, 47, 0.3); cursor: pointer;
-        }
+        .stock-info { font-size: 0.75rem; color: #888; background: #f5f5f5; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; }
+        .arrival-info { font-size: 0.8rem; color: #fff; background: #ef5350; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px; font-weight: bold; }
+        
+        .product-card.oos-mode .product-img { opacity: 0.5; filter: grayscale(100%); }
+        .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 32px; height: 32px; background: var(--accent); color: var(--text-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); cursor: pointer; }
+        .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: #fff; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 1px solid var(--accent); }
+        .qty-btn { width: 28px; height: 28px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; }
+        .qty-val { font-size: 0.9rem; font-weight: bold; width: 24px; text-align: center; }
 
         /* 底部購物車 */
         .cart-bar { 
             position: fixed; bottom: 25px; left: 5%; width: 90%; 
-            background: var(--text-dark); /* 深色更有質感 */
-            color: var(--yellow); border-radius: 50px; padding: 12px 25px; 
+            background: var(--text-dark); color: var(--accent); border-radius: 50px; padding: 12px 25px; 
             display: flex; justify-content: space-between; align-items: center; 
             box-shadow: 0 8px 20px rgba(0,0,0,0.3); 
-            z-index: 1050; cursor: pointer; transition: 0.3s; transform: translateY(150%); border: 2px solid var(--yellow);
+            z-index: 1050; cursor: pointer; transition: 0.3s; transform: translateY(150%); border: 2px solid var(--accent);
         }
         .cart-bar.show { transform: translateY(0); }
 
-        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-warm); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        
-        /* Modal 美化 */
+        /* Modal */
         .modal-header { background: var(--bg-warm); border-bottom: 1px dashed #ccc; }
         .btn-confirm { background: var(--primary); color: white; border: none; font-weight: bold; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3); }
         
-        /* Lightbox */
         #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 9999; cursor: zoom-out; }
         #lightbox img { max-width: 90%; max-height: 80%; border-radius: 8px; transform: scale(0.9); transition: 0.3s; }
         #lightbox.show img { transform: scale(1); }
@@ -200,50 +178,47 @@
 <body>
 
 <div id="loader">
-    <div class="spinner-border text-warning mb-3"></div>
-    <div class="fw-bold" style="color:var(--text-dark)">狗狗店長整理貨架中...</div>
+    <img src="https://drive.google.com/uc?export=view&id=1aEOQvdpcOhwFaIYBZocUONmsGWgAbjuG" class="loader-img" alt="Loading">
+    <div class="spinner-border text-warning" role="status"></div>
+    <div class="mt-2 text-secondary fw-bold small">Loading...</div>
 </div>
 
+<div id="update-time-banner" style="display:none">庫存更新：<span id="stock-time"></span></div>
+
 <div class="hero-section">
-    <img src="https://i.imgur.com/your-dog-cart-image.png" class="mascot-logo" onerror="this.src='https://placehold.co/200x200/fdd835/3e2723?text=DOG+CART'">
+    <div class="header-left">
+        <img src="https://drive.google.com/uc?export=view&id=1aEOQvdpcOhwFaIYBZocUONmsGWgAbjuG" class="header-logo" alt="Logo">
+        <div>
+            <div class="store-title" id="store-title">樂森良選<br>Lifestyle Select</div>
+        </div>
+    </div>
     
-    <div class="store-title">樂森良選 Lifestyle Select</div>
-    
-    <div class="user-welcome" onclick="openMyOrders()">
-        <i class="bi bi-person-circle me-1"></i> <span id="user-name">訪客</span>
+    <div class="user-block" onclick="openMyOrders()">
+        <img src="https://placehold.co/100x100?text=U" class="user-avatar" id="user-avatar">
+        <div class="mt-1" id="user-name">訪客</div>
     </div>
 </div>
 
 <div class="quick-menu">
-    <div class="menu-item" onclick="scrollToMenu()">
-        <div class="menu-icon-circle bg-shop"><i class="bi bi-shop"></i></div>
-        <div class="menu-label">購物去</div>
-    </div>
-    <div class="menu-item" onclick="setCategory('top10')">
-        <div class="menu-icon-circle bg-love"><i class="bi bi-heart-fill text-danger"></i></div>
-        <div class="menu-label">加入最愛</div>
-    </div>
     <div class="menu-item" onclick="openCartModal()">
-        <div class="menu-icon-circle bg-pay"><i class="bi bi-currency-dollar"></i></div>
+        <img src="https://drive.google.com/uc?export=view&id=1orrVRlifzggHUaqmGVk1kZXlQMPiE4LJ" class="menu-btn-img">
         <div class="menu-label">立即結帳</div>
     </div>
-    <div class="menu-item" onclick="openSupport()">
-        <div class="menu-icon-circle bg-svc"><i class="bi bi-headset"></i></div>
-        <div class="menu-label">聯絡客服</div>
-    </div>
+
     <div class="menu-item" onclick="openMyOrders()">
-        <div class="menu-icon-circle bg-mem"><i class="bi bi-person-lines-fill"></i></div>
-        <div class="menu-label">會員中心</div>
+        <img src="https://drive.google.com/uc?export=view&id=1es0kvRG1S6NAswcGU1zLj7UqtGpm3701" class="menu-btn-img">
+        <div class="menu-label">查詢訂單</div>
     </div>
-    <div class="menu-item" onclick="openCoupon()">
-        <div class="menu-icon-circle bg-sale"><i class="bi bi-gift-fill text-danger"></i></div>
-        <div class="menu-label">領取優惠</div>
+
+    <div class="menu-item" onclick="openSupport()">
+        <img src="https://drive.google.com/uc?export=view&id=11citnr98aeLlOKeqN27AeMks4d4YiBDo" class="menu-btn-img">
+        <div class="menu-label">聯絡客服</div>
     </div>
 </div>
 
 <div class="cat-nav" id="cat-nav"></div>
 
-<div class="container mt-3" id="product-container"></div>
+<div class="container mt-2" id="product-container"></div>
 
 <div class="cart-bar" id="cart-bar" onclick="openCartModal()">
     <div class="d-flex align-items-center">
@@ -257,7 +232,7 @@
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold text-dark"><i class="bi bi-cart-check-fill text-danger"></i> 購物清單</h5>
+                <h5 class="modal-title fw-bold text-dark"><i class="bi bi-basket-fill text-danger"></i> 購物清單</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="cart-modal-body"></div>
@@ -300,7 +275,7 @@
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold">🐶 會員中心 (歷史訂單)</h5>
+                <h5 class="modal-title fw-bold">🐶 歷史訂單查詢</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body bg-light" id="my-orders-list"></div>
@@ -311,7 +286,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // ⚠️ 請確認您的 LIFF ID
     const LIFF_ID = "2009014517-qshUmlAc"; 
+    // ⚠️ 請確認您的 GAS URL
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
 
     let allData = {}; let cart = []; let userProfile = { userId: 'guest', displayName: '訪客' }; 
@@ -322,12 +299,13 @@
     const announceModal = new bootstrap.Modal(document.getElementById('announceModal'));
 
     window.onload = function() { fetchMenu(); initLiff(); };
-    async function initLiff() { try { await liff.init({ liffId: LIFF_ID }); if (liff.isLoggedIn()) { const p = await liff.getProfile(); userProfile = p; document.getElementById('user-name').innerText = p.displayName; } else { liff.login(); } } catch (e) { console.error("LIFF Error:", e); } }
+    async function initLiff() { try { await liff.init({ liffId: LIFF_ID }); if (liff.isLoggedIn()) { const p = await liff.getProfile(); userProfile = p; document.getElementById('user-name').innerText = p.displayName; if(p.pictureUrl) document.getElementById('user-avatar').src = p.pictureUrl; } else { liff.login(); } } catch (e) { console.error("LIFF Error:", e); } }
     
     function fetchMenu() {
         fetch(GAS_URL + "?page=json&t=" + Date.now()).then(res => res.json()).then(data => {
                 allData = data; 
-                if(data.appTitle) document.querySelector('.store-title').innerText = data.appTitle; 
+                if(data.appTitle) document.getElementById('store-title').innerHTML = data.appTitle.replace(/\n/g, '<br>'); 
+                if(data.lastUpdateTime) { document.getElementById('stock-time').innerText = data.lastUpdateTime; document.getElementById('update-time-banner').style.display = 'block'; }
                 renderMenu(); checkAnnouncement(data); document.getElementById('loader').style.display = 'none';
         }).catch(err => { console.log("載入失敗"); document.getElementById('loader').innerHTML = '<div class="text-danger">載入失敗</div>'; });
     }
@@ -340,21 +318,14 @@
             const imgDiv = document.getElementById('announce-img-container');
             if (hasImg) { imgDiv.innerHTML = `<img src="${data.announcementImg}" referrerpolicy="no-referrer" style="width:100%; border-radius:15px;">`; imgDiv.style.display = "block"; } 
             else { imgDiv.innerHTML = ""; imgDiv.style.display = "none"; }
-            // 預設不自動彈出，除非您希望一進來就彈出，可把下面這行取消註解
-            // announceModal.show();
+            announceModal.show();
         }
     }
 
-    // 🟢 快速選單功能
-    function scrollToMenu() {
-        document.getElementById('cat-nav').scrollIntoView({behavior: 'smooth'});
-    }
+    // 🟢 連結到您的 LINE 客服 (請修改網址)
     function openSupport() {
-        // 這裡可以換成您的 LINE 客服連結，例如 https://line.me/R/ti/p/@your_id
-        alert("即將開啟 LINE 客服視窗 (功能預留)");
-    }
-    function openCoupon() {
-        announceModal.show();
+        // window.open('https://line.me/R/ti/p/@your_id', '_blank'); 
+        alert("請設定您的 LINE 官方帳號連結");
     }
 
     function setCategory(cat) { currentCategory = cat; renderMenu(); }
