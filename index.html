@@ -22,22 +22,36 @@
             background-color: var(--bg-warm); 
             color: var(--text-dark);
             padding-bottom: 100px; 
+            overflow-x: hidden; /* 防止狗狗跑出去時出現橫向卷軸 */
         }
 
-        /* 🟢 1. 載入畫面樣式 */
+        /* 🟢 1. 載入畫面樣式 (修改處：讓狗狗跑起來) */
         #loader { 
             position: fixed; top:0; left:0; width:100%; height:100%; 
             background: #fff; z-index: 9999; 
             display: flex; justify-content: center; align-items: center; flex-direction: column; 
+            overflow: hidden; /* 確保動畫不影響版面 */
         }
+        
         .loader-img {
-            width: 180px; 
+            width: 200px; /* 稍微加大一點讓看比較清楚 */
             height: auto;
             object-fit: contain; 
             margin-bottom: 20px;
-            animation: bounce 2s infinite;
+            
+            /* 🔥 這裡設定動畫：由右往左跑 */
+            animation: runRightToLeft 3.5s linear infinite; 
         }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        /* 🔥 定義跑步動畫軌跡 */
+        @keyframes runRightToLeft {
+            0% { 
+                transform: translateX(120vw); /* 從螢幕右邊外面開始 */
+            }
+            100% { 
+                transform: translateX(-120vw); /* 跑到螢幕左邊外面 */
+            }
+        }
 
         /* 頂部更新時間條 */
         #update-time-banner { 
@@ -177,7 +191,7 @@
 <div id="loader">
     <img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img" alt="Loading" referrerpolicy="no-referrer">
     <div class="spinner-border text-warning" role="status"></div>
-    <div class="mt-2 text-secondary fw-bold small">Loading...</div>
+    <div class="mt-2 text-secondary fw-bold small">樂森良選 為您服務...</div>
 </div>
 
 <div id="update-time-banner" style="display:none">庫存更新：<span id="stock-time"></span></div>
@@ -357,7 +371,7 @@
         });
     }
 
-    // 🔥 🟢 修正：日期格式化 (只顯示 M/D)
+    // 日期格式化 M/D
     function createProductCard(p) {
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat); const count = inCart ? inCart.count : 0; const isOOS = p.status === 'oos' || p.stock <= 0;
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
@@ -367,7 +381,6 @@
             let dateStr = p.arrivalDate;
             const dateObj = new Date(p.arrivalDate);
             if (!isNaN(dateObj.getTime())) {
-                // 格式化為 M/D (去除年份與時間)
                 dateStr = (dateObj.getMonth() + 1) + '/' + dateObj.getDate();
             }
             stockHtml += `<div class="arrival-info small">${dateStr} 到貨</div>`; 
