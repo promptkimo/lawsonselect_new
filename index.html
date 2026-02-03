@@ -357,11 +357,21 @@
         });
     }
 
+    // 🔥 🟢 修正：日期格式化 (只顯示 M/D)
     function createProductCard(p) {
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat); const count = inCart ? inCart.count : 0; const isOOS = p.status === 'oos' || p.stock <= 0;
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         let stockHtml = `<span class="stock-info">剩: ${p.stock}</span>`;
-        if (p.stock <= 0 && p.arrivalDate) { stockHtml += `<div class="arrival-info small">${p.arrivalDate} 到貨</div>`; }
+        
+        if (p.stock <= 0 && p.arrivalDate) { 
+            let dateStr = p.arrivalDate;
+            const dateObj = new Date(p.arrivalDate);
+            if (!isNaN(dateObj.getTime())) {
+                // 格式化為 M/D (去除年份與時間)
+                dateStr = (dateObj.getMonth() + 1) + '/' + dateObj.getDate();
+            }
+            stockHtml += `<div class="arrival-info small">${dateStr} 到貨</div>`; 
+        }
         
         let btnHtml = isOOS ? `<span class="badge bg-secondary position-absolute bottom-0 end-0 m-2">補貨中</span>` : (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', 1)">+</button></div>` : `<div class="btn-add-only" onclick="updateQty('${p.name}', '${p.cat}', 1)"><i class="bi bi-plus-lg"></i></div>`);
         const cardClass = isOOS ? 'oos-mode' : ''; 
