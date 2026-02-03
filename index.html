@@ -25,66 +25,30 @@
             overflow-x: hidden; 
         }
 
-        /* 🟢 1. 載入畫面特效區 (狗狗慢跑+殘影) */
+        /* 🟢 1. 載入畫面特效區 */
         #loader { 
             position: fixed; top:0; left:0; width:100%; height:100%; 
             background: #fff; z-index: 9999; 
             display: flex; justify-content: center; align-items: center; flex-direction: column; 
             overflow: hidden; 
         }
-        
-        .dog-wrapper {
-            position: relative;
-            width: 100%;
-            height: 180px; 
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .loader-img {
-            position: absolute; 
-            width: 180px; 
-            height: auto;
-            object-fit: contain; 
-            animation: runRightToLeft 7s linear infinite; /* 7秒慢跑 */
-        }
-
+        .dog-wrapper { position: relative; width: 100%; height: 180px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; }
+        .loader-img { position: absolute; width: 180px; height: auto; object-fit: contain; animation: runRightToLeft 7s linear infinite; }
         .main-dog { z-index: 10; opacity: 1; }
         .ghost-1 { z-index: 9; opacity: 0.6; animation-delay: -0.15s; filter: blur(1px); }
         .ghost-2 { z-index: 8; opacity: 0.3; animation-delay: -0.3s; filter: blur(2px); }
         .ghost-3 { z-index: 7; opacity: 0.1; animation-delay: -0.45s; filter: blur(4px); }
-
-        @keyframes runRightToLeft {
-            0% { transform: translateX(120vw); }   
-            100% { transform: translateX(-120vw); } 
-        }
+        @keyframes runRightToLeft { 0% { transform: translateX(120vw); } 100% { transform: translateX(-120vw); } }
 
         /* 頂部更新時間條 */
-        #update-time-banner { 
-            background: var(--text-dark); color: #fff; font-size: 0.8rem; 
-            text-align: center; padding: 6px 0; position: sticky; top: 0; z-index: 1030; 
-        }
+        #update-time-banner { background: var(--text-dark); color: #fff; font-size: 0.8rem; text-align: center; padding: 6px 0; position: sticky; top: 0; z-index: 1030; }
         #stock-time { color: var(--accent); font-weight: bold; margin-left: 10px; }
 
         /* 🟢 2. 頂部標題區塊 */
-        .hero-section { 
-            background: white; 
-            padding: 15px 20px; 
-            position: sticky; top: 30px; z-index: 1020; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            border-bottom-left-radius: 25px;
-            border-bottom-right-radius: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
+        .hero-section { background: white; padding: 15px 20px; position: sticky; top: 30px; z-index: 1020; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; display: flex; align-items: center; justify-content: space-between; }
         .header-left { display: flex; align-items: center; }
         .header-logo { width: 60px; height: 60px; object-fit: contain; margin-right: 10px; }
         .store-title { font-weight: 800; font-size: 1.2rem; color: var(--text-dark); line-height: 1.2; }
-        
         .user-block { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #888; cursor: pointer; }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; margin-bottom: 2px;}
 
@@ -98,8 +62,12 @@
         /* 分類導航 */
         .cat-nav { display: flex; overflow-x: auto; white-space: nowrap; padding: 10px 15px; gap: 8px; position: sticky; top: 0; }
         .cat-nav::-webkit-scrollbar { display: none; }
-        .cat-pill { padding: 6px 16px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; transition: 0.2s; }
+        .cat-pill { padding: 6px 16px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; transition: 0.2s; cursor: pointer; }
         .cat-pill.active { background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        
+        /* 🔥 特別樣式：即期品按鈕 */
+        .cat-pill-danger { color: #d32f2f; border-color: #d32f2f; background: #fff5f5; }
+        .cat-pill-danger.active { background: #d32f2f; color: white; border-color: #d32f2f; }
 
         /* 商品卡片 */
         .section-title { font-weight: 800; margin: 20px 0 10px 0; padding-left: 15px; border-left: 5px solid var(--accent); font-size: 1.2rem; color: var(--text-dark); }
@@ -108,13 +76,36 @@
         .product-body { padding: 12px; position: relative; }
         .product-name { font-size: 0.95rem; font-weight: bold; margin-bottom: 5px; color: #4e342e; }
         .product-price { color: var(--primary); font-size: 1.1rem; font-weight: 900; }
-        
         .stock-info { font-size: 0.75rem; color: #888; background: #f5f5f5; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; }
         .arrival-info { font-size: 0.8rem; color: #fff; background: #ef5350; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px; font-weight: bold; }
         
-        /* 🟢 即期品標籤與日期 */
-        .short-date-badge { position: absolute; top: 0; right: 0; background: #ff9800; color: white; font-size: 0.8rem; font-weight: bold; padding: 4px 10px; border-bottom-left-radius: 15px; border-top-right-radius: 15px; z-index: 20; box-shadow: -2px 2px 5px rgba(0,0,0,0.1); }
-        .expiry-info { color: #e65100; font-size: 0.8rem; font-weight: bold; display: block; margin-top: 2px; }
+        /* 🔥 🟢 即期品標籤 (強化視覺：改紅色、字變大、加陰影) */
+        .short-date-badge { 
+            position: absolute; top: 0; right: 0; 
+            background: #d32f2f; /* 鮮紅色 */
+            color: white; 
+            font-size: 0.9rem; /* 字體加大 */
+            font-weight: 900; 
+            padding: 6px 12px; 
+            border-bottom-left-radius: 15px; 
+            border-top-right-radius: 15px; 
+            z-index: 20; 
+            box-shadow: -3px 3px 8px rgba(0,0,0,0.3); /* 加強陰影 */
+            letter-spacing: 1px;
+        }
+        
+        /* 🔥 🟢 到期日文字 (強化視覺) */
+        .expiry-info { 
+            color: #b71c1c; /* 深紅色 */
+            font-size: 0.85rem; 
+            font-weight: 800; 
+            display: block; 
+            margin-top: 4px; 
+            background: #ffebee; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            display: inline-block;
+        }
 
         .product-card.oos-mode .product-img { opacity: 0.5; filter: grayscale(100%); }
         .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 32px; height: 32px; background: var(--accent); color: var(--text-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); cursor: pointer; }
@@ -157,7 +148,6 @@
             <div class="store-title" id="store-title">樂森良選<br>Lifestyle Select</div>
         </div>
     </div>
-    
     <div class="user-block" onclick="openMyOrders()">
         <img src="https://placehold.co/100x100?text=U" class="user-avatar" id="user-avatar">
         <div class="mt-1" id="user-name">訪客</div>
@@ -199,7 +189,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="cart-modal-body"></div>
-            
             <div class="px-3 pb-3 bg-white border-top">
                 <div class="mt-3">
                     <label class="form-label small fw-bold text-secondary">取餐聯絡人 <span class="text-danger">*</span></label>
@@ -210,15 +199,12 @@
                     <input type="tel" id="order-contact-phone" class="form-control rounded-pill bg-light" placeholder="請輸入手機號碼">
                 </div>
             </div>
-
             <div class="modal-footer border-0 pt-0 d-block">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-secondary fw-bold">總計金額</span>
                     <span class="h3 fw-bold text-danger m-0" id="modal-cart-total">$0</span>
                 </div>
-                <button class="btn btn-confirm w-100 py-2 rounded-pill fs-5" onclick="submitOrder()">
-                    確認送出訂單
-                </button>
+                <button class="btn btn-confirm w-100 py-2 rounded-pill fs-5" onclick="submitOrder()">確認送出訂單</button>
             </div>
         </div>
     </div>
@@ -237,10 +223,7 @@
 <div class="modal fade" id="myOrdersModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">🐶 歷史訂單查詢</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+            <div class="modal-header"><h5 class="modal-title fw-bold">🐶 歷史訂單查詢</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body bg-light" id="my-orders-list"></div>
         </div>
     </div>
@@ -259,50 +242,23 @@
     const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
     const announceModal = new bootstrap.Modal(document.getElementById('announceModal'));
 
-    // 🟢 重要：優先讀取資料，再處理 LIFF，避免畫面卡住
-    window.onload = function() { 
-        fetchMenu(); // 1. 先抓資料讓頁面有東西
-        initLiff();  // 2. 再處理登入
-    };
+    window.onload = function() { fetchMenu(); initLiff(); };
 
     async function initLiff() { 
-        try { 
-            await liff.init({ liffId: LIFF_ID }); 
-            if (liff.isLoggedIn()) { 
-                const p = await liff.getProfile(); 
-                userProfile = p; 
-                document.getElementById('user-name').innerText = p.displayName; 
-                if(p.pictureUrl) document.getElementById('user-avatar').src = p.pictureUrl; 
-            } else { 
-                // 若未登入，嘗試自動登入或保持訪客
-                liff.login(); 
-            } 
-        } catch (e) { 
-            console.error("LIFF Init Error:", e);
-            // 就算 LIFF 失敗，也不要阻擋頁面運作
-        } 
+        try { await liff.init({ liffId: LIFF_ID }); if (liff.isLoggedIn()) { const p = await liff.getProfile(); userProfile = p; document.getElementById('user-name').innerText = p.displayName; if(p.pictureUrl) document.getElementById('user-avatar').src = p.pictureUrl; } else { liff.login(); } } catch (e) { console.error("LIFF Init Error:", e); } 
     }
     
     function fetchMenu() {
-        // 加入 random 參數避免快取
-        fetch(GAS_URL + "?page=json&t=" + Date.now())
-            .then(res => res.json())
-            .then(data => {
-                allData = data; 
-                if(data.appTitle) document.getElementById('store-title').innerHTML = data.appTitle.replace(/\n/g, '<br>'); 
-                if(data.lastUpdateTime) { 
-                    document.getElementById('stock-time').innerText = data.lastUpdateTime; 
-                    document.getElementById('update-time-banner').style.display = 'block'; 
-                }
-                renderMenu(); 
-                checkAnnouncement(data); 
-                // 🟢 資料載入完成，關閉 Loader
-                document.getElementById('loader').style.display = 'none';
-            })
-            .catch(err => { 
-                console.log("載入失敗", err); 
-                document.getElementById('loader').innerHTML = '<div class="text-danger fw-bold p-3">載入失敗，請檢查網路或重新整理<br><small>'+err+'</small></div>'; 
-            });
+        fetch(GAS_URL + "?page=json&t=" + Date.now()).then(res => res.json()).then(data => {
+            allData = data; 
+            if(data.appTitle) document.getElementById('store-title').innerHTML = data.appTitle.replace(/\n/g, '<br>'); 
+            if(data.lastUpdateTime) { document.getElementById('stock-time').innerText = data.lastUpdateTime; document.getElementById('update-time-banner').style.display = 'block'; }
+            renderMenu(); checkAnnouncement(data); 
+            document.getElementById('loader').style.display = 'none';
+        }).catch(err => { 
+            console.log("載入失敗", err); 
+            document.getElementById('loader').innerHTML = '<div class="text-danger fw-bold p-3">載入失敗，請檢查網路或重新整理</div>'; 
+        });
     }
 
     function checkAnnouncement(data) {
@@ -317,17 +273,18 @@
         }
     }
 
-    // 🟢 LINE 官方帳號連結
-    function openSupport() {
-        window.location.href = 'https://line.me/R/ti/p/@lawsonshop';
-    }
+    function openSupport() { window.location.href = 'https://line.me/R/ti/p/@lawsonshop'; }
 
     function setCategory(cat) { currentCategory = cat; renderMenu(); }
     
+    // 🟢 修改：選單渲染 (加入即期品專區)
     function renderMenu() {
         const nav = document.getElementById('cat-nav'); const container = document.getElementById('product-container');
         
         let navHtml = `<span class="cat-pill ${currentCategory === 'top10' ? 'active' : ''}" onclick="setCategory('top10')">🔥 熱銷TOP10</span>`;
+        // 🟢 新增即期品專屬按鈕
+        navHtml += `<span class="cat-pill cat-pill-danger ${currentCategory === 'shortDated' ? 'active' : ''}" onclick="setCategory('shortDated')">⚡ 即期良品</span>`;
+        
         navHtml += `<span class="cat-pill ${currentCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">全部商品</span>`;
         
         if (allData.categories) { allData.categories.forEach(cat => { navHtml += `<span class="cat-pill ${currentCategory === cat ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</span>`; }); }
@@ -336,6 +293,7 @@
         container.innerHTML = '';
         if (!allData.categories || allData.categories.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前沒有商品</div>'; return; }
 
+        // 1. 熱銷 TOP10
         if (currentCategory === 'top10') {
              const topItems = allData.products.filter(p => allData.top10.includes(p.name));
              if (topItems.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前還沒有熱銷數據，請先點選其他分類</div>'; return; }
@@ -344,6 +302,16 @@
              html += `</div>`; container.innerHTML = html; return;
         }
 
+        // 🟢 2. 即期良品專區 (撈出所有打勾的商品)
+        if (currentCategory === 'shortDated') {
+             const shortItems = allData.products.filter(p => p.isShortDated === true);
+             if (shortItems.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前沒有即期良品</div>'; return; }
+             let html = `<div class="section-title" style="border-left-color:#d32f2f; color:#d32f2f;">⚡ 即期良品專區</div><div class="row g-3">`;
+             shortItems.forEach(p => html += createProductCard(p));
+             html += `</div>`; container.innerHTML = html; return;
+        }
+
+        // 3. 一般分類
         allData.categories.forEach(cat => {
             if (currentCategory !== 'all' && currentCategory !== cat) return;
             const items = allData.products.filter(p => p.cat === cat); if(items.length === 0) return;
@@ -357,23 +325,20 @@
         });
     }
 
-    // 🟢 核心：建立商品卡片 (含即期品邏輯)
     function createProductCard(p) {
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat); const count = inCart ? inCart.count : 0; const isOOS = p.status === 'oos' || p.stock <= 0;
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         let stockHtml = `<span class="stock-info">剩: ${p.stock}</span>`;
         
-        // 1. 預計到貨邏輯 (無庫存時顯示)
+        // 預計到貨
         if (p.stock <= 0 && p.arrivalDate) { 
             let dateStr = p.arrivalDate;
             const dateObj = new Date(p.arrivalDate);
-            if (!isNaN(dateObj.getTime())) {
-                dateStr = (dateObj.getMonth() + 1) + '/' + dateObj.getDate();
-            }
+            if (!isNaN(dateObj.getTime())) { dateStr = (dateObj.getMonth() + 1) + '/' + dateObj.getDate(); }
             stockHtml += `<div class="arrival-info small">${dateStr} 到貨</div>`; 
         }
 
-        // 2. 即期品邏輯
+        // 🟢 即期品標籤與日期
         let badgeHtml = "";
         let expiryHtml = "";
         if (p.isShortDated) {
@@ -391,10 +356,7 @@
         return `
         <div class="col-6 col-md-4">
             <div class="product-card ${cardClass}">
-                <div class="position-relative">
-                    ${badgeHtml}
-                    ${imgHtml}
-                </div>
+                <div class="position-relative">${badgeHtml}${imgHtml}</div>
                 <div class="product-body">
                     <div class="product-name text-truncate">${p.name}</div>
                     <div class="product-price">$${p.price}</div>
