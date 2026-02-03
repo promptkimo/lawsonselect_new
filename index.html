@@ -1,458 +1,88 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>樂森良選 Lifestyle Select</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    
     <style>
-        /* 🎨 溫暖配色系統 */
-        :root { 
-            --primary: #d32f2f;   /* 紅色 */
-            --accent: #ffb300;    /* 溫暖黃 */
-            --bg-warm: #fffdf5;   /* 奶油底色 */
-            --text-dark: #3e2723; /* 深咖文字 */
-        }
-
-        body { 
-            font-family: 'Noto Sans TC', sans-serif; 
-            background-color: var(--bg-warm); 
-            color: var(--text-dark);
-            padding-bottom: 100px; 
-            overflow-x: hidden; 
-        }
-
-        /* 🟢 1. 載入畫面特效區 */
-        #loader { 
-            position: fixed; top:0; left:0; width:100%; height:100%; 
-            background: #fff; z-index: 9999; 
-            display: flex; justify-content: center; align-items: center; flex-direction: column; 
-            overflow: hidden; 
+        /* ... (保留原本的樣式) ... */
+        
+        /* 🟢 新增：即期品標籤樣式 (右上角) */
+        .short-date-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #ff9800; /* 亮橘色 */
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-bottom-left-radius: 15px;
+            border-top-right-radius: 15px; /* 配合卡片圓角 */
+            z-index: 20;
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
         }
         
-        /* 殘影容器 */
-        .dog-wrapper {
-            position: relative;
-            width: 100%;
-            height: 180px; /* 預留高度給圖片 */
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        /* 到期日文字 (顯示在標籤下方或卡片內容裡) */
+        .expiry-info {
+            color: #e65100;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: block;
+            margin-top: 2px;
         }
-
-        /* 圖片共用設定 */
-        .loader-img {
-            position: absolute; /* 讓圖片重疊在一起 */
-            width: 180px; 
-            height: auto;
-            object-fit: contain; 
-            
-            /* 🔥 修改：時間改成 7s (變慢)，linear 維持等速 */
-            animation: runRightToLeft 7s linear infinite; 
-        }
-
-        /* 🐶 本體設定 */
-        .main-dog {
-            z-index: 10; /* 在最上面 */
-            opacity: 1;
-        }
-
-        /* 👻 殘影 1 (最近的) */
-        .ghost-1 {
-            z-index: 9;
-            opacity: 0.6; /* 半透明 */
-            animation-delay: -0.15s; /* 稍微延遲一點點，製造跟隨感 */
-            filter: blur(1px); /* 稍微模糊 */
-        }
-
-        /* 👻 殘影 2 */
-        .ghost-2 {
-            z-index: 8;
-            opacity: 0.3; 
-            animation-delay: -0.3s; 
-            filter: blur(2px); 
-        }
-
-        /* 👻 殘影 3 (最遠的) */
-        .ghost-3 {
-            z-index: 7;
-            opacity: 0.1; 
-            animation-delay: -0.45s; 
-            filter: blur(4px); /* 最模糊 */
-        }
-
-        /* 🔥 定義跑步動畫軌跡 */
-        @keyframes runRightToLeft {
-            0% { transform: translateX(120vw); }   /* 從右邊外面開始 */
-            100% { transform: translateX(-120vw); } /* 跑到左邊外面 */
-        }
-
-        /* 頂部更新時間條 */
-        #update-time-banner { 
-            background: var(--text-dark); color: #fff; font-size: 0.8rem; 
-            text-align: center; padding: 6px 0; position: sticky; top: 0; z-index: 1030; 
-        }
-        #stock-time { color: var(--accent); font-weight: bold; margin-left: 10px; }
-
-        /* 🟢 2. 頂部標題區塊 (Header) */
-        .hero-section { 
-            background: white; 
-            padding: 15px 20px; 
-            position: sticky; top: 30px; z-index: 1020; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            border-bottom-left-radius: 25px;
-            border-bottom-right-radius: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .header-left { display: flex; align-items: center; }
-        
-        /* 首頁圖 (Logo) */
-        .header-logo {
-            width: 60px; 
-            height: 60px; 
-            object-fit: contain; 
-            margin-right: 10px;
-        }
-
-        .store-title {
-            font-weight: 800;
-            font-size: 1.2rem;
-            color: var(--text-dark);
-            line-height: 1.2;
-        }
-
-        .user-block { 
-            display: flex; flex-direction: column; align-items: center; 
-            font-size: 0.75rem; color: #888; cursor: pointer;
-        }
-        .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; margin-bottom: 2px;}
-
-        /* 🟢 3. 三功能圓形選單 */
-        .quick-menu {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 15px;
-            padding: 20px 15px 10px 15px;
-        }
-        
-        .menu-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .menu-item:active { transform: scale(0.95); opacity: 0.8; }
-
-        .menu-btn-img {
-            width: 80px; 
-            height: 80px;
-            object-fit: contain; 
-            margin-bottom: 5px;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); 
-        }
-        
-        .menu-label {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        /* 分類導航 */
-        .cat-nav { 
-            display: flex; overflow-x: auto; white-space: nowrap; padding: 10px 15px; gap: 8px; 
-            position: sticky; top: 0; 
-        }
-        .cat-nav::-webkit-scrollbar { display: none; }
-        .cat-pill { 
-            padding: 6px 16px; background: #fff; color: var(--text-dark); 
-            border: 1px solid #e0e0e0; border-radius: 20px; 
-            font-size: 0.9rem; font-weight: 700; transition: 0.2s; 
-        }
-        .cat-pill.active { 
-            background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        /* 商品卡片 */
-        .section-title { 
-            font-weight: 800; margin: 20px 0 10px 0; padding-left: 15px; 
-            border-left: 5px solid var(--accent); 
-            font-size: 1.2rem; color: var(--text-dark); 
-        }
-        .product-card { 
-            background: white; border-radius: 15px; overflow: hidden; border: none; 
-            box-shadow: 0 3px 10px rgba(0,0,0,0.05); margin-bottom: 15px;
-        }
-        .product-img { width: 100%; height: 140px; object-fit: cover; background: #eee; }
-        .product-body { padding: 12px; position: relative; }
-        .product-name { font-size: 0.95rem; font-weight: bold; margin-bottom: 5px; color: #4e342e; }
-        .product-price { color: var(--primary); font-size: 1.1rem; font-weight: 900; }
-        
-        .stock-info { font-size: 0.75rem; color: #888; background: #f5f5f5; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; }
-        .arrival-info { font-size: 0.8rem; color: #fff; background: #ef5350; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px; font-weight: bold; }
-        
-        .product-card.oos-mode .product-img { opacity: 0.5; filter: grayscale(100%); }
-        .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 32px; height: 32px; background: var(--accent); color: var(--text-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); cursor: pointer; }
-        .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: #fff; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 1px solid var(--accent); }
-        .qty-btn { width: 28px; height: 28px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; }
-        .qty-val { font-size: 0.9rem; font-weight: bold; width: 24px; text-align: center; }
-
-        /* 底部購物車 */
-        .cart-bar { 
-            position: fixed; bottom: 25px; left: 5%; width: 90%; 
-            background: var(--text-dark); color: var(--accent); border-radius: 50px; padding: 12px 25px; 
-            display: flex; justify-content: space-between; align-items: center; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3); 
-            z-index: 1050; cursor: pointer; transition: 0.3s; transform: translateY(150%); border: 2px solid var(--accent);
-        }
-        .cart-bar.show { transform: translateY(0); }
-
-        /* Modal */
-        .modal-header { background: var(--bg-warm); border-bottom: 1px dashed #ccc; }
-        .btn-confirm { background: var(--primary); color: white; border: none; font-weight: bold; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3); }
-        
-        #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 9999; cursor: zoom-out; }
-        #lightbox img { max-width: 90%; max-height: 80%; border-radius: 8px; transform: scale(0.9); transition: 0.3s; }
-        #lightbox.show img { transform: scale(1); }
     </style>
 </head>
 <body>
-
-<div id="loader">
-    <div class="dog-wrapper">
-        <img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-3" referrerpolicy="no-referrer">
-        <img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-2" referrerpolicy="no-referrer">
-        <img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-1" referrerpolicy="no-referrer">
-        <img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img main-dog" alt="Loading" referrerpolicy="no-referrer">
-    </div>
-    
-    <div class="spinner-border text-warning" role="status"></div>
-    <div class="mt-2 text-secondary fw-bold small">樂森良選 為您服務...</div>
-</div>
-
-<div id="update-time-banner" style="display:none">庫存更新：<span id="stock-time"></span></div>
-
-<div class="hero-section">
-    <div class="header-left">
-        <img src="https://drive.google.com/thumbnail?id=1fkSBRo12seoZSTOlk-ALjF9yTO7usXmV&sz=w1000" class="header-logo" alt="Logo" referrerpolicy="no-referrer">
-        <div>
-            <div class="store-title" id="store-title">樂森良選<br>Lifestyle Select</div>
-        </div>
-    </div>
-    
-    <div class="user-block" onclick="openMyOrders()">
-        <img src="https://placehold.co/100x100?text=U" class="user-avatar" id="user-avatar">
-        <div class="mt-1" id="user-name">訪客</div>
-    </div>
-</div>
-
-<div class="quick-menu">
-    <div class="menu-item" onclick="openCartModal()">
-        <img src="https://drive.google.com/thumbnail?id=1xM2Zbn4YW06eGcmWPV0DTQG6yQlDgTAd&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
-        <div class="menu-label">立即結帳</div>
-    </div>
-
-    <div class="menu-item" onclick="openMyOrders()">
-        <img src="https://drive.google.com/thumbnail?id=1-gXteiqgQi24r2ZuljHT8f5hj1ntk_Rn&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
-        <div class="menu-label">查詢訂單</div>
-    </div>
-
-    <div class="menu-item" onclick="openSupport()">
-        <img src="https://drive.google.com/thumbnail?id=1SITi3RtcBJuShqo7kSRCS3JjP-zujbZ0&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
-        <div class="menu-label">聯絡客服</div>
-    </div>
-</div>
-
-<div class="cat-nav" id="cat-nav"></div>
-
-<div class="container mt-2" id="product-container"></div>
-
-<div class="cart-bar" id="cart-bar" onclick="openCartModal()">
-    <div class="d-flex align-items-center">
-        <span class="badge bg-danger rounded-pill me-2 fs-6" id="cart-count">0</span>
-        <span class="fw-bold">去結帳</span>
-    </div>
-    <span class="fw-bold fs-5 text-warning" id="cart-total">$0</span>
-</div>
-
-<div class="modal fade" id="cartModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold text-dark"><i class="bi bi-basket-fill text-danger"></i> 購物清單</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="cart-modal-body"></div>
-            
-            <div class="px-3 pb-3 bg-white border-top">
-                <div class="mt-3">
-                    <label class="form-label small fw-bold text-secondary">取餐聯絡人 <span class="text-danger">*</span></label>
-                    <input type="text" id="order-contact-name" class="form-control rounded-pill bg-light" placeholder="請輸入姓名">
-                </div>
-                <div class="mt-2">
-                    <label class="form-label small fw-bold text-secondary">聯絡電話 <span class="text-danger">*</span></label>
-                    <input type="tel" id="order-contact-phone" class="form-control rounded-pill bg-light" placeholder="請輸入手機號碼">
-                </div>
-            </div>
-
-            <div class="modal-footer border-0 pt-0 d-block">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-secondary fw-bold">總計金額</span>
-                    <span class="h3 fw-bold text-danger m-0" id="modal-cart-total">$0</span>
-                </div>
-                <button class="btn btn-confirm w-100 py-2 rounded-pill fs-5" onclick="submitOrder()">
-                    確認送出訂單
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="announceModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0"><h5 class="modal-title fw-bold text-danger">📢 優惠活動 / 公告</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body"><div id="announce-img-container" style="display:none;"></div><div id="announce-content" class="mt-2 text-center fw-bold text-dark"></div></div>
-            <div class="modal-footer border-0"><button type="button" class="btn btn-warning w-100 rounded-pill fw-bold text-dark" data-bs-dismiss="modal">我知道了</button></div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="myOrdersModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">🐶 歷史訂單查詢</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body bg-light" id="my-orders-list"></div>
-        </div>
-    </div>
-</div>
-<div id="lightbox" onclick="closeLightbox()"><img id="lightbox-img" src="" alt="放大圖片"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const LIFF_ID = "2009014517-qshUmlAc"; 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
+    // ... (LIFF, GAS_URL 等變數保持不變) ...
 
-    let allData = {}; let cart = []; let userProfile = { userId: 'guest', displayName: '訪客' }; 
-    let currentCategory = 'top10'; 
-
-    const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
-    const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
-    const announceModal = new bootstrap.Modal(document.getElementById('announceModal'));
-
-    window.onload = function() { fetchMenu(); initLiff(); };
-    async function initLiff() { try { await liff.init({ liffId: LIFF_ID }); if (liff.isLoggedIn()) { const p = await liff.getProfile(); userProfile = p; document.getElementById('user-name').innerText = p.displayName; if(p.pictureUrl) document.getElementById('user-avatar').src = p.pictureUrl; } else { liff.login(); } } catch (e) { console.error("LIFF Error:", e); } }
-    
-    function fetchMenu() {
-        fetch(GAS_URL + "?page=json&t=" + Date.now()).then(res => res.json()).then(data => {
-                allData = data; 
-                if(data.appTitle) document.getElementById('store-title').innerHTML = data.appTitle.replace(/\n/g, '<br>'); 
-                if(data.lastUpdateTime) { document.getElementById('stock-time').innerText = data.lastUpdateTime; document.getElementById('update-time-banner').style.display = 'block'; }
-                renderMenu(); checkAnnouncement(data); document.getElementById('loader').style.display = 'none';
-        }).catch(err => { console.log("載入失敗"); document.getElementById('loader').innerHTML = '<div class="text-danger">載入失敗</div>'; });
-    }
-
-    function checkAnnouncement(data) {
-        const hasText = data.announcementText && data.announcementText.trim() !== "";
-        const hasImg = data.announcementImg && data.announcementImg.trim() !== "";
-        if (hasText || hasImg) {
-            document.getElementById('announce-content').innerText = data.announcementText || "";
-            const imgDiv = document.getElementById('announce-img-container');
-            if (hasImg) { imgDiv.innerHTML = `<img src="${data.announcementImg}" referrerpolicy="no-referrer" style="width:100%; border-radius:15px;">`; imgDiv.style.display = "block"; } 
-            else { imgDiv.innerHTML = ""; imgDiv.style.display = "none"; }
-            announceModal.show();
-        }
-    }
-
-    // 🟢 LINE 官方帳號連結
-    function openSupport() {
-        window.location.href = 'https://line.me/R/ti/p/@lawsonshop';
-    }
-
-    function setCategory(cat) { currentCategory = cat; renderMenu(); }
-    
-    function renderMenu() {
-        const nav = document.getElementById('cat-nav'); const container = document.getElementById('product-container');
-        
-        let navHtml = `<span class="cat-pill ${currentCategory === 'top10' ? 'active' : ''}" onclick="setCategory('top10')">🔥 熱銷TOP10</span>`;
-        navHtml += `<span class="cat-pill ${currentCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">全部商品</span>`;
-        
-        if (allData.categories) { allData.categories.forEach(cat => { navHtml += `<span class="cat-pill ${currentCategory === cat ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</span>`; }); }
-        nav.innerHTML = navHtml; 
-        
-        container.innerHTML = '';
-        if (!allData.categories || allData.categories.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前沒有商品</div>'; return; }
-
-        if (currentCategory === 'top10') {
-             const topItems = allData.products.filter(p => allData.top10.includes(p.name));
-             if (topItems.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前還沒有熱銷數據，請先點選其他分類</div>'; return; }
-             let html = `<div class="section-title">🔥 熱銷推薦</div><div class="row g-3">`;
-             topItems.forEach(p => html += createProductCard(p));
-             html += `</div>`; container.innerHTML = html; return;
-        }
-
-        allData.categories.forEach(cat => {
-            if (currentCategory !== 'all' && currentCategory !== cat) return;
-            const items = allData.products.filter(p => p.cat === cat); if(items.length === 0) return;
-            let grouped = {}; items.forEach(p => { const sub = p.subCat || '其他'; if(!grouped[sub]) grouped[sub] = []; grouped[sub].push(p); });
-            let html = `<div id="cat-${cat}" class="section-title">${cat}</div>`;
-            for (const [subName, subItems] of Object.entries(grouped)) {
-                if(subName && subName !== '') html += `<div class="sub-cat-title text-secondary small fw-bold mb-2 ms-2"><i class="bi bi-tag-fill me-1"></i>${subName}</div>`; 
-                html += `<div class="row g-3">`; 
-                subItems.forEach(p => html += createProductCard(p)); html += `</div>`; 
-            } container.innerHTML += html;
-        });
-    }
-
-    // 日期格式化 M/D
+    // 🟢 修改：建立商品卡片函式
     function createProductCard(p) {
-        const inCart = cart.find(c => c.name === p.name && c.cat === p.cat); const count = inCart ? inCart.count : 0; const isOOS = p.status === 'oos' || p.stock <= 0;
-        const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
-        let stockHtml = `<span class="stock-info">剩: ${p.stock}</span>`;
+        const inCart = cart.find(c => c.name === p.name && c.cat === p.cat); 
+        const count = inCart ? inCart.count : 0; 
+        const isOOS = p.status === 'oos' || p.stock <= 0;
         
+        const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
+        
+        let stockHtml = `<span class="stock-info">剩: ${p.stock}</span>`;
         if (p.stock <= 0 && p.arrivalDate) { 
-            let dateStr = p.arrivalDate;
-            const dateObj = new Date(p.arrivalDate);
-            if (!isNaN(dateObj.getTime())) {
-                dateStr = (dateObj.getMonth() + 1) + '/' + dateObj.getDate();
-            }
+            let d = new Date(p.arrivalDate);
+            let dateStr = !isNaN(d.getTime()) ? (d.getMonth()+1)+'/'+d.getDate() : p.arrivalDate;
             stockHtml += `<div class="arrival-info small">${dateStr} 到貨</div>`; 
+        }
+
+        // 🟢 判斷是否為即期品
+        let badgeHtml = "";
+        let expiryHtml = "";
+        if (p.isShortDated) {
+            badgeHtml = `<div class="short-date-badge">即期品</div>`;
+            if (p.expiryDate) {
+                let d = new Date(p.expiryDate);
+                // 格式化日期為 YYYY/M/D 或 M/D
+                let dateStr = !isNaN(d.getTime()) ? `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}` : p.expiryDate;
+                // 加在價格旁邊或下方
+                expiryHtml = `<div class="expiry-info"><i class="bi bi-hourglass-split"></i> ${dateStr} 到期</div>`;
+            }
         }
         
         let btnHtml = isOOS ? `<span class="badge bg-secondary position-absolute bottom-0 end-0 m-2">補貨中</span>` : (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', 1)">+</button></div>` : `<div class="btn-add-only" onclick="updateQty('${p.name}', '${p.cat}', 1)"><i class="bi bi-plus-lg"></i></div>`);
         const cardClass = isOOS ? 'oos-mode' : ''; 
         
-        return `<div class="col-6 col-md-4"><div class="product-card ${cardClass}"><div class="position-relative">${imgHtml}</div><div class="product-body"><div class="product-name text-truncate">${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
+        return `
+        <div class="col-6 col-md-4">
+            <div class="product-card ${cardClass}">
+                <div class="position-relative">
+                    ${badgeHtml} ${imgHtml}
+                </div>
+                <div class="product-body">
+                    <div class="product-name text-truncate">${p.name}</div>
+                    <div class="product-price">$${p.price}</div>
+                    ${expiryHtml} ${stockHtml}
+                    ${btnHtml}
+                </div>
+            </div>
+        </div>`;
     }
 
-    function updateQty(name, cat, delta) { const product = allData.products.find(p => p.name === name && p.cat === cat); const idx = cart.findIndex(c => c.name === name && c.cat === cat); if (idx > -1) { cart[idx].count += delta; if (cart[idx].count <= 0) cart.splice(idx, 1); } else if (delta > 0) { cart.push({ name, price: product.price, cat, count: 1 }); } renderMenu(); updateCartUI(); if(document.getElementById('cartModal').classList.contains('show')) renderCartModal(); }
-    function updateCartUI() { const total = cart.reduce((s, i) => s + (i.price * i.count), 0); const count = cart.reduce((s, i) => s + i.count, 0); document.getElementById('cart-count').innerText = count; document.getElementById('cart-total').innerText = '$' + total; document.getElementById('modal-cart-total').innerText = '$' + total; document.getElementById('cart-bar').classList.toggle('show', count > 0); if (count === 0) cartModal.hide(); }
-    function openCartModal() { renderCartModal(); cartModal.show(); }
-    function renderCartModal() { const body = document.getElementById('cart-modal-body'); if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } let grouped = {}; cart.forEach(i => { const p = allData.products.find(x => x.name === i.name && x.cat === i.cat); const s = p ? (p.subCat || '其他') : '其他'; if (!grouped[i.cat]) grouped[i.cat] = {}; if (!grouped[i.cat][s]) grouped[i.cat][s] = []; grouped[i.cat][s].push(i); }); let html = ''; for (const [cat, subCats] of Object.entries(grouped)) { html += `<div class="cart-main-cat fw-bold text-dark border-start border-4 border-danger ps-2 mt-3">${cat}</div>`; for (const [s, items] of Object.entries(subCats)) { if (s && s !== '') html += `<div class="cart-sub-cat small text-secondary ms-2 mt-1 mb-2">${s}</div>`; items.forEach(i => { html += `<div class="d-flex justify-content-between align-items-center cart-item-row py-2 border-bottom"><div style="flex:1"><div class="fw-bold text-dark">${i.name}</div><small class="text-danger fw-bold">$${i.price}</small></div><div class="d-flex align-items-center"><button class="btn btn-sm btn-outline-warning text-dark border fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQty('${i.name}','${i.cat}',-1)">-</button><span class="px-3 fw-bold">${i.count}</span><button class="btn btn-sm btn-warning text-dark fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQty('${i.name}','${i.cat}',1)">+</button></div></div>`; }); } } body.innerHTML = html; }
-    
-    function submitOrder() {
-        const cName = document.getElementById('order-contact-name').value.trim(); const cPhone = document.getElementById('order-contact-phone').value.trim();
-        if (!cName) { alert("請輸入取餐聯絡人姓名"); return; } if (!cPhone) { alert("請輸入聯絡電話"); return; }
-        if(!confirm("確認送出訂單？")) return;
-        document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "狗狗跑腿送單中..."; cartModal.hide();
-        const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: cart.map(i => `${i.name} x${i.count}`).join(', '), total: cart.reduce((s, i) => s + (i.price * i.count), 0), cartItems: cart, contactName: cName, contactPhone: cPhone } };
-        fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' }).then(() => { alert("🎉 訂單已送出！"); cart = []; updateCartUI(); renderMenu(); document.getElementById('loader').style.display = 'none'; }).catch(e => alert("錯誤: " + e));
-    }
-    
-    function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
-    function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
-    function openMyOrders() { myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-3">載入中...</div>'; fetch(GAS_URL + "?page=myOrders&uid=" + userProfile.userId + "&t=" + Date.now()).then(res => res.json()).then(orders => { document.getElementById('my-orders-list').innerHTML = orders.map(o => `<div class="card mb-2 border-0 shadow-sm p-3"><div class="d-flex justify-content-between"><span class="badge bg-warning text-dark">${o.status}</span><small>${o.date}</small></div><div class="fw-bold mt-1 text-dark">#${o.id}</div><div class="small text-secondary">${o.items}</div><div class="text-end fw-bold text-danger mt-1">$${o.total}</div></div>`).join('') || '<div class="text-center py-3 text-muted">尚無訂單紀錄</div>'; }); }
+    // ... (其餘 updateQty, submitOrder 等函式保持不變) ...
 </script>
 </body>
 </html>
