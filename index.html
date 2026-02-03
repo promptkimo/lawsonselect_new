@@ -22,35 +22,73 @@
             background-color: var(--bg-warm); 
             color: var(--text-dark);
             padding-bottom: 100px; 
-            overflow-x: hidden; /* 防止狗狗跑出去時出現橫向卷軸 */
+            overflow-x: hidden; 
         }
 
-        /* 🟢 1. 載入畫面樣式 (修改處：讓狗狗跑起來) */
+        /* 🟢 1. 載入畫面特效區 */
         #loader { 
             position: fixed; top:0; left:0; width:100%; height:100%; 
             background: #fff; z-index: 9999; 
             display: flex; justify-content: center; align-items: center; flex-direction: column; 
-            overflow: hidden; /* 確保動畫不影響版面 */
+            overflow: hidden; 
         }
         
+        /* 殘影容器 */
+        .dog-wrapper {
+            position: relative;
+            width: 100%;
+            height: 180px; /* 預留高度給圖片 */
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 圖片共用設定 */
         .loader-img {
-            width: 200px; /* 稍微加大一點讓看比較清楚 */
+            position: absolute; /* 讓圖片重疊在一起 */
+            width: 180px; 
             height: auto;
             object-fit: contain; 
-            margin-bottom: 20px;
             
-            /* 🔥 這裡設定動畫：由右往左跑 */
-            animation: runRightToLeft 3.5s linear infinite; 
+            /* 🔥 修改：時間改成 7s (變慢)，linear 維持等速 */
+            animation: runRightToLeft 7s linear infinite; 
+        }
+
+        /* 🐶 本體設定 */
+        .main-dog {
+            z-index: 10; /* 在最上面 */
+            opacity: 1;
+        }
+
+        /* 👻 殘影 1 (最近的) */
+        .ghost-1 {
+            z-index: 9;
+            opacity: 0.6; /* 半透明 */
+            animation-delay: -0.15s; /* 稍微延遲一點點，製造跟隨感 */
+            filter: blur(1px); /* 稍微模糊 */
+        }
+
+        /* 👻 殘影 2 */
+        .ghost-2 {
+            z-index: 8;
+            opacity: 0.3; 
+            animation-delay: -0.3s; 
+            filter: blur(2px); 
+        }
+
+        /* 👻 殘影 3 (最遠的) */
+        .ghost-3 {
+            z-index: 7;
+            opacity: 0.1; 
+            animation-delay: -0.45s; 
+            filter: blur(4px); /* 最模糊 */
         }
 
         /* 🔥 定義跑步動畫軌跡 */
         @keyframes runRightToLeft {
-            0% { 
-                transform: translateX(120vw); /* 從螢幕右邊外面開始 */
-            }
-            100% { 
-                transform: translateX(-120vw); /* 跑到螢幕左邊外面 */
-            }
+            0% { transform: translateX(120vw); }   /* 從右邊外面開始 */
+            100% { transform: translateX(-120vw); } /* 跑到左邊外面 */
         }
 
         /* 頂部更新時間條 */
@@ -99,7 +137,7 @@
         /* 🟢 3. 三功能圓形選單 */
         .quick-menu {
             display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 切成三等份 */
+            grid-template-columns: repeat(3, 1fr); 
             gap: 15px;
             padding: 20px 15px 10px 15px;
         }
@@ -189,7 +227,13 @@
 <body>
 
 <div id="loader">
-    <img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img" alt="Loading" referrerpolicy="no-referrer">
+    <div class="dog-wrapper">
+        <img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-3" referrerpolicy="no-referrer">
+        <img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-2" referrerpolicy="no-referrer">
+        <img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-1" referrerpolicy="no-referrer">
+        <img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img main-dog" alt="Loading" referrerpolicy="no-referrer">
+    </div>
+    
     <div class="spinner-border text-warning" role="status"></div>
     <div class="mt-2 text-secondary fw-bold small">樂森良選 為您服務...</div>
 </div>
