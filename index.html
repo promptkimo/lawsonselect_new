@@ -170,6 +170,7 @@
         transition: 0.3s; }
         #lightbox.show img { transform: scale(1);
         }
+        
         /* 訂單明細樣式優化 */
         .order-item-list { list-style: none; padding: 0; margin: 5px 0; }
         .order-item-list li { 
@@ -287,7 +288,9 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const LIFF_ID = "2009042792-5xuNohp3";
-    const GAS_URL = "<?= url ?>"; // 自動取得後端網址
+    
+    // 🟢 這裡已經填入你給的正確網址
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
 
     let allData = {}; let cart = [];
     let userProfile = { userId: 'guest', displayName: '訪客' }; 
