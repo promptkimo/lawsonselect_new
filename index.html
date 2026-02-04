@@ -14,25 +14,13 @@
         }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-warm); color: var(--text-dark); padding-bottom: 100px; overflow-x: hidden; }
 
-        /* 跑馬燈樣式 */
+        /* 跑馬燈 */
         .marquee-container {
-            background-color: var(--text-dark);
-            color: var(--accent);
-            padding: 5px 0;
-            overflow: hidden;
-            white-space: nowrap;
-            /* position: sticky; top: 0; */ /* 讓跑馬燈也跟著滑走，不佔空間 */
-            position: relative;
-            z-index: 1030;
-            font-size: 0.9rem;
-            font-weight: bold;
-            display: none; 
+            background-color: var(--text-dark); color: var(--accent); padding: 5px 0;
+            overflow: hidden; white-space: nowrap; position: relative; z-index: 1030;
+            font-size: 0.9rem; font-weight: bold; display: none; 
         }
-        .marquee-content {
-            display: inline-block;
-            padding-left: 100%;
-            animation: marquee 15s linear infinite;
-        }
+        .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 15s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
 
         /* 載入畫面 */
@@ -45,56 +33,53 @@
         .ghost-3 { z-index: 7; opacity: 0.1; animation-delay: -0.45s; filter: blur(4px); }
         @keyframes runRightToLeft { 0% { transform: translateX(120vw); } 100% { transform: translateX(-120vw); } }
 
-        /* Header (修改處：改成 relative 讓它跟著捲動) */
-        .hero-section { 
-            background: white; 
-            padding: 15px 20px; 
-            position: relative; /* 🔥 修改：不再固定 (原本是 sticky) */
-            z-index: 1020; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            border-bottom-left-radius: 25px; 
-            border-bottom-right-radius: 25px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-        }
+        /* Header */
+        .hero-section { background: white; padding: 15px 20px; position: relative; z-index: 1020; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; display: flex; align-items: center; justify-content: space-between; }
         .header-left { display: flex; align-items: center; }
         .header-logo { width: 60px; height: 60px; object-fit: contain; margin-right: 10px; }
         .store-title { font-weight: 800; font-size: 1.2rem; color: var(--text-dark); line-height: 1.2; }
         .user-block { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #888; cursor: pointer; }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; margin-bottom: 2px;}
 
-        /* Menu */
+        /* Menu & Nav */
         .quick-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px 15px 10px 15px; }
         .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; }
         .menu-item:active { transform: scale(0.95); opacity: 0.8; }
         .menu-btn-img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
         .menu-label { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); }
 
-        /* Nav (保留 sticky，這樣標題滑走後，分類會吸在最上面) */
-        .cat-nav { 
-            display: flex; overflow-x: auto; white-space: nowrap; padding: 10px 15px; gap: 8px; 
-            position: sticky; top: 0; z-index: 1010; /* 確保它會浮在內容上面 */
-            background: var(--bg-warm); /* 加個背景色避免透明 */
-            padding-top: 10px; padding-bottom: 10px;
-        }
+        .cat-nav { display: flex; overflow-x: auto; white-space: nowrap; padding: 10px 15px; gap: 8px; position: sticky; top: 0; z-index: 1010; background: var(--bg-warm); padding-top: 10px; padding-bottom: 10px; }
         .cat-nav::-webkit-scrollbar { display: none; }
         .cat-pill { padding: 6px 16px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; transition: 0.2s; }
         .cat-pill.active { background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
         /* Product */
         .section-title { font-weight: 800; margin: 20px 0 10px 0; padding-left: 15px; border-left: 5px solid var(--accent); font-size: 1.2rem; color: var(--text-dark); }
-        .product-card { background: white; border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 3px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .product-card { background: white; border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 3px 10px rgba(0,0,0,0.05); margin-bottom: 15px; position: relative; }
         .product-img { width: 100%; height: 140px; object-fit: cover; background: #eee; }
         .product-body { padding: 12px; position: relative; }
         .product-name { font-size: 0.95rem; font-weight: bold; margin-bottom: 5px; color: #4e342e; }
         .product-price { color: var(--primary); font-size: 1.1rem; font-weight: 900; }
-        
         .stock-info { font-size: 0.75rem; color: #888; background: #f5f5f5; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; }
         
-        .arrival-info { font-size: 0.8rem; color: #fff; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px; font-weight: bold; }
-        .bg-expiry { background: #ff9800; } 
+        /* 🟢 強化版：底部到貨/效期標示 */
+        .arrival-info { font-size: 0.85rem; color: #fff; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px; font-weight: 900; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        /* 🟢 即期品顏色：深橘紅 */
+        .bg-expiry { background: #ff5722; border: 1px solid #fff; } 
+        /* 缺貨預計到貨：紅色 */
         .bg-arrival { background: #ef5350; } 
+
+        /* 🟢 新增：右上角即期品標籤 */
+        .badge-corner {
+            position: absolute; top: 0; right: 0;
+            background: #d32f2f; color: white;
+            font-size: 0.8rem; font-weight: bold;
+            padding: 5px 10px;
+            border-bottom-left-radius: 10px;
+            z-index: 10;
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.2);
+        }
 
         .product-card.oos-mode .product-img { opacity: 0.5; filter: grayscale(100%); }
         .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 32px; height: 32px; background: var(--accent); color: var(--text-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); cursor: pointer; }
@@ -260,6 +245,10 @@
     function renderMenu() {
         const nav = document.getElementById('cat-nav'); const container = document.getElementById('product-container');
         let navHtml = `<span class="cat-pill ${currentCategory === 'top10' ? 'active' : ''}" onclick="setCategory('top10')">🔥 熱銷TOP10</span>`;
+        
+        // 🟢 新增：即期良品按鈕
+        navHtml += `<span class="cat-pill ${currentCategory === 'expiry' ? 'active' : ''}" onclick="setCategory('expiry')">⚠️ 即期良品</span>`;
+        
         navHtml += `<span class="cat-pill ${currentCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">全部商品</span>`;
         if (allData.categories) { allData.categories.forEach(cat => { navHtml += `<span class="cat-pill ${currentCategory === cat ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</span>`; }); }
         nav.innerHTML = navHtml; 
@@ -267,11 +256,21 @@
         container.innerHTML = '';
         if (!allData.categories || allData.categories.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前沒有商品</div>'; return; }
 
+        // 顯示熱銷
         if (currentCategory === 'top10') {
              const topItems = allData.products.filter(p => allData.top10.includes(p.name));
              if (topItems.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前還沒有熱銷數據，請先點選其他分類</div>'; return; }
              let html = `<div class="section-title">🔥 熱銷推薦</div><div class="row g-3">`;
              topItems.forEach(p => html += createProductCard(p));
+             html += `</div>`; container.innerHTML = html; return;
+        }
+
+        // 🟢 新增：顯示即期品
+        if (currentCategory === 'expiry') {
+             const expiryItems = allData.products.filter(p => p.stock > 0 && p.arrivalDate && String(p.arrivalDate).trim() !== "");
+             if (expiryItems.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前沒有即期良品</div>'; return; }
+             let html = `<div class="section-title">⚠️ 即期良品專區</div><div class="row g-3">`;
+             expiryItems.forEach(p => html += createProductCard(p));
              html += `</div>`; container.innerHTML = html; return;
         }
 
@@ -292,18 +291,42 @@
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat); const count = inCart ? inCart.count : 0; const isOOS = p.status === 'oos' || p.stock <= 0;
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         let stockHtml = `<span class="stock-info">剩: ${p.stock}</span>`;
-        
+        let cornerBadgeHtml = '';
+
         if (p.arrivalDate && String(p.arrivalDate).trim() !== "") { 
             let dateStr = p.arrivalDate;
             const dateObj = new Date(p.arrivalDate);
             if (!isNaN(dateObj.getTime())) { dateStr = (dateObj.getMonth() + 1) + '/' + dateObj.getDate(); }
-            if (p.stock > 0) { stockHtml += `<div class="arrival-info bg-expiry">⚠️ 即期品: ${dateStr}</div>`; } 
-            else { stockHtml += `<div class="arrival-info bg-arrival">預計到貨: ${dateStr}</div>`; }
+            
+            // 🟢 如果有庫存 + 日期 = 即期品 (橘色) + 右上角標籤
+            if (p.stock > 0) { 
+                stockHtml += `<div class="arrival-info bg-expiry">⚠️ 即期效期: ${dateStr}</div>`; 
+                cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; // 🟢 新增標籤
+            } 
+            else { 
+                stockHtml += `<div class="arrival-info bg-arrival">預計到貨: ${dateStr}</div>`; 
+            }
         }
         
         let btnHtml = isOOS ? `<span class="badge bg-secondary position-absolute bottom-0 end-0 m-2">補貨中</span>` : (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', 1)">+</button></div>` : `<div class="btn-add-only" onclick="updateQty('${p.name}', '${p.cat}', 1)"><i class="bi bi-plus-lg"></i></div>`);
         const cardClass = isOOS ? 'oos-mode' : ''; 
-        return `<div class="col-6 col-md-4"><div class="product-card ${cardClass}"><div class="position-relative">${imgHtml}</div><div class="product-body"><div class="product-name text-truncate">${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
+        
+        // 🟢 將 cornerBadgeHtml 加入到圖片容器中
+        return `
+        <div class="col-6 col-md-4">
+            <div class="product-card ${cardClass}">
+                <div class="position-relative">
+                    ${cornerBadgeHtml}
+                    ${imgHtml}
+                </div>
+                <div class="product-body">
+                    <div class="product-name text-truncate">${p.name}</div>
+                    <div class="product-price">$${p.price}</div>
+                    ${stockHtml}
+                    ${btnHtml}
+                </div>
+            </div>
+        </div>`;
     }
 
     function updateQty(name, cat, delta) { const product = allData.products.find(p => p.name === name && p.cat === cat); const idx = cart.findIndex(c => c.name === name && c.cat === cat); if (idx > -1) { cart[idx].count += delta; if (cart[idx].count <= 0) cart.splice(idx, 1); } else if (delta > 0) { cart.push({ name, price: product.price, cat, count: 1 }); } renderMenu(); updateCartUI(); if(document.getElementById('cartModal').classList.contains('show')) renderCartModal(); }
