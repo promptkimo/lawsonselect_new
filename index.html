@@ -41,24 +41,19 @@
         .user-block { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #888; cursor: pointer; }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; margin-bottom: 2px;}
 
-        /* Menu */
+        /* Menu & Nav */
         .quick-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px 15px 10px 15px; }
         .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; }
         .menu-item:active { transform: scale(0.95); opacity: 0.8; }
         .menu-btn-img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
         .menu-label { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); }
 
-        /* 🟢 Nav (視覺優化區) */
         .cat-nav { 
             display: flex; overflow-x: auto; white-space: nowrap; padding: 12px 15px; gap: 8px; 
             position: sticky; top: 0; z-index: 1010; 
-            
-            /* 修改：背景改為 95% 不透明白色，加毛玻璃與陰影 */
             background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08); /* 加強陰影 */
-            border-bottom: 1px solid rgba(0,0,0,0.05); /* 底部細線 */
+            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08); border-bottom: 1px solid rgba(0,0,0,0.05); 
         }
         .cat-nav::-webkit-scrollbar { display: none; }
         .cat-pill { padding: 6px 16px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; transition: 0.2s; }
@@ -93,8 +88,26 @@
         .qty-btn { width: 28px; height: 28px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; }
         .qty-val { font-size: 0.9rem; font-weight: bold; width: 24px; text-align: center; }
 
-        /* Cart */
-        .cart-bar { position: fixed; bottom: 25px; left: 5%; width: 90%; background: var(--text-dark); color: var(--accent); border-radius: 50px; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 1050; cursor: pointer; transition: 0.3s; transform: translateY(150%); border: 2px solid var(--accent); }
+        /* 🟢 Cart Bar (視覺強化版) */
+        .cart-bar { 
+            position: fixed; bottom: 25px; left: 5%; width: 90%; 
+            background: var(--text-dark); color: var(--accent); 
+            border-radius: 50px; padding: 12px 25px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            z-index: 1050; cursor: pointer; transition: 0.3s; 
+            transform: translateY(150%); 
+            
+            /* 邊框：黃色 */
+            border: 2px solid var(--accent); 
+            
+            /* 🔥 雙重陰影特效：
+               1. 內圈：3px 白色光暈 (讓深色按鈕從任何背景跳出來)
+               2. 外圈：深色立體陰影 (增加浮動感) 
+            */
+            box-shadow: 
+                0 0 0 3px rgba(255, 255, 255, 0.9), 
+                0 10px 25px rgba(0,0,0,0.5); 
+        }
         .cart-bar.show { transform: translateY(0); }
 
         .modal-header { background: var(--bg-warm); border-bottom: 1px dashed #ccc; }
