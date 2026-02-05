@@ -16,12 +16,11 @@
         body { font-family: 'Noto Sans TC', sans-serif;
             background-color: var(--bg-warm); color: var(--text-dark); padding-bottom: 100px; overflow-x: hidden; }
 
-        /* 跑馬燈 */
+        /* ... (前台 CSS 樣式) ... */
         .marquee-container { background-color: var(--text-dark); color: var(--accent); padding: 5px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 0.9rem; font-weight: bold; display: none; }
         .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 15s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
         
-        /* 載入畫面 */
         #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; overflow: hidden; }
         .dog-wrapper { position: relative; width: 100%; height: 180px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; }
         .loader-img { position: absolute; width: 180px; height: auto; object-fit: contain; animation: runRightToLeft 7s linear infinite; }
@@ -31,7 +30,6 @@
         .ghost-3 { z-index: 7; opacity: 0.1; animation-delay: -0.45s; filter: blur(4px); }
         @keyframes runRightToLeft { 0% { transform: translateX(120vw); } 100% { transform: translateX(-120vw); } }
 
-        /* Header */
         .hero-section { background: white; padding: 15px 20px; position: relative; z-index: 1020; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; display: flex; align-items: center; justify-content: space-between; }
         .header-left { display: flex; align-items: center; }
         .header-logo { width: 60px; height: 60px; object-fit: contain; margin-right: 10px; }
@@ -39,7 +37,6 @@
         .user-block { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #888; cursor: pointer; }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; margin-bottom: 2px;}
 
-        /* Menu */
         .quick-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px 15px 10px 15px; }
         .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; }
         .menu-item:active { transform: scale(0.95); opacity: 0.8; }
@@ -51,7 +48,6 @@
         .cat-pill { padding: 6px 16px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; transition: 0.2s; }
         .cat-pill.active { background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
-        /* Product Card */
         .section-title { font-weight: 800; margin: 20px 0 10px 0; padding-left: 15px; border-left: 5px solid var(--accent); font-size: 1.2rem; color: var(--text-dark); }
         .product-card { background: white; border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 3px 10px rgba(0,0,0,0.05); margin-bottom: 15px; position: relative; }
         .product-img { width: 100%; height: 140px; object-fit: cover; background: #eee; }
@@ -85,7 +81,6 @@
         #lightbox img { max-width: 90%; max-height: 80%; border-radius: 8px; transform: scale(0.9); transition: 0.3s; }
         #lightbox.show img { transform: scale(1); }
         
-        /* 訂單明細優化 */
         .order-item-list { list-style: none; padding: 0; margin: 5px 0; }
         .order-item-list li { padding: 4px 0; border-bottom: 1px dashed #eee; font-size: 0.95rem; display: flex; justify-content: space-between; }
         .order-item-list li:last-child { border-bottom: none; }
