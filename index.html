@@ -11,9 +11,24 @@
     <style>
         :root { --primary: #d32f2f; var(--accent): #ffb300; var(--bg-warm): #fffdf5; var(--text-dark): #3e2723; }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-warm); color: var(--text-dark); padding-bottom: 100px; overflow-x: hidden; }
-        .marquee-container { background-color: var(--text-dark); color: var(--accent); padding: 5px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 0.9rem; font-weight: bold; display: none; }
-        .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 15s linear infinite; }
+        
+        /* 🟢 跑馬燈強化版 */
+        .marquee-container {
+            background: #ffc107; /* 亮黃色背景 */
+            color: #000;         /* 黑色字體 */
+            padding: 10px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            z-index: 1030;
+            font-size: 1rem;     /* 加大字體 */
+            font-weight: 900;    /* 粗體 */
+            border-bottom: 2px solid #000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+        
         #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; overflow: hidden; }
         .dog-wrapper { position: relative; width: 100%; height: 180px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; }
         .loader-img { position: absolute; width: 180px; height: auto; object-fit: contain; animation: runRightToLeft 7s linear infinite; }
@@ -60,8 +75,6 @@
         .order-item-list li { padding: 4px 0; border-bottom: 1px dashed #eee; font-size: 0.95rem; display: flex; justify-content: space-between; }
         .order-item-list li:last-child { border-bottom: none; }
         .item-qty-badge { background-color: #3e2723; color: #ffb300; padding: 1px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
-        
-        /* 🟢 彈窗計數器樣式 */
         .variant-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #eee; }
         .variant-row:last-child { border-bottom: none; }
         .qty-stepper { display: flex; align-items: center; background: #f8f9fa; border-radius: 20px; border: 1px solid #ddd; }
@@ -121,7 +134,7 @@
     let allData = {}; let cart = [];
     let userProfile = { userId: 'guest', displayName: '訪客' }; 
     let currentCategory = 'top10'; 
-    let tempNormalQty = 0, tempClearanceQty = 0, tempProduct = null; // 暫存變數
+    let tempNormalQty = 0, tempClearanceQty = 0, tempProduct = null;
 
     const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
     const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
@@ -221,7 +234,6 @@
         </div>`;
     }
 
-    // 🟢 雙規格彈窗邏輯
     function openVariantModal(name, cat) {
         tempProduct = allData.products.find(x => x.name === name && x.cat === cat);
         if (!tempProduct) return;
@@ -243,7 +255,6 @@
             dateStr = `效期: ${(d.getMonth()+1)}/${d.getDate()}`;
         }
 
-        // 正常品列
         if (tempProduct.stock > 0) {
             list.innerHTML += `
             <div class="variant-row">
@@ -259,7 +270,6 @@
             </div>`;
         }
         
-        // 即期品列
         if (tempProduct.clearStock > 0) {
             list.innerHTML += `
             <div class="variant-row">
