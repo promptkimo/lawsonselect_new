@@ -16,7 +16,6 @@
         body { font-family: 'Noto Sans TC', sans-serif;
             background-color: var(--bg-warm); color: var(--text-dark); padding-bottom: 100px; overflow-x: hidden; }
 
-        /* ... (省略部分通用樣式以節省篇幅) ... */
         .marquee-container { background-color: var(--text-dark); color: var(--accent); padding: 5px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 0.9rem; font-weight: bold; display: none; }
         .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 15s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
@@ -62,17 +61,13 @@
         .qty-btn { width: 28px; height: 28px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; }
         .qty-val { font-size: 0.9rem; font-weight: bold; width: 24px; text-align: center; }
 
-        /* 🟢 Cart Bar (修正配色：深底白字) */
+        /* 🟢 Cart Bar (深色配色) */
         .cart-bar { 
             position: fixed; bottom: 25px; left: 5%; width: 90%; 
-            background: #3e2723; /* 深咖啡色 */
-            color: #ffffff;      /* 白色文字 */
-            border-radius: 50px; padding: 12px 25px; 
+            background: #3e2723; color: #ffffff; border-radius: 50px; padding: 12px 25px; 
             display: flex; justify-content: space-between; align-items: center; 
-            z-index: 1050; cursor: pointer; transition: 0.3s; 
-            transform: translateY(150%);
-            border: 2px solid #ffb300; /* 黃色邊框 */
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.85), 0 12px 25px rgba(0,0,0,0.6); 
+            z-index: 1050; cursor: pointer; transition: 0.3s; transform: translateY(150%);
+            border: 2px solid #ffb300; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.85), 0 12px 25px rgba(0,0,0,0.6); 
         }
         .cart-bar.show { transform: translateY(0); }
         .cart-bar-total { color: #ffb300; font-weight: 900; font-size: 1.25rem; }
@@ -86,7 +81,6 @@
         .order-item-list li:last-child { border-bottom: none; }
         .item-qty-badge { background-color: #3e2723; color: #ffb300; padding: 1px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
     
-        /* 選項彈窗樣式 */
         .variant-btn { text-align: left; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; background: white; transition: 0.2s; width: 100%; display: flex; justify-content: space-between; align-items: center; }
         .variant-btn:hover { border-color: var(--accent); background: #fffdf5; }
         .variant-tag { font-size: 0.75rem; background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
@@ -181,6 +175,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const LIFF_ID = "2009042792-5xuNohp3";
+    
+    // 🟢 確保這裡填的是你剛剛給我的正確網址
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
 
     let allData = {}; let cart = [];
@@ -196,13 +192,24 @@
     async function initLiff() { try { await liff.init({ liffId: LIFF_ID }); if (liff.isLoggedIn()) { const p = await liff.getProfile(); userProfile = p; document.getElementById('user-name').innerText = p.displayName; if(p.pictureUrl) document.getElementById('user-avatar').src = p.pictureUrl; } else { liff.login(); } } catch (e) { console.error("LIFF Error:", e); } }
     
     function fetchMenu() {
-        fetch(GAS_URL + "?page=json&t=" + Date.now()).then(res => res.json()).then(data => {
-                allData = data; 
-                if(data.appTitle) document.getElementById('store-title').innerHTML = data.appTitle.replace(/\n/g, '<br>'); 
-                if(data.marqueeText && data.marqueeText.trim() !== "") { document.getElementById('marquee-text').innerText = data.marqueeText; document.getElementById('marquee-bar').style.display = 'block'; }
-                if(data.lastUpdateTime) { document.getElementById('stock-time').innerText = data.lastUpdateTime; document.getElementById('update-time-banner').style.display = 'block'; }
-                renderMenu(); checkAnnouncement(data); document.getElementById('loader').style.display = 'none';
-        }).catch(err => { console.log("載入失敗"); document.getElementById('loader').innerHTML = '<div class="text-danger">載入失敗: ' + err + '</div>'; });
+        // 增加一個 alert 確保如果讀不到會告訴我們原因
+        fetch(GAS_URL + "?page=json&t=" + Date.now())
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                alert("後端錯誤: " + data.message);
+                return;
+            }
+            allData = data; 
+            if(data.appTitle) document.getElementById('store-title').innerHTML = data.appTitle.replace(/\n/g, '<br>'); 
+            if(data.marqueeText && data.marqueeText.trim() !== "") { document.getElementById('marquee-text').innerText = data.marqueeText; document.getElementById('marquee-bar').style.display = 'block'; }
+            if(data.lastUpdateTime) { document.getElementById('stock-time').innerText = data.lastUpdateTime; document.getElementById('update-time-banner').style.display = 'block'; }
+            renderMenu(); checkAnnouncement(data); document.getElementById('loader').style.display = 'none';
+        })
+        .catch(err => { 
+            console.log("載入失敗", err); 
+            document.getElementById('loader').innerHTML = '<div class="text-danger p-4 text-center"><h3>載入失敗</h3><br>請檢查網路或聯繫管理員<br><small>' + err + '</small></div>';
+        });
     }
 
     function checkAnnouncement(data) { const hasText = data.announcementText && data.announcementText.trim() !== ""; const hasImg = data.announcementImg && data.announcementImg.trim() !== ""; if (hasText || hasImg) { document.getElementById('announce-content').innerText = data.announcementText || ""; const imgDiv = document.getElementById('announce-img-container'); if (hasImg) { imgDiv.innerHTML = `<img src="${data.announcementImg}" referrerpolicy="no-referrer" style="width:100%; border-radius:15px;">`; imgDiv.style.display = "block"; } else { imgDiv.innerHTML = ""; imgDiv.style.display = "none"; } announceModal.show(); } }
@@ -248,17 +255,14 @@
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         let stockHtml = `<span class="stock-info">剩: ${p.stock}</span>`;
         
-        // 判斷是否顯示「選購」按鈕 (當有即期庫存時)
         const hasClearanceOption = (p.clearStock > 0);
         let btnHtml = '';
 
         if (isOOS) {
             btnHtml = `<span class="badge bg-secondary position-absolute bottom-0 end-0 m-2">補貨中</span>`;
         } else if (hasClearanceOption) {
-            // 🟢 如果有即期品選項，顯示「選購」
             btnHtml = `<div class="btn-add-only" style="width:auto; padding:0 10px; border-radius:20px; font-size:0.85rem;" onclick="openVariantModal('${p.name}', '${p.cat}')">選購</div>`;
         } else {
-            // 只有正常品，維持原本 + -
             btnHtml = (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', 1)">+</button></div>` : `<div class="btn-add-only" onclick="updateQty('${p.name}', '${p.cat}', 1)"><i class="bi bi-plus-lg"></i></div>`);
         }
 
@@ -291,7 +295,6 @@
         </div>`;
     }
 
-    // 🟢 處理雙規格彈窗
     function openVariantModal(name, cat) {
         const p = allData.products.find(x => x.name === name && x.cat === cat);
         if (!p) return;
@@ -300,7 +303,6 @@
         const list = document.getElementById('variant-list');
         list.innerHTML = '';
 
-        // 正常品選項
         if (p.stock > 0) {
             list.innerHTML += `
             <button class="variant-btn" onclick="addToCartVariant('${p.name}', '${p.cat}', ${p.price}, false)">
@@ -311,7 +313,6 @@
             </button>`;
         }
 
-        // 即期品選項
         if (p.clearStock > 0) {
             let dateStr = '即期';
             if (p.arrivalDate) {
@@ -331,11 +332,9 @@
     }
 
     function addToCartVariant(name, cat, price, isClearance) {
-        // 如果是即期品，名稱加上標記
         let displayName = name;
-        if (isClearance) displayName += " (即期品)"; // 這個名稱很重要，後端用來判斷
+        if (isClearance) displayName += " (即期品)"; 
 
-        // 檢查購物車
         const idx = cart.findIndex(c => c.name === displayName && c.cat === cat);
         if (idx > -1) {
             cart[idx].count += 1;
@@ -347,7 +346,6 @@
     }
 
     function updateQty(name, cat, delta) { 
-        // 這裡只處理「正常品」的加減 (沒有選購按鈕的)
         const product = allData.products.find(p => p.name === name && p.cat === cat);
         const idx = cart.findIndex(c => c.name === name && c.cat === cat); 
         if (idx > -1) { 
@@ -367,7 +365,6 @@
         if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } 
         let grouped = {};
         cart.forEach(i => { 
-            // 反查原始商品以取得分類 (如果名稱有(即期品)，要先拿掉)
             const rawName = i.name.replace(" (即期品)", "");
             const p = allData.products.find(x => x.name === rawName && x.cat === i.cat); 
             const s = p ? (p.subCat || '其他') : '其他'; 
@@ -386,7 +383,6 @@
         body.innerHTML = html;
     }
 
-    // 購物車內的加減 (需要獨立處理，因為名稱可能含(即期品))
     function updateQtyInCart(displayName, cat, delta) {
         const idx = cart.findIndex(c => c.name === displayName && c.cat === cat);
         if (idx > -1) {
