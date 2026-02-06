@@ -66,6 +66,15 @@
         .step-btn { width: 30px; height: 30px; border: none; background: transparent; color: #333; font-weight: bold; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .step-val { width: 30px; text-align: center; font-weight: bold; font-size: 1rem; }
         .variant-tag { font-size: 0.75rem; background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
+
+        /* 🟢 即期品特別色塊樣式 */
+        .cart-item-row.clearance-item {
+            background-color: #fff9e6; /* 淡黃色背景 */
+            border-left: 5px solid #ff9800; /* 橘色警示邊條 */
+            padding-left: 10px; /* 增加內距避免文字貼邊 */
+            margin-bottom: 4px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -155,10 +164,7 @@
 
         let items = [];
         if (currentCategory === 'top10') items = allData.products.filter(p => allData.top10.includes(p.name)); 
-        
-        // 🟢 關鍵修正：只顯示即期庫存 > 0 的商品
-        else if (currentCategory === 'expiry') items = allData.products.filter(p => p.clearStock > 0); 
-        
+        else if (currentCategory === 'expiry') items = allData.products.filter(p => p.clearStock > 0); // 🟢 修正：只顯示即期庫存>0
         else {
             allData.categories.forEach(cat => {
                 if (currentCategory !== 'all' && currentCategory !== cat) return;
@@ -203,11 +209,8 @@
             let dateStr = p.arrivalDate;
             const dateObj = new Date(p.arrivalDate);
             if (!isNaN(dateObj.getTime())) { dateStr = (dateObj.getMonth() + 1) + '/' + dateObj.getDate(); }
-            
-            // 🟢 關鍵修正：只有即期庫存 > 0 才顯示紅色標籤
-            if (p.clearStock > 0) { 
-                cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; 
-            } 
+            // 🟢 修正：只有即期庫存>0 才顯示紅色標籤
+            if (p.clearStock > 0) { cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; } 
         }
         
         const cardClass = isOOS ? 'oos-mode' : ''; 
@@ -326,9 +329,11 @@
     function updateCartUI() { const total = cart.reduce((s, i) => s + (i.price * i.count), 0); const count = cart.reduce((s, i) => s + i.count, 0); document.getElementById('cart-count').innerText = count; document.getElementById('cart-total').innerText = '$' + total; document.getElementById('modal-cart-total').innerText = '$' + total; document.getElementById('cart-bar').classList.toggle('show', count > 0); if (count === 0) cartModal.hide(); }
     function openCartModal() { renderCartModal(); cartModal.show(); }
     
+    // 🟢 購物車渲染：加入自動排序邏輯
     function renderCartModal() { 
         const body = document.getElementById('cart-modal-body');
         if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } 
+        
         let grouped = {};
         cart.forEach(i => { 
             const rawName = i.name.replace(" (即期品)", "");
@@ -336,16 +341,29 @@
             const s = p ? (p.subCat || '其他') : '其他'; 
             if (!grouped[i.cat]) grouped[i.cat] = {}; if (!grouped[i.cat][s]) grouped[i.cat][s] = []; grouped[i.cat][s].push(i); 
         });
+        
         let html = ''; 
-        for (const [cat, subCats] of Object.entries(grouped)) { 
+        
+        // 🟢 排序邏輯：主分類排序 -> 子分類排序
+        const sortedCats = Object.keys(grouped).sort();
+        sortedCats.forEach(cat => {
+            const subCats = grouped[cat];
             html += `<div class="cart-main-cat fw-bold text-dark border-start border-4 border-danger ps-2 mt-3">${cat}</div>`;
-            for (const [s, items] of Object.entries(subCats)) { 
+            
+            const sortedSubs = Object.keys(subCats).sort();
+            sortedSubs.forEach(s => {
                 if (s && s !== '') html += `<div class="cart-sub-cat small text-secondary ms-2 mt-1 mb-2">${s}</div>`;
+                
+                const items = subCats[s];
                 items.forEach(i => { 
-                    html += `<div class="d-flex justify-content-between align-items-center cart-item-row py-2 border-bottom"><div style="flex:1"><div class="fw-bold text-dark">${i.name}</div><small class="text-danger fw-bold">$${i.price}</small></div><div class="d-flex align-items-center"><button class="btn btn-sm btn-outline-warning text-dark border fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',-1)">-</button><span class="px-3 fw-bold">${i.count}</span><button class="btn btn-sm btn-warning text-dark fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',1)">+</button></div></div>`;
+                    const isClearance = i.name.includes('(即期品)');
+                    const rowClass = isClearance ? 'cart-item-row clearance-item' : 'cart-item-row border-bottom';
+
+                    html += `<div class="d-flex justify-content-between align-items-center py-2 ${rowClass}"><div style="flex:1"><div class="fw-bold text-dark">${i.name}</div><small class="text-danger fw-bold">$${i.price}</small></div><div class="d-flex align-items-center"><button class="btn btn-sm btn-outline-warning text-dark border fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',-1)">-</button><span class="px-3 fw-bold">${i.count}</span><button class="btn btn-sm btn-warning text-dark fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',1)">+</button></div></div>`;
                 }); 
-            } 
-        } 
+            });
+        }); 
+        
         body.innerHTML = html;
     }
 
@@ -370,6 +388,8 @@
     
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
+    
+    // 🟢 訂單查詢：即期品紅色標示
     function openMyOrders() { 
         myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-3">載入中...</div>';
         fetch(GAS_URL + "?page=myOrders&uid=" + userProfile.userId + "&t=" + Date.now()).then(res => res.json()).then(orders => { 
@@ -378,7 +398,12 @@
             orders.forEach(o => {
                 let itemsHtml = '<ul class="order-item-list">';
                 const itemsArray = o.items.split(','); 
-                itemsArray.forEach(itemStr => { const parts = itemStr.split(' x'); const name = parts[0].trim(); const qty = parts[1] ? parts[1].trim() : '1'; itemsHtml += `<li><span>${name}</span><span class="item-qty-badge">x${qty}</span></li>`; });
+                itemsArray.forEach(itemStr => { 
+                    const parts = itemStr.split(' x'); const name = parts[0].trim(); const qty = parts[1] ? parts[1].trim() : '1'; 
+                    // 檢查是否為即期品，給予特殊樣式
+                    const nameDisplay = name.includes('(即期品)') ? `<span class="text-danger fw-bold">${name}</span>` : name;
+                    itemsHtml += `<li><span>${nameDisplay}</span><span class="item-qty-badge">x${qty}</span></li>`; 
+                });
                 itemsHtml += '</ul>';
                 html += `<div class="card mb-3 border-0 shadow-sm"><div class="card-header bg-white d-flex justify-content-between align-items-center"><span class="badge ${o.status === '已完成' ? 'bg-success' : 'bg-warning text-dark'}">${o.status}</span><small class="text-secondary">${o.date}</small></div><div class="card-body p-3"><div class="d-flex justify-content-between align-items-center mb-2"><span class="fw-bold text-dark">#${o.id}</span><span class="text-danger fw-bold">$${o.total}</span></div><div class="bg-light p-2 rounded">${itemsHtml}</div></div></div>`;
             });
