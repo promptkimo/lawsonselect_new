@@ -67,10 +67,9 @@
         .step-val { width: 30px; text-align: center; font-weight: bold; font-size: 1rem; }
         .variant-tag { font-size: 0.75rem; background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
 
-        /* 🟢 即期品特別色塊 + 序號樣式 */
         .cart-item-row.clearance-item {
-            background-color: #fff3cd; /* 更明顯的黃色背景 */
-            border-left: 5px solid #dc3545; /* 紅色警示邊條 */
+            background-color: #fff3cd; 
+            border-left: 5px solid #dc3545; 
             padding-left: 10px;
             margin-bottom: 4px;
             border-radius: 4px;
@@ -167,7 +166,7 @@
 
         let items = [];
         if (currentCategory === 'top10') items = allData.products.filter(p => allData.top10.includes(p.name)); 
-        else if (currentCategory === 'expiry') items = allData.products.filter(p => p.clearStock > 0); 
+        else if (currentCategory === 'expiry') items = allData.products.filter(p => p.clearStock > 0); // 🟢 修正：只顯示即期庫存>0
         else {
             allData.categories.forEach(cat => {
                 if (currentCategory !== 'all' && currentCategory !== cat) return;
@@ -212,7 +211,8 @@
             let dateStr = p.arrivalDate;
             const dateObj = new Date(p.arrivalDate);
             if (!isNaN(dateObj.getTime())) { dateStr = (dateObj.getMonth() + 1) + '/' + dateObj.getDate(); }
-            if (p.stock > 0 || p.clearStock > 0) { cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; } 
+            // 🟢 修正：只有即期庫存>0 才顯示紅色標籤
+            if (p.clearStock > 0) { cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; } 
         }
         
         const cardClass = isOOS ? 'oos-mode' : ''; 
@@ -316,12 +316,11 @@
         updateCartUI();
     }
 
-    // 🟢 主畫面直接按 + 增加數量，加入庫存檢查
     function updateQty(name, cat, delta) { 
         const product = allData.products.find(p => p.name === name && p.cat === cat);
         const idx = cart.findIndex(c => c.name === name && c.cat === cat); 
         
-        // 增加時檢查正常品庫存
+        // 🟢 主畫面加按鈕防呆
         if (delta > 0) {
             const currentQty = idx > -1 ? cart[idx].count : 0;
             if (currentQty >= product.stock) {
@@ -342,7 +341,7 @@
     function updateCartUI() { const total = cart.reduce((s, i) => s + (i.price * i.count), 0); const count = cart.reduce((s, i) => s + i.count, 0); document.getElementById('cart-count').innerText = count; document.getElementById('cart-total').innerText = '$' + total; document.getElementById('modal-cart-total').innerText = '$' + total; document.getElementById('cart-bar').classList.toggle('show', count > 0); if (count === 0) cartModal.hide(); }
     function openCartModal() { renderCartModal(); cartModal.show(); }
     
-    // 🟢 購物車渲染：即期品特殊色塊顯示
+    // 🟢 購物車渲染：純序號清單 + 即期品高亮
     function renderCartModal() { 
         const body = document.getElementById('cart-modal-body');
         if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } 
@@ -351,8 +350,7 @@
         
         cart.forEach((i, index) => {
             const isClearance = i.name.includes('(即期品)');
-            
-            // 如果是即期品，給予特殊樣式與標籤
+            // 🟢 判斷是否為即期品，給予黃色背景
             const rowClass = isClearance ? 'cart-item-row clearance-item' : 'cart-item-row border-bottom';
             const badgeHtml = isClearance ? `<span class="clearance-badge">⚠️ 即期良品</span>` : ``;
             
@@ -386,7 +384,7 @@
         body.innerHTML = html;
     }
 
-    // 🟢 購物車內的數量增減 (含防呆檢查)
+    // 🟢 購物車內數量控制 (含雙軌庫存防呆)
     function updateQtyInCart(displayName, cat, delta) {
         // 1. 找出原始商品資料
         const rawName = displayName.replace(" (即期品)", "").trim();
@@ -397,7 +395,7 @@
         const idx = cart.findIndex(c => c.name === displayName && c.cat === cat);
         const currentQty = idx > -1 ? cart[idx].count : 0;
 
-        // 3. 增加時檢查庫存
+        // 3. 增加時檢查庫存 (區分即期/正常)
         if (delta > 0 && product) {
             const maxStock = isClearance ? product.clearStock : product.stock;
             if (currentQty >= maxStock) {
@@ -426,6 +424,8 @@
     
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
+    
+    // 🟢 訂單查詢：即期品紅色標示
     function openMyOrders() { 
         myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-3">載入中...</div>';
         fetch(GAS_URL + "?page=myOrders&uid=" + userProfile.userId + "&t=" + Date.now()).then(res => res.json()).then(orders => { 
@@ -436,6 +436,7 @@
                 const itemsArray = o.items.split(','); 
                 itemsArray.forEach(itemStr => { 
                     const parts = itemStr.split(' x'); const name = parts[0].trim(); const qty = parts[1] ? parts[1].trim() : '1'; 
+                    // 檢查是否為即期品，給予特殊樣式
                     const nameDisplay = name.includes('(即期品)') ? `<span class="text-danger fw-bold">${name}</span>` : name;
                     itemsHtml += `<li><span>${nameDisplay}</span><span class="item-qty-badge">x${qty}</span></li>`; 
                 });
