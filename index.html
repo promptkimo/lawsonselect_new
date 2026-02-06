@@ -75,6 +75,9 @@
             margin-bottom: 4px;
             border-radius: 4px;
         }
+        
+        /* 🟢 序號樣式 */
+        .item-index { font-weight: 900; color: #aaa; min-width: 25px; font-size: 1rem; }
     </style>
 </head>
 <body>
@@ -164,7 +167,7 @@
 
         let items = [];
         if (currentCategory === 'top10') items = allData.products.filter(p => allData.top10.includes(p.name)); 
-        else if (currentCategory === 'expiry') items = allData.products.filter(p => p.clearStock > 0); // 🟢 修正：只顯示即期庫存>0
+        else if (currentCategory === 'expiry') items = allData.products.filter(p => p.clearStock > 0); 
         else {
             allData.categories.forEach(cat => {
                 if (currentCategory !== 'all' && currentCategory !== cat) return;
@@ -209,8 +212,7 @@
             let dateStr = p.arrivalDate;
             const dateObj = new Date(p.arrivalDate);
             if (!isNaN(dateObj.getTime())) { dateStr = (dateObj.getMonth() + 1) + '/' + dateObj.getDate(); }
-            // 🟢 修正：只有即期庫存>0 才顯示紅色標籤
-            if (p.clearStock > 0) { cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; } 
+            if (p.stock > 0 || p.clearStock > 0) { cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; } 
         }
         
         const cardClass = isOOS ? 'oos-mode' : ''; 
@@ -329,40 +331,33 @@
     function updateCartUI() { const total = cart.reduce((s, i) => s + (i.price * i.count), 0); const count = cart.reduce((s, i) => s + i.count, 0); document.getElementById('cart-count').innerText = count; document.getElementById('cart-total').innerText = '$' + total; document.getElementById('modal-cart-total').innerText = '$' + total; document.getElementById('cart-bar').classList.toggle('show', count > 0); if (count === 0) cartModal.hide(); }
     function openCartModal() { renderCartModal(); cartModal.show(); }
     
-    // 🟢 購物車渲染：加入自動排序邏輯
+    // 🟢 購物車渲染：純序號清單 + 即期品高亮
     function renderCartModal() { 
         const body = document.getElementById('cart-modal-body');
         if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } 
         
-        let grouped = {};
-        cart.forEach(i => { 
-            const rawName = i.name.replace(" (即期品)", "");
-            const p = allData.products.find(x => x.name === rawName && x.cat === i.cat); 
-            const s = p ? (p.subCat || '其他') : '其他'; 
-            if (!grouped[i.cat]) grouped[i.cat] = {}; if (!grouped[i.cat][s]) grouped[i.cat][s] = []; grouped[i.cat][s].push(i); 
-        });
-        
         let html = ''; 
         
-        // 🟢 排序邏輯：主分類排序 -> 子分類排序
-        const sortedCats = Object.keys(grouped).sort();
-        sortedCats.forEach(cat => {
-            const subCats = grouped[cat];
-            html += `<div class="cart-main-cat fw-bold text-dark border-start border-4 border-danger ps-2 mt-3">${cat}</div>`;
-            
-            const sortedSubs = Object.keys(subCats).sort();
-            sortedSubs.forEach(s => {
-                if (s && s !== '') html += `<div class="cart-sub-cat small text-secondary ms-2 mt-1 mb-2">${s}</div>`;
-                
-                const items = subCats[s];
-                items.forEach(i => { 
-                    const isClearance = i.name.includes('(即期品)');
-                    const rowClass = isClearance ? 'cart-item-row clearance-item' : 'cart-item-row border-bottom';
+        cart.forEach((i, index) => {
+            const isClearance = i.name.includes('(即期品)');
+            // 🟢 判斷是否為即期品，給予黃色背景
+            const rowClass = isClearance ? 'cart-item-row clearance-item' : 'cart-item-row border-bottom';
+            const nameDisplay = isClearance ? `<span class="text-danger fw-bold">${i.name}</span>` : `<span class="text-dark fw-bold">${i.name}</span>`;
 
-                    html += `<div class="d-flex justify-content-between align-items-center py-2 ${rowClass}"><div style="flex:1"><div class="fw-bold text-dark">${i.name}</div><small class="text-danger fw-bold">$${i.price}</small></div><div class="d-flex align-items-center"><button class="btn btn-sm btn-outline-warning text-dark border fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',-1)">-</button><span class="px-3 fw-bold">${i.count}</span><button class="btn btn-sm btn-warning text-dark fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',1)">+</button></div></div>`;
-                }); 
-            });
-        }); 
+            html += `
+            <div class="d-flex justify-content-between align-items-center py-2 ${rowClass}">
+                <div class="me-2 item-index">${index + 1}.</div>
+                <div style="flex:1">
+                    <div>${nameDisplay}</div>
+                    <small class="text-danger fw-bold">$${i.price}</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-sm btn-outline-warning text-dark border fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',-1)">-</button>
+                    <span class="px-3 fw-bold">${i.count}</span>
+                    <button class="btn btn-sm btn-warning text-dark fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',1)">+</button>
+                </div>
+            </div>`;
+        });
         
         body.innerHTML = html;
     }
