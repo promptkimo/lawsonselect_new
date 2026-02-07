@@ -25,12 +25,27 @@
         
         /* 🟢 Header 樣式調整開始 */
         .hero-section { background: white; padding: 15px 20px; position: relative; z-index: 1020; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; display: flex; align-items: center; justify-content: space-between; }
-        .header-left { display: flex; align-items: center; flex-grow: 1; }
-        /* 新增 Banner 圖片樣式，取代原本的 logo 和標題樣式 */
-        .hero-banner-img { height: 80px; width: auto; object-fit: contain; margin-right: 15px; }
+        .header-left { display: flex; align-items: center; flex-grow: 1; justify-content: center; } /* 讓圖片在區塊內居中 */
+        
+        /* 🟢 新增：Banner 圖片響應式設定 */
+        .hero-banner-img {
+            width: auto;           /* 寬度自動抓取比例 */
+            height: auto;          /* 高度自動抓取比例 */
+            max-width: 100%;       /* 確保寬度不超出螢幕 */
+            max-height: 120px;     /* 預設(手機)最大高度，避免太佔空間 */
+            object-fit: contain;   /* 保持圖片完整比例顯示 */
+            transition: 0.3s;      /* 加入平滑過渡效果 */
+        }
+
+        /* 🟢 媒體查詢：當螢幕寬度大於 768px (平板/電腦) 時適用 */
+        @media (min-width: 768px) {
+            .hero-banner-img {
+                max-height: 200px; /* 電腦版允許更大的高度，讓圖片變大 */
+            }
+        }
         /* 🟢 Header 樣式調整結束 */
 
-        .user-block { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #888; cursor: pointer; }
+        .user-block { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #888; cursor: pointer; flex-shrink: 0; margin-left: 10px; } /* 防止使用者區塊被擠壓 */
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; margin-bottom: 2px;}
         .quick-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px 15px 10px 15px; }
         .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; }
@@ -92,7 +107,7 @@
 
 <div class="hero-section">
     <div class="header-left">
-        <img src="https://drive.google.com/thumbnail?id=1vJC2lMXFzfdHs5VErXkUcxpBeEJwYDuz&sz=w1000" class="hero-banner-img" alt="樂森良選 Lifestyle Select" referrerpolicy="no-referrer">
+        <img src="https://drive.google.com/thumbnail?id=1Fl0Z0zGUaTR3eSIuRjU5qOcgbl6X_4d6&sz=w2000" class="hero-banner-img" alt="樂森良選 Lifestyle Select" referrerpolicy="no-referrer">
     </div>
     <div class="user-block" onclick="handleUserBlockClick()">
         <img src="https://placehold.co/100x100?text=Guest" class="user-avatar" id="user-avatar">
@@ -251,11 +266,9 @@
     }
     
     function fetchMenu() {
-        // 移除原本設定標題的程式碼，因為現在是圖片了
         fetch(GAS_URL + "?page=json&t=" + Date.now()).then(res => res.json()).then(data => {
                 if (data.error) { alert("後端錯誤: " + data.message); return; }
                 allData = data; 
-                // if(data.appTitle) document.getElementById('store-title').innerHTML = data.appTitle.replace(/\n/g, '<br>'); // 這一行移除
                 if(data.marqueeText && data.marqueeText.trim() !== "") { document.getElementById('marquee-text').innerText = data.marqueeText; document.getElementById('marquee-bar').style.display = 'block'; }
                 if(data.lastUpdateTime) { document.getElementById('stock-time').innerText = data.lastUpdateTime; document.getElementById('update-time-banner').style.display = 'block'; }
                 renderMenu(); checkAnnouncement(data); document.getElementById('loader').style.display = 'none';
