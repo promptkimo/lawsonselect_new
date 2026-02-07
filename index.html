@@ -107,7 +107,7 @@
 
 <div class="hero-section">
     <div class="header-left">
-        <img src="https://drive.google.com/thumbnail?id=1nULeyOlhRorIEP0ab3yHW7XAZmNUQhIM&sz=w2000" class="hero-banner-img" alt="樂森良選 Lifestyle Select" referrerpolicy="no-referrer">
+        <img src="https://drive.google.com/thumbnail?id=1Fl0Z0zGUaTR3eSIuRjU5qOcgbl6X_4d6&sz=w2000" class="hero-banner-img" alt="樂森良選 Lifestyle Select" referrerpolicy="no-referrer">
     </div>
     <div class="user-block" onclick="handleUserBlockClick()">
         <img src="https://placehold.co/100x100?text=Guest" class="user-avatar" id="user-avatar">
@@ -282,12 +282,10 @@
     function renderMenu() {
         const nav = document.getElementById('cat-nav'); const container = document.getElementById('product-container');
         
-        // 智慧判斷：檢查是否有任何商品的即期庫存 > 0
         const hasClearanceItems = allData.products.some(p => Number(p.clearStock) > 0);
 
         let navHtml = `<span class="cat-pill ${currentCategory === 'top10' ? 'active' : ''}" onclick="setCategory('top10')">🔥 熱銷TOP10</span>`;
         
-        // 只有當有即期品時，才顯示按鈕
         if (hasClearanceItems) {
             navHtml += `<span class="cat-pill ${currentCategory === 'expiry' ? 'active' : ''}" onclick="setCategory('expiry')">⚠️ 即期良品</span>`;
         }
@@ -324,7 +322,6 @@
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat);
         const count = inCart ? inCart.count : 0; 
         
-        // 庫存判斷：需同時檢查正常與即期
         const isOOS = p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || Number(p.clearStock) <= 0));
         
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
@@ -342,7 +339,6 @@
         }
 
         let cornerBadgeHtml = '';
-        // 標籤顯示：嚴格只看即期庫存 > 0
         if (Number(p.clearStock) > 0) { 
             cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; 
         } 
