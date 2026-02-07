@@ -104,6 +104,25 @@
 
 <div class="cart-bar" id="cart-bar" onclick="openCartModal()"><div class="d-flex align-items-center"><span class="badge bg-danger rounded-pill me-2 fs-6" id="cart-count">0</span><span class="fw-bold">去結帳</span></div><span class="cart-bar-total" id="cart-total">$0</span></div>
 
+<div class="modal fade" id="logoutModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">會員功能</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body d-grid gap-2">
+                <button class="btn btn-primary" onclick="openMyOrders(); bootstrap.Modal.getInstance(document.getElementById('logoutModal')).hide();">
+                    <i class="bi bi-file-earmark-text me-2"></i>查詢歷史訂單
+                </button>
+                <button class="btn btn-outline-danger" onclick="performLogout()">
+                    <i class="bi bi-box-arrow-right me-2"></i>登出 (切換為訪客)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="cartModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
@@ -162,6 +181,7 @@
     const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
     const announceModal = new bootstrap.Modal(document.getElementById('announceModal'));
     const variantModal = new bootstrap.Modal(document.getElementById('variantModal'));
+    const logoutModal = new bootstrap.Modal(document.getElementById('logoutModal'));
 
     window.onload = function() { 
         loadCartFromLocal(); 
@@ -194,12 +214,23 @@
         }
     }
 
+    // 🟢 點擊頭像：根據登入狀態執行不同動作
     function handleUserBlockClick() {
         if (!isLoggedIn) {
             loginWithLine();
         } else {
-            openMyOrders();
+            // 已登入：顯示選項彈窗
+            logoutModal.show();
         }
+    }
+
+    // 🟢 執行登出
+    function performLogout() {
+        if (liff.isLoggedIn()) {
+            liff.logout();
+        }
+        localStorage.removeItem('pos_cart'); // 選擇性：登出時清除購物車
+        window.location.reload(); // 重新整理頁面，回歸訪客
     }
 
     function loginWithLine() {
@@ -286,8 +317,7 @@
             let dateStr = p.arrivalDate;
             const dateObj = new Date(p.arrivalDate);
             if (!isNaN(dateObj.getTime())) { dateStr = (dateObj.getMonth() + 1) + '/' + dateObj.getDate(); }
-            // 🟢 修正：只有即期庫存>0 才顯示紅色標籤
-            if (p.clearStock > 0) { cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; } 
+            if (p.stock > 0 || p.clearStock > 0) { cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; } 
         }
         
         const cardClass = isOOS ? 'oos-mode' : ''; 
@@ -389,14 +419,13 @@
             cart.push({ name: name, price: price, cat: cat, count: qty });
         }
         updateCartUI();
-        saveCartToLocal(); // 🟢 保存購物車
+        saveCartToLocal(); // 🟢 保存
     }
 
     function updateQty(name, cat, delta) { 
         const product = allData.products.find(p => p.name === name && p.cat === cat);
         const idx = cart.findIndex(c => c.name === name && c.cat === cat); 
         
-        // 🟢 主畫面加按鈕防呆
         if (delta > 0) {
             const currentQty = idx > -1 ? cart[idx].count : 0;
             if (currentQty >= product.stock) {
@@ -413,7 +442,7 @@
         } 
         
         updateCartUI();
-        saveCartToLocal(); // 🟢 保存購物車
+        saveCartToLocal(); // 🟢 保存
         renderMenu(); 
         if(document.getElementById('cartModal').classList.contains('show')) renderCartModal(); 
     }
@@ -421,11 +450,9 @@
     function updateCartUI() { const total = cart.reduce((s, i) => s + (i.price * i.count), 0); const count = cart.reduce((s, i) => s + i.count, 0); document.getElementById('cart-count').innerText = count; document.getElementById('cart-total').innerText = '$' + total; document.getElementById('modal-cart-total').innerText = '$' + total; document.getElementById('cart-bar').classList.toggle('show', count > 0); if (count === 0) cartModal.hide(); }
     function openCartModal() { renderCartModal(); cartModal.show(); }
     
-    // 🟢 購物車渲染：純序號清單 + 即期品高亮
     function renderCartModal() { 
         const body = document.getElementById('cart-modal-body');
         
-        // 判斷是否顯示登入提示
         const loginPrompt = document.getElementById('guest-login-prompt');
         const submitBtn = document.getElementById('btn-submit-order');
         if (isLoggedIn) {
@@ -446,11 +473,9 @@
         
         cart.forEach((i, index) => {
             const isClearance = i.name.includes('(即期品)');
-            // 🟢 判斷是否為即期品，給予黃色背景
             const rowClass = isClearance ? 'cart-item-row clearance-item' : 'cart-item-row border-bottom';
             const badgeHtml = isClearance ? `<span class="clearance-badge">⚠️ 即期良品</span>` : ``;
             
-            // 找出商品的效期
             let dateInfo = '';
             if (isClearance) {
                 const rawName = i.name.replace(" (即期品)", "");
@@ -480,18 +505,13 @@
         body.innerHTML = html;
     }
 
-    // 🟢 購物車內數量控制 (含雙軌庫存防呆)
     function updateQtyInCart(displayName, cat, delta) {
-        // 1. 找出原始商品資料
         const rawName = displayName.replace(" (即期品)", "").trim();
         const product = allData.products.find(p => p.name === rawName && p.cat === cat);
         const isClearance = displayName.includes('(即期品)');
-
-        // 2. 找出目前購物車內的數量
         const idx = cart.findIndex(c => c.name === displayName && c.cat === cat);
         const currentQty = idx > -1 ? cart[idx].count : 0;
 
-        // 3. 增加時檢查庫存 (區分即期/正常)
         if (delta > 0 && product) {
             const maxStock = isClearance ? product.clearStock : product.stock;
             if (currentQty >= maxStock) {
@@ -500,13 +520,13 @@
             }
         }
 
-        // 4. 執行增減
         if (idx > -1) {
             cart[idx].count += delta;
             if (cart[idx].count <= 0) cart.splice(idx, 1);
         }
+        
         updateCartUI();
-        saveCartToLocal(); // 🟢 保存
+        saveCartToLocal(); 
         renderCartModal();
     }
     
