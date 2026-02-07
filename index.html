@@ -87,7 +87,10 @@
 
 <div class="hero-section">
     <div class="header-left"><img src="https://drive.google.com/thumbnail?id=1fkSBRo12seoZSTOlk-ALjF9yTO7usXmV&sz=w1000" class="header-logo" alt="Logo" referrerpolicy="no-referrer"><div><div class="store-title" id="store-title">樂森良選<br>Lifestyle Select</div></div></div>
-    <div class="user-block" onclick="openMyOrders()"><img src="https://placehold.co/100x100?text=U" class="user-avatar" id="user-avatar"><div class="mt-1" id="user-name">訪客</div></div>
+    <div class="user-block" onclick="handleUserBlockClick()">
+        <img src="https://placehold.co/100x100?text=Guest" class="user-avatar" id="user-avatar">
+        <div class="mt-1" id="user-name">訪客</div>
+    </div>
 </div>
 
 <div class="quick-menu">
@@ -101,7 +104,29 @@
 
 <div class="cart-bar" id="cart-bar" onclick="openCartModal()"><div class="d-flex align-items-center"><span class="badge bg-danger rounded-pill me-2 fs-6" id="cart-count">0</span><span class="fw-bold">去結帳</span></div><span class="cart-bar-total" id="cart-total">$0</span></div>
 
-<div class="modal fade" id="cartModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title fw-bold text-dark"><i class="bi bi-basket-fill text-danger"></i> 購物清單</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="cart-modal-body"></div><div class="px-3 pb-3 bg-white border-top"><div class="mt-3"><label class="form-label small fw-bold text-secondary">取餐聯絡人 <span class="text-danger">*</span></label><input type="text" id="order-contact-name" class="form-control rounded-pill bg-light" placeholder="請輸入姓名"></div><div class="mt-2"><label class="form-label small fw-bold text-secondary">聯絡電話 <span class="text-danger">*</span></label><input type="tel" id="order-contact-phone" class="form-control rounded-pill bg-light" placeholder="請輸入手機號碼"></div></div><div class="modal-footer border-0 pt-0 d-block"><div class="d-flex justify-content-between align-items-center mb-3"><span class="text-secondary fw-bold">總計金額</span><span class="h3 fw-bold text-danger m-0" id="modal-cart-total">$0</span></div><button class="btn btn-confirm w-100 py-2 rounded-pill fs-5" onclick="submitOrder()">確認送出訂單</button></div></div></div></div>
+<div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title fw-bold text-dark"><i class="bi bi-basket-fill text-danger"></i> 購物清單</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div id="guest-login-prompt" style="display:none;" class="mb-3 p-3 bg-light rounded border border-success text-center">
+                    <div class="fw-bold text-success mb-2">👋 尚未登入 LINE</div>
+                    <button class="btn btn-success w-100 fw-bold" onclick="loginWithLine()"><i class="bi bi-line me-2"></i>LINE 登入 (推薦)</button>
+                    <div class="text-muted small mt-2">登入後可追蹤訂單狀態與累積點數</div>
+                </div>
+                <div id="cart-modal-body"></div>
+            </div>
+            <div class="px-3 pb-3 bg-white border-top">
+                <div class="mt-3"><label class="form-label small fw-bold text-secondary">取餐聯絡人 <span class="text-danger">*</span></label><input type="text" id="order-contact-name" class="form-control rounded-pill bg-light" placeholder="請輸入姓名"></div>
+                <div class="mt-2"><label class="form-label small fw-bold text-secondary">聯絡電話 <span class="text-danger">*</span></label><input type="tel" id="order-contact-phone" class="form-control rounded-pill bg-light" placeholder="請輸入手機號碼"></div>
+            </div>
+            <div class="modal-footer border-0 pt-0 d-block">
+                <div class="d-flex justify-content-between align-items-center mb-3"><span class="text-secondary fw-bold">總計金額</span><span class="h3 fw-bold text-danger m-0" id="modal-cart-total">$0</span></div>
+                <button class="btn btn-confirm w-100 py-2 rounded-pill fs-5" id="btn-submit-order" onclick="submitOrder()">送出訂單</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="variantModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -131,14 +156,69 @@
     let userProfile = { userId: 'guest', displayName: '訪客' }; 
     let currentCategory = 'top10'; 
     let tempNormalQty = 0, tempClearanceQty = 0, tempProduct = null;
+    let isLoggedIn = false; // 🟢 新增登入狀態標記
 
     const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
     const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
     const announceModal = new bootstrap.Modal(document.getElementById('announceModal'));
     const variantModal = new bootstrap.Modal(document.getElementById('variantModal'));
 
-    window.onload = function() { fetchMenu(); initLiff(); };
-    async function initLiff() { try { await liff.init({ liffId: LIFF_ID }); if (liff.isLoggedIn()) { const p = await liff.getProfile(); userProfile = p; document.getElementById('user-name').innerText = p.displayName; if(p.pictureUrl) document.getElementById('user-avatar').src = p.pictureUrl; } else { liff.login(); } } catch (e) { console.error("LIFF Error:", e); } }
+    window.onload = function() { 
+        loadCartFromLocal(); // 🟢 載入暫存購物車
+        fetchMenu(); 
+        initLiff(); 
+    };
+
+    // 🟢 改良版 LIFF 初始化：不強制登入
+    async function initLiff() { 
+        try { 
+            await liff.init({ liffId: LIFF_ID }); 
+            if (liff.isLoggedIn()) { 
+                const p = await liff.getProfile(); 
+                userProfile = p; 
+                isLoggedIn = true;
+                updateUserUI(true);
+            } else { 
+                isLoggedIn = false;
+                updateUserUI(false);
+            } 
+        } catch (e) { console.error("LIFF Error:", e); } 
+    }
+
+    // 🟢 更新 Header 使用者狀態
+    function updateUserUI(isLogin) {
+        if(isLogin) {
+            document.getElementById('user-name').innerText = userProfile.displayName;
+            if(userProfile.pictureUrl) document.getElementById('user-avatar').src = userProfile.pictureUrl;
+        } else {
+            document.getElementById('user-name').innerText = "訪客 (點擊登入)";
+            document.getElementById('user-avatar').src = "https://placehold.co/100x100?text=Login";
+        }
+    }
+
+    // 🟢 Header 點擊事件
+    function handleUserBlockClick() {
+        if (!isLoggedIn) {
+            loginWithLine();
+        } else {
+            openMyOrders();
+        }
+    }
+
+    // 🟢 執行 LINE 登入 (先存購物車)
+    function loginWithLine() {
+        saveCartToLocal(); // 登入前保存購物車
+        liff.login({ redirectUri: window.location.href });
+    }
+
+    // 🟢 購物車暫存功能
+    function saveCartToLocal() { localStorage.setItem('pos_cart', JSON.stringify(cart)); }
+    function loadCartFromLocal() {
+        const saved = localStorage.getItem('pos_cart');
+        if (saved) {
+            try { cart = JSON.parse(saved); updateCartUI(); } catch(e) { console.log("Cart load error"); }
+        }
+    }
     
     function fetchMenu() {
         fetch(GAS_URL + "?page=json&t=" + Date.now()).then(res => res.json()).then(data => {
@@ -166,7 +246,7 @@
 
         let items = [];
         if (currentCategory === 'top10') items = allData.products.filter(p => allData.top10.includes(p.name)); 
-        else if (currentCategory === 'expiry') items = allData.products.filter(p => p.clearStock > 0); // 🟢 修正：只顯示即期庫存>0
+        else if (currentCategory === 'expiry') items = allData.products.filter(p => p.clearStock > 0); 
         else {
             allData.categories.forEach(cat => {
                 if (currentCategory !== 'all' && currentCategory !== cat) return;
@@ -211,8 +291,7 @@
             let dateStr = p.arrivalDate;
             const dateObj = new Date(p.arrivalDate);
             if (!isNaN(dateObj.getTime())) { dateStr = (dateObj.getMonth() + 1) + '/' + dateObj.getDate(); }
-            // 🟢 修正：只有即期庫存>0 才顯示紅色標籤
-            if (p.clearStock > 0) { cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; } 
+            if (p.stock > 0 || p.clearStock > 0) { cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; } 
         }
         
         const cardClass = isOOS ? 'oos-mode' : ''; 
@@ -314,13 +393,13 @@
             cart.push({ name: name, price: price, cat: cat, count: qty });
         }
         updateCartUI();
+        saveCartToLocal(); // 🟢 保存購物車
     }
 
     function updateQty(name, cat, delta) { 
         const product = allData.products.find(p => p.name === name && p.cat === cat);
         const idx = cart.findIndex(c => c.name === name && c.cat === cat); 
         
-        // 🟢 主畫面加按鈕防呆
         if (delta > 0) {
             const currentQty = idx > -1 ? cart[idx].count : 0;
             if (currentQty >= product.stock) {
@@ -335,14 +414,34 @@
         } else if (delta > 0) { 
             cart.push({ name, price: product.price, cat, count: 1 });
         } 
-        renderMenu(); updateCartUI(); if(document.getElementById('cartModal').classList.contains('show')) renderCartModal(); 
+        
+        updateCartUI();
+        saveCartToLocal(); // 🟢 保存購物車
+        renderMenu(); 
+        if(document.getElementById('cartModal').classList.contains('show')) renderCartModal(); 
     }
 
     function updateCartUI() { const total = cart.reduce((s, i) => s + (i.price * i.count), 0); const count = cart.reduce((s, i) => s + i.count, 0); document.getElementById('cart-count').innerText = count; document.getElementById('cart-total').innerText = '$' + total; document.getElementById('modal-cart-total').innerText = '$' + total; document.getElementById('cart-bar').classList.toggle('show', count > 0); if (count === 0) cartModal.hide(); }
     function openCartModal() { renderCartModal(); cartModal.show(); }
     
-    // 🟢 購物車渲染：純序號清單 + 即期品高亮
+    // 🟢 購物車渲染：支援登入提示
     function renderCartModal() { 
+        // 判斷是否顯示登入提示
+        const loginPrompt = document.getElementById('guest-login-prompt');
+        const submitBtn = document.getElementById('btn-submit-order');
+        
+        if (isLoggedIn) {
+            loginPrompt.style.display = 'none';
+            submitBtn.innerText = "送出訂單";
+            submitBtn.classList.remove('btn-secondary');
+            submitBtn.classList.add('btn-confirm');
+        } else {
+            loginPrompt.style.display = 'block';
+            submitBtn.innerText = "以訪客身分送單";
+            submitBtn.classList.remove('btn-confirm');
+            submitBtn.classList.add('btn-secondary');
+        }
+
         const body = document.getElementById('cart-modal-body');
         if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } 
         
@@ -350,11 +449,9 @@
         
         cart.forEach((i, index) => {
             const isClearance = i.name.includes('(即期品)');
-            // 🟢 判斷是否為即期品，給予黃色背景
             const rowClass = isClearance ? 'cart-item-row clearance-item' : 'cart-item-row border-bottom';
             const badgeHtml = isClearance ? `<span class="clearance-badge">⚠️ 即期良品</span>` : ``;
             
-            // 找出商品的效期
             let dateInfo = '';
             if (isClearance) {
                 const rawName = i.name.replace(" (即期品)", "");
@@ -384,18 +481,13 @@
         body.innerHTML = html;
     }
 
-    // 🟢 購物車內數量控制 (含雙軌庫存防呆)
     function updateQtyInCart(displayName, cat, delta) {
-        // 1. 找出原始商品資料
         const rawName = displayName.replace(" (即期品)", "").trim();
         const product = allData.products.find(p => p.name === rawName && p.cat === cat);
         const isClearance = displayName.includes('(即期品)');
-
-        // 2. 找出目前購物車內的數量
         const idx = cart.findIndex(c => c.name === displayName && c.cat === cat);
         const currentQty = idx > -1 ? cart[idx].count : 0;
 
-        // 3. 增加時檢查庫存 (區分即期/正常)
         if (delta > 0 && product) {
             const maxStock = isClearance ? product.clearStock : product.stock;
             if (currentQty >= maxStock) {
@@ -404,29 +496,46 @@
             }
         }
 
-        // 4. 執行增減
         if (idx > -1) {
             cart[idx].count += delta;
             if (cart[idx].count <= 0) cart.splice(idx, 1);
         }
+        
         updateCartUI();
+        saveCartToLocal(); // 🟢 保存購物車
         renderCartModal();
     }
     
     function submitOrder() {
         const cName = document.getElementById('order-contact-name').value.trim(); const cPhone = document.getElementById('order-contact-phone').value.trim();
         if (!cName) { alert("請輸入取餐聯絡人姓名"); return; } if (!cPhone) { alert("請輸入聯絡電話"); return; }
-        if(!confirm("確認送出訂單？")) return;
+        
+        // 🟢 訪客提示
+        let confirmMsg = "確認送出訂單？";
+        if (!isLoggedIn) {
+            confirmMsg = "⚠️ 您目前是訪客身分，將無法收到訂單狀態通知。\n\n確定要送出嗎？";
+        }
+
+        if(!confirm(confirmMsg)) return;
+        
         document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "狗狗跑腿送單中..."; cartModal.hide();
         const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: cart.map(i => `${i.name} x${i.count}`).join(', '), total: cart.reduce((s, i) => s + (i.price * i.count), 0), cartItems: cart, contactName: cName, contactPhone: cPhone } };
-        fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' }).then(() => { alert("🎉 訂單已送出！"); cart = []; updateCartUI(); renderMenu(); document.getElementById('loader').style.display = 'none'; }).catch(e => alert("錯誤: " + e));
+        
+        fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' }).then(() => { 
+            alert("🎉 訂單已送出！"); 
+            cart = []; 
+            saveCartToLocal(); // 🟢 清空購物車
+            updateCartUI(); 
+            renderMenu(); 
+            document.getElementById('loader').style.display = 'none'; 
+        }).catch(e => alert("錯誤: " + e));
     }
     
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
     
-    // 🟢 訂單查詢：即期品紅色標示
     function openMyOrders() { 
+        if(!isLoggedIn) { alert("請先登入 LINE 才能查詢訂單！"); return; }
         myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-3">載入中...</div>';
         fetch(GAS_URL + "?page=myOrders&uid=" + userProfile.userId + "&t=" + Date.now()).then(res => res.json()).then(orders => { 
             if(!orders || orders.length === 0) { document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-3 text-muted">尚無訂單紀錄</div>'; return; }
@@ -436,7 +545,6 @@
                 const itemsArray = o.items.split(','); 
                 itemsArray.forEach(itemStr => { 
                     const parts = itemStr.split(' x'); const name = parts[0].trim(); const qty = parts[1] ? parts[1].trim() : '1'; 
-                    // 檢查是否為即期品，給予特殊樣式
                     const nameDisplay = name.includes('(即期品)') ? `<span class="text-danger fw-bold">${name}</span>` : name;
                     itemsHtml += `<li><span>${nameDisplay}</span><span class="item-qty-badge">x${qty}</span></li>`; 
                 });
