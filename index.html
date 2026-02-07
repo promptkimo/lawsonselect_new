@@ -27,25 +27,25 @@
         .hero-section { background: white; padding: 15px 20px; position: relative; z-index: 1020; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; display: flex; align-items: center; justify-content: space-between; }
         .header-left { display: flex; align-items: center; flex-grow: 1; justify-content: center; } /* 讓圖片在區塊內居中 */
         
-        /* 🟢 新增：Banner 圖片響應式設定 */
+        /* Banner 圖片響應式設定 */
         .hero-banner-img {
             width: auto;           /* 寬度自動抓取比例 */
             height: auto;          /* 高度自動抓取比例 */
             max-width: 100%;       /* 確保寬度不超出螢幕 */
-            max-height: 120px;     /* 預設(手機)最大高度，避免太佔空間 */
+            max-height: 120px;     /* 手機預設最大高度 */
             object-fit: contain;   /* 保持圖片完整比例顯示 */
             transition: 0.3s;      /* 加入平滑過渡效果 */
         }
 
-        /* 🟢 媒體查詢：當螢幕寬度大於 768px (平板/電腦) 時適用 */
+        /* 當螢幕寬度大於 768px (平板/電腦) 時適用 */
         @media (min-width: 768px) {
             .hero-banner-img {
-                max-height: 200px; /* 電腦版允許更大的高度，讓圖片變大 */
+                max-height: 200px; /* 電腦版允許更大的高度 */
             }
         }
         /* 🟢 Header 樣式調整結束 */
 
-        .user-block { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #888; cursor: pointer; flex-shrink: 0; margin-left: 10px; } /* 防止使用者區塊被擠壓 */
+        .user-block { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #888; cursor: pointer; flex-shrink: 0; margin-left: 10px; } 
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; margin-bottom: 2px;}
         .quick-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px 15px 10px 15px; }
         .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; }
@@ -107,7 +107,7 @@
 
 <div class="hero-section">
     <div class="header-left">
-        <img src="https://drive.google.com/thumbnail?id=1Fl0Z0zGUaTR3eSIuRjU5qOcgbl6X_4d6&sz=w2000" class="hero-banner-img" alt="樂森良選 Lifestyle Select" referrerpolicy="no-referrer">
+        <img src="https://drive.google.com/thumbnail?id=1nULeyOlhRorIEP0ab3yHW7XAZmNUQhIM&sz=w2000" class="hero-banner-img" alt="樂森良選 Lifestyle Select" referrerpolicy="no-referrer">
     </div>
     <div class="user-block" onclick="handleUserBlockClick()">
         <img src="https://placehold.co/100x100?text=Guest" class="user-avatar" id="user-avatar">
@@ -282,10 +282,12 @@
     function renderMenu() {
         const nav = document.getElementById('cat-nav'); const container = document.getElementById('product-container');
         
+        // 智慧判斷：檢查是否有任何商品的即期庫存 > 0
         const hasClearanceItems = allData.products.some(p => Number(p.clearStock) > 0);
 
         let navHtml = `<span class="cat-pill ${currentCategory === 'top10' ? 'active' : ''}" onclick="setCategory('top10')">🔥 熱銷TOP10</span>`;
         
+        // 只有當有即期品時，才顯示按鈕
         if (hasClearanceItems) {
             navHtml += `<span class="cat-pill ${currentCategory === 'expiry' ? 'active' : ''}" onclick="setCategory('expiry')">⚠️ 即期良品</span>`;
         }
@@ -322,6 +324,7 @@
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat);
         const count = inCart ? inCart.count : 0; 
         
+        // 庫存判斷：需同時檢查正常與即期
         const isOOS = p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || Number(p.clearStock) <= 0));
         
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
@@ -339,6 +342,7 @@
         }
 
         let cornerBadgeHtml = '';
+        // 標籤顯示：嚴格只看即期庫存 > 0
         if (Number(p.clearStock) > 0) { 
             cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; 
         } 
