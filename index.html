@@ -214,23 +214,20 @@
         }
     }
 
-    // 🟢 點擊頭像：根據登入狀態執行不同動作
     function handleUserBlockClick() {
         if (!isLoggedIn) {
             loginWithLine();
         } else {
-            // 已登入：顯示選項彈窗
             logoutModal.show();
         }
     }
 
-    // 🟢 執行登出
     function performLogout() {
         if (liff.isLoggedIn()) {
             liff.logout();
         }
-        localStorage.removeItem('pos_cart'); // 選擇性：登出時清除購物車
-        window.location.reload(); // 重新整理頁面，回歸訪客
+        localStorage.removeItem('pos_cart'); 
+        window.location.reload(); 
     }
 
     function loginWithLine() {
@@ -261,10 +258,20 @@
     function openSupport() { window.location.href = 'https://line.me/R/ti/p/@lawsonshop'; }
     function setCategory(cat) { currentCategory = cat; renderMenu(); }
     
+    // 🟢 修正：renderMenu 智慧判斷是否顯示即期分類
     function renderMenu() {
         const nav = document.getElementById('cat-nav'); const container = document.getElementById('product-container');
+        
+        // 1. 檢查是否有任何商品的即期庫存 > 0
+        const hasClearanceItems = allData.products.some(p => Number(p.clearStock) > 0);
+
         let navHtml = `<span class="cat-pill ${currentCategory === 'top10' ? 'active' : ''}" onclick="setCategory('top10')">🔥 熱銷TOP10</span>`;
-        navHtml += `<span class="cat-pill ${currentCategory === 'expiry' ? 'active' : ''}" onclick="setCategory('expiry')">⚠️ 即期良品</span>`;
+        
+        // 2. 只有當有即期品時，才顯示按鈕
+        if (hasClearanceItems) {
+            navHtml += `<span class="cat-pill ${currentCategory === 'expiry' ? 'active' : ''}" onclick="setCategory('expiry')">⚠️ 即期良品</span>`;
+        }
+
         navHtml += `<span class="cat-pill ${currentCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">全部商品</span>`;
         if (allData.categories) { allData.categories.forEach(cat => { navHtml += `<span class="cat-pill ${currentCategory === cat ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</span>`; }); }
         nav.innerHTML = navHtml; container.innerHTML = '';
@@ -272,7 +279,10 @@
 
         let items = [];
         if (currentCategory === 'top10') items = allData.products.filter(p => allData.top10.includes(p.name)); 
-        else if (currentCategory === 'expiry') items = allData.products.filter(p => p.clearStock > 0); 
+        
+        // 🟢 修正：過濾邏輯也同步，確保只顯示庫存>0的
+        else if (currentCategory === 'expiry') items = allData.products.filter(p => Number(p.clearStock) > 0); 
+        
         else {
             allData.categories.forEach(cat => {
                 if (currentCategory !== 'all' && currentCategory !== cat) return;
@@ -293,15 +303,18 @@
         html += `</div>`; container.innerHTML = html;
     }
 
+    // 🟢 修正：createProductCard 嚴格檢查即期庫存
     function createProductCard(p) {
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat);
         const count = inCart ? inCart.count : 0; 
-        const isOOS = p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || p.clearStock <= 0));
+        
+        // 庫存判斷：需同時檢查正常與即期
+        const isOOS = p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || Number(p.clearStock) <= 0));
         
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         let stockHtml = `<span class="stock-info">剩: ${p.stock}</span>`;
         
-        const hasClearanceOption = (p.clearStock > 0);
+        const hasClearanceOption = (Number(p.clearStock) > 0);
         let btnHtml = '';
 
         if (isOOS) {
@@ -313,12 +326,10 @@
         }
 
         let cornerBadgeHtml = '';
-        if (p.arrivalDate && String(p.arrivalDate).trim() !== "") { 
-            let dateStr = p.arrivalDate;
-            const dateObj = new Date(p.arrivalDate);
-            if (!isNaN(dateObj.getTime())) { dateStr = (dateObj.getMonth() + 1) + '/' + dateObj.getDate(); }
-            if (p.stock > 0 || p.clearStock > 0) { cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; } 
-        }
+        // 🟢 修正：標籤顯示不再看日期，只看庫存 > 0
+        if (Number(p.clearStock) > 0) { 
+            cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; 
+        } 
         
         const cardClass = isOOS ? 'oos-mode' : ''; 
         
@@ -354,7 +365,7 @@
         let dateStr = '';
         if (tempProduct.arrivalDate) {
             const d = new Date(tempProduct.arrivalDate);
-            dateStr = `效期: ${(d.getMonth()+1)}/${d.getDate()}`;
+            if (!isNaN(d.getTime())) { dateStr = `效期: ${(d.getMonth()+1)}/${d.getDate()}`; }
         }
 
         if (tempProduct.stock > 0) {
@@ -372,7 +383,7 @@
             </div>`;
         }
         
-        if (tempProduct.clearStock > 0) {
+        if (Number(tempProduct.clearStock) > 0) {
             list.innerHTML += `
             <div class="variant-row">
                 <div class="flex-grow-1">
@@ -419,7 +430,7 @@
             cart.push({ name: name, price: price, cat: cat, count: qty });
         }
         updateCartUI();
-        saveCartToLocal(); // 🟢 保存
+        saveCartToLocal(); 
     }
 
     function updateQty(name, cat, delta) { 
@@ -442,7 +453,7 @@
         } 
         
         updateCartUI();
-        saveCartToLocal(); // 🟢 保存
+        saveCartToLocal(); 
         renderMenu(); 
         if(document.getElementById('cartModal').classList.contains('show')) renderCartModal(); 
     }
@@ -482,7 +493,7 @@
                 const p = allData.products.find(x => x.name === rawName && x.cat === i.cat);
                 if (p && p.arrivalDate) {
                     const d = new Date(p.arrivalDate);
-                    dateInfo = `<div class="small text-danger fw-bold"><i class="bi bi-calendar-event"></i> 效期：${d.getMonth()+1}/${d.getDate()}</div>`;
+                    if (!isNaN(d.getTime())) { dateInfo = `<div class="small text-danger fw-bold"><i class="bi bi-calendar-event"></i> 效期：${d.getMonth()+1}/${d.getDate()}</div>`; }
                 }
             }
 
