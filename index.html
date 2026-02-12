@@ -11,9 +11,13 @@
     <style>
         :root { --primary: #d32f2f; var(--accent): #ffb300; var(--bg-warm): #fffdf5; var(--text-dark): #3e2723; }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-warm); color: var(--text-dark); padding-bottom: 100px; overflow-x: hidden; }
+        
+        /* 跑馬燈 */
         .marquee-container { background: #ffc107; color: #000; padding: 10px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 1rem; font-weight: 900; border-bottom: 2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+        
+        /* Loading 動畫 */
         #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; overflow: hidden; }
         .dog-wrapper { position: relative; width: 100%; height: 180px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; }
         .loader-img { position: absolute; width: 180px; height: auto; object-fit: contain; animation: runRightToLeft 7s linear infinite; }
@@ -23,22 +27,49 @@
         .ghost-3 { z-index: 7; opacity: 0.1; animation-delay: -0.45s; filter: blur(4px); }
         @keyframes runRightToLeft { 0% { transform: translateX(120vw); } 100% { transform: translateX(-120vw); } }
         
-        .hero-section { background: white; padding: 15px 20px; position: relative; z-index: 1020; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; display: flex; align-items: center; justify-content: space-between; }
+        /* 🟢 修改 Header (Banner 區塊) 樣式 - 去除下方圓角與陰影，與下方選單融合 */
+        .hero-section { 
+            background: white; 
+            padding: 15px 20px 5px 20px; /* 減少下方 padding */
+            position: relative; 
+            z-index: 1020; 
+            /* 移除陰影與圓角，讓它跟下方接合 */
+            border-bottom-left-radius: 0; 
+            border-bottom-right-radius: 0; 
+            box-shadow: none; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+        }
         .header-left { display: flex; align-items: center; flex-grow: 1; justify-content: center; } 
         
-        /* Banner 圖片響應式設定 */
         .hero-banner-img { width: auto; height: auto; max-width: 100%; max-height: 120px; object-fit: contain; transition: 0.3s; }
         @media (min-width: 768px) { .hero-banner-img { max-height: 200px; } }
 
         .user-block { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #888; cursor: pointer; flex-shrink: 0; margin-left: 10px; } 
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; margin-bottom: 2px;}
-        .quick-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px 15px 10px 15px; }
+        
+        /* 🟢 修改 快速選單 樣式 - 加入白色背景、下方圓角與陰影 */
+        .quick-menu { 
+            background: white; /* 加入背景色 */
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 15px; 
+            padding: 5px 15px 20px 15px; /* 調整 padding */
+            /* 將圓角與陰影移到這裡 */
+            border-bottom-left-radius: 25px; 
+            border-bottom-right-radius: 25px; 
+            box-shadow: 0 10px 15px -5px rgba(0,0,0,0.05);
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1019;
+        }
         .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; }
         .menu-item:active { transform: scale(0.95); opacity: 0.8; }
         .menu-btn-img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
         .menu-label { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); }
         
-        /* 🟢 Sticky Header Group: 包含分類導航與置頂訊息 */
+        /* Sticky Header Group */
         .sticky-header-group {
             position: sticky;
             top: 0;
@@ -54,7 +85,7 @@
             text-align: center;
             padding: 8px 10px;
             border-bottom: 1px solid rgba(0,0,0,0.05);
-            display: none; /* 預設隱藏，有內容才顯示 */
+            display: none; 
         }
 
         .cat-nav { 
