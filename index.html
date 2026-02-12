@@ -116,7 +116,7 @@
 
 <div class="hero-section">
     <div class="header-left">
-        <img src="https://drive.google.com/thumbnail?id=1vRTh5gAxbj-CpVtHBbwltWeMYmQwG6Do&sz=w2000" class="hero-banner-img" alt="樂森良選 Lifestyle Select" referrerpolicy="no-referrer">
+        <img src="https://drive.google.com/thumbnail?id=1Htxmmsf4KyprRYI_3ZCBN99Pjk4Q5viq&sz=w2000" class="hero-banner-img" alt="樂森良選 Lifestyle Select" referrerpolicy="no-referrer">
     </div>
     <div class="user-block" onclick="handleUserBlockClick()">
         <img src="https://placehold.co/100x100?text=Guest" class="user-avatar" id="user-avatar">
@@ -241,7 +241,7 @@
     let currentCategory = 'top10'; 
     let tempNormalQty = 0, tempClearanceQty = 0, tempProduct = null;
     let isLoggedIn = false; 
-    let lastOrderText = ""; 
+    let lastOrderText = ""; // 暫存訂單文字
 
     const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
     const myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
@@ -315,21 +315,11 @@
     }
     
     function fetchMenu() {
-        fetch(GAS_URL + "?page=json&t=" + Date.now())
-            .then(res => res.json())
-            .then(data => {
+        fetch(GAS_URL + "?page=json&t=" + Date.now()).then(res => res.json()).then(data => {
                 if (data.error) { alert("後端錯誤: " + data.message); return; }
                 allData = data; 
-                
-                if(data.marqueeText && data.marqueeText.trim() !== "") { 
-                    document.getElementById('marquee-text').innerText = data.marqueeText; 
-                    document.getElementById('marquee-bar').style.display = 'block'; 
-                }
-                
-                if(data.lastUpdateTime) { 
-                    document.getElementById('stock-time').innerText = data.lastUpdateTime; 
-                    document.getElementById('update-time-banner').style.display = 'block'; 
-                }
+                if(data.marqueeText && data.marqueeText.trim() !== "") { document.getElementById('marquee-text').innerText = data.marqueeText; document.getElementById('marquee-bar').style.display = 'block'; }
+                if(data.lastUpdateTime) { document.getElementById('stock-time').innerText = data.lastUpdateTime; document.getElementById('update-time-banner').style.display = 'block'; }
                 
                 // 🟢 處理置頂訊息顯示 (修正語法錯誤)
                 if (data.stickyMsg && data.stickyMsg.trim() !== "") {
@@ -340,13 +330,8 @@
                     document.getElementById('sticky-msg-bar').style.display = 'none';
                 }
 
-                renderMenu(); 
-                checkAnnouncement(data); 
-                document.getElementById('loader').style.display = 'none';
-            })
-            .catch(err => { 
-                document.getElementById('loader').innerHTML = '<div class="text-danger p-4 text-center"><h3>載入失敗</h3><br>請檢查網路或聯繫管理員<br><small>' + err + '</small></div>'; 
-            });
+                renderMenu(); checkAnnouncement(data); document.getElementById('loader').style.display = 'none';
+        }).catch(err => { document.getElementById('loader').innerHTML = '<div class="text-danger p-4 text-center"><h3>載入失敗</h3><br>請檢查網路或聯繫管理員<br><small>' + err + '</small></div>'; });
     }
 
     function checkAnnouncement(data) { const hasText = data.announcementText && data.announcementText.trim() !== ""; const hasImg = data.announcementImg && data.announcementImg.trim() !== ""; if (hasText || hasImg) { document.getElementById('announce-content').innerText = data.announcementText || ""; const imgDiv = document.getElementById('announce-img-container'); if (hasImg) { imgDiv.innerHTML = `<img src="${data.announcementImg}" referrerpolicy="no-referrer" style="width:100%; border-radius:15px;">`; imgDiv.style.display = "block"; } else { imgDiv.innerHTML = ""; imgDiv.style.display = "none"; } announceModal.show(); } }
