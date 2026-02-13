@@ -12,8 +12,24 @@
         :root { --primary: #d32f2f; var(--accent): #ffb300; var(--bg-warm): #fffdf5; var(--text-dark): #3e2723; }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-warm); color: var(--text-dark); padding-bottom: 100px; overflow-x: hidden; }
         
+        /* 🟢 新增：全螢幕背景層 */
+        #full-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* 放在最底層 */
+            /* 預設背景圖 */
+            background-image: url('https://drive.google.com/thumbnail?id=1Htxmmsf4KyprRYI_3ZCBN99Pjk4Q5viq&sz=w2000');
+            background-size: cover; /* 填滿整個螢幕 */
+            background-position: center top; /* 從上方置中對齊 */
+            background-repeat: no-repeat;
+            transition: background-image 0.5s ease-in-out; /* 圖片切換時的轉場效果 */
+        }
+
         /* 跑馬燈 */
-        .marquee-container { background: #ffc107; color: #000; padding: 10px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 1rem; font-weight: 900; border-bottom: 2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .marquee-container { background: rgba(255, 193, 7, 0.95); /* 改為半透明 */ color: #000; padding: 10px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 1rem; font-weight: 900; border-bottom: 2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
         
@@ -27,40 +43,33 @@
         .ghost-3 { z-index: 7; opacity: 0.1; animation-delay: -0.45s; filter: blur(4px); }
         @keyframes runRightToLeft { 0% { transform: translateX(120vw); } 100% { transform: translateX(-120vw); } }
         
-        /* 🟢 修改 Header (Banner 區塊) 樣式 - 去除下方圓角與陰影，與下方選單融合 */
+        /* 🟢 修改 Header 區塊：改為透明，只保留 User Block 的容器功能 */
         .hero-section { 
-            background: white; 
-            padding: 15px 20px 5px 20px; /* 減少下方 padding */
+            background: transparent; /* 透明背景 */
+            padding: 15px 20px 5px 20px;
             position: relative; 
             z-index: 1020; 
-            /* 移除陰影與圓角，讓它跟下方接合 */
-            border-bottom-left-radius: 0; 
-            border-bottom-right-radius: 0; 
             box-shadow: none; 
             display: flex; 
             align-items: center; 
-            justify-content: space-between; 
+            justify-content: flex-end; /* 靠右對齊 */
         }
-        .header-left { display: flex; align-items: center; flex-grow: 1; justify-content: center; } 
+        /* 移除 .header-left 和 .hero-banner-img 的樣式，因為不再需要 */
         
-        .hero-banner-img { width: auto; height: auto; max-width: 100%; max-height: 120px; object-fit: contain; transition: 0.3s; }
-        @media (min-width: 768px) { .hero-banner-img { max-height: 200px; } }
-
-        .user-block { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #888; cursor: pointer; flex-shrink: 0; margin-left: 10px; } 
+        .user-block { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #888; cursor: pointer; flex-shrink: 0; margin-left: 10px; background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 20px; backdrop-filter: blur(5px); } 
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; margin-bottom: 2px;}
         
-        /* 🟢 修改 快速選單 樣式 - 加入白色背景、下方圓角與陰影 */
+        /* 🟢 修改 快速選單：改為半透明白色背景 + 毛玻璃效果 */
         .quick-menu { 
-            background: white; /* 加入背景色 */
+            background: rgba(255, 255, 255, 0.85); /* 半透明白色 */
+            backdrop-filter: blur(10px); /* 毛玻璃效果 */
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
             gap: 15px; 
-            padding: 5px 15px 20px 15px; /* 調整 padding */
-            /* 將圓角與陰影移到這裡 */
-            border-bottom-left-radius: 25px; 
-            border-bottom-right-radius: 25px; 
-            box-shadow: 0 10px 15px -5px rgba(0,0,0,0.05);
-            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 25px; /* 四個角都圓角 */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* 柔和陰影 */
+            margin: 10px 15px 20px 15px; /* 增加外距，讓它浮在背景上 */
             position: relative;
             z-index: 1019;
         }
@@ -74,11 +83,12 @@
             position: sticky;
             top: 0;
             z-index: 1010;
-            background: #fff;
+            background: transparent; /* 透明 */
         }
 
         .sticky-msg-bar {
-            background-color: #ffe0b2;
+            background-color: rgba(255, 224, 178, 0.95); /* 半透明 */
+            backdrop-filter: blur(5px);
             color: #e65100;
             font-size: 0.9rem;
             font-weight: bold;
@@ -90,15 +100,27 @@
 
         .cat-nav { 
             display: flex; overflow-x: auto; white-space: nowrap; padding: 12px 15px; gap: 8px; 
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); 
+            background: rgba(255, 255, 255, 0.9); /* 半透明 */
+            backdrop-filter: blur(10px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.08); border-bottom: 1px solid rgba(0,0,0,0.05); 
         }
         .cat-nav::-webkit-scrollbar { display: none; }
         
-        .cat-pill { padding: 6px 16px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; transition: 0.2s; }
+        .cat-pill { padding: 6px 16px; background: rgba(255,255,255,0.9); color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; transition: 0.2s; }
         .cat-pill.active { background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .section-title { font-weight: 800; margin: 20px 0 10px 0; padding-left: 15px; border-left: 5px solid var(--accent); font-size: 1.2rem; color: var(--text-dark); }
-        .product-card { background: white; border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 3px 10px rgba(0,0,0,0.05); margin-bottom: 15px; position: relative; }
+        
+        /* 🟢 新增：商品列表容器樣式，增加半透明背景，讓商品更清晰 */
+        .content-wrapper {
+            background: rgba(255, 255, 255, 0.7); /* 半透明背景 */
+            backdrop-filter: blur(15px); /* 強力毛玻璃 */
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .section-title { font-weight: 800; margin: 0 0 15px 0; padding-left: 15px; border-left: 5px solid var(--accent); font-size: 1.2rem; color: var(--text-dark); }
+        .product-card { background: rgba(255,255,255,0.95); /* 微透明卡片 */ border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 3px 10px rgba(0,0,0,0.05); margin-bottom: 15px; position: relative; }
         .product-img { width: 100%; height: 140px; object-fit: cover; background: #eee; }
         .product-body { padding: 12px; position: relative; }
         .product-name { font-size: 0.95rem; font-weight: bold; margin-bottom: 5px; color: #4e342e; }
@@ -110,7 +132,7 @@
         .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: #fff; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 1px solid var(--accent); }
         .qty-btn { width: 28px; height: 28px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; }
         .qty-val { font-size: 0.9rem; font-weight: bold; width: 24px; text-align: center; }
-        .cart-bar { position: fixed; bottom: 25px; left: 5%; width: 90%; background: #3e2723; color: #ffffff; border-radius: 50px; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 1050; cursor: pointer; transition: 0.3s; transform: translateY(150%); border: 2px solid #ffb300; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.85), 0 12px 25px rgba(0,0,0,0.6); }
+        .cart-bar { position: fixed; bottom: 25px; left: 5%; width: 90%; background: rgba(62, 39, 35, 0.95); color: #ffffff; border-radius: 50px; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 1050; cursor: pointer; transition: 0.3s; transform: translateY(150%); border: 2px solid #ffb300; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 12px 25px rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
         .cart-bar.show { transform: translateY(0); }
         .cart-bar-total { color: #ffb300; font-weight: 900; font-size: 1.25rem; }
         .btn-confirm { background: var(--primary); color: white; border: none; font-weight: bold; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3); }
@@ -142,15 +164,13 @@
 </head>
 <body>
 
+<div id="full-bg"></div>
+
 <div id="loader"><div class="dog-wrapper"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-3" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-2" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-1" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img main-dog" alt="Loading" referrerpolicy="no-referrer"></div><div class="spinner-border text-warning" role="status"></div><div class="mt-2 text-secondary fw-bold small">樂森良選 為您服務...</div></div>
 <div id="marquee-bar" class="marquee-container"><div id="marquee-text" class="marquee-content"></div></div>
-<div id="update-time-banner" style="display:none">庫存更新：<span id="stock-time"></span></div>
+<div id="update-time-banner" style="display:none; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);">庫存更新：<span id="stock-time"></span></div>
 
 <div class="hero-section">
-    <div class="header-left">
-        <img src="https://drive.google.com/thumbnail?id=1Htxmmsf4KyprRYI_3ZCBN99Pjk4Q5viq&sz=w2000" class="hero-banner-img" id="hero-banner-img" alt="樂森良選 Lifestyle Select" referrerpolicy="no-referrer">
-    </div>
-    
     <div class="user-block" onclick="handleUserBlockClick()">
         <img src="https://placehold.co/100x100?text=Guest" class="user-avatar" id="user-avatar">
         <div class="mt-1" id="user-name">訪客</div>
@@ -168,7 +188,9 @@
     <div class="cat-nav" id="cat-nav"></div>
 </div>
 
-<div class="container mt-2" id="product-container"></div>
+<div class="content-wrapper">
+    <div class="container px-0" id="product-container"></div>
+</div>
 
 <div class="cart-bar" id="cart-bar" onclick="openCartModal()"><div class="d-flex align-items-center"><span class="badge bg-danger rounded-pill me-2 fs-6" id="cart-count">0</span><span class="fw-bold">去結帳</span></div><span class="cart-bar-total" id="cart-total">$0</span></div>
 
@@ -371,9 +393,9 @@
                     document.getElementById('sticky-msg-bar').style.display = 'none';
                 }
 
-                // 🟢 處理 Banner 自訂圖片
+                // 🟢 處理 Banner 自訂圖片：現在是設定背景層的圖片
                 if (data.homeBannerImg && data.homeBannerImg.trim() !== "") {
-                    document.getElementById('hero-banner-img').src = data.homeBannerImg;
+                    document.getElementById('full-bg').style.backgroundImage = `url('${data.homeBannerImg}')`;
                 }
 
                 renderMenu(); checkAnnouncement(data); document.getElementById('loader').style.display = 'none';
