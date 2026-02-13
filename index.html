@@ -12,7 +12,8 @@
         :root { 
             --primary: #d32f2f; 
             --accent: #ffb300; 
-            --body-bg: #f4f6f9; /* 換成微冷灰色背景，讓白色卡片更跳出來 */
+            --app-bg: #fffdf5; 
+            --body-bg: #f0f2f5; 
             --text-dark: #3e2723; 
         }
         
@@ -20,12 +21,23 @@
             font-family: 'Noto Sans TC', sans-serif; 
             background-color: var(--body-bg); 
             color: var(--text-dark); 
-            padding-bottom: 100px; 
+            margin: 0;
             overflow-x: hidden; 
         }
         
+        /* APP 核心容器 */
+        .app-layout {
+            max-width: 768px; 
+            margin: 0 auto;   
+            background-color: var(--app-bg);
+            min-height: 100vh; 
+            box-shadow: 0 0 25px rgba(0,0,0,0.05); 
+            position: relative;
+            padding-bottom: 90px; 
+        }
+
         /* 跑馬燈 */
-        .marquee-container { background: #ffc107; color: #000; padding: 10px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 1rem; font-weight: 900; border-bottom: 2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .marquee-container { background: #ffc107; color: #000; padding: 10px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 1rem; font-weight: 900; border-bottom: 2px solid #000; }
         .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
         
@@ -39,158 +51,137 @@
         .ghost-3 { z-index: 7; opacity: 0.1; animation-delay: -0.45s; filter: blur(4px); }
         @keyframes runRightToLeft { 0% { transform: translateX(120vw); } 100% { transform: translateX(-120vw); } }
         
-        /* 🟢 Banner 區塊：獨立置中佈局 */
+        /* Banner 容器 */
         .banner-wrapper {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            padding: 15px 15px 0 15px; 
-        }
-        .responsive-banner {
-            width: 100%;            
-            max-width: 1000px;      /* 電腦版最大寬度 */
-            height: auto;           
-            max-height: 350px;      /* 電腦版給予更多高度 */
-            object-fit: cover;      /* 讓圖片飽滿 */
-            border-radius: 20px;    
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08); /* 增加立體感 */
+            padding: 15px 15px 5px 15px; 
+            text-align: center; 
         }
 
-        /* 🟢 4 欄位快速選單 (疊加層次設計) */
+        .responsive-banner {
+            width: 100%;            
+            height: auto;           
+            max-height: 250px;      
+            object-fit: contain;    
+            border-radius: 15px;    
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        }
+
+        /* 4 欄位快速選單 */
         .quick-menu { 
             background: #fff; 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
             gap: 10px; 
-            padding: 15px 10px;
-            border-radius: 25px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
-            max-width: 700px; /* 電腦版限制按鈕不會被拉太開 */
-            margin: -25px auto 25px auto; /* 負 margin 讓它一半疊在圖片上 */
+            padding: 15px;
+            border-radius: 20px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+            margin: 10px 15px 15px 15px;
             position: relative;
             z-index: 10;
         }
-        .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.2s; }
-        .menu-item:hover { transform: translateY(-3px); } /* 電腦版滑鼠懸停效果 */
+        .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; }
         .menu-item:active { transform: scale(0.95); opacity: 0.8; }
         
+        /* 🟢 統一所有按鈕的外觀與大小 */
         .menu-btn-img { 
-            width: 50px; 
-            height: 50px; 
+            width: 56px; 
+            height: 56px; 
             object-fit: contain; 
             margin-bottom: 8px; 
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.08)); 
+            filter: drop-shadow(0 3px 5px rgba(0,0,0,0.08)); 
             border-radius: 50%; 
         }
-        .menu-label { font-size: 0.8rem; font-weight: 700; color: var(--text-dark); text-align: center; line-height: 1.2; }
 
-        @media (min-width: 768px) {
-            .quick-menu { padding: 25px; margin: -40px auto 30px auto; gap: 20px; }
-            .menu-btn-img { width: 65px; height: 65px; }
-            .menu-label { font-size: 0.95rem; }
+        /* 🟢 針對 LINE 頭像做視覺校正，與手繪徽章的風格完美融合 */
+        #member-btn-img {
+            object-fit: cover;       /* 確保頭像填滿整個圓 */
+            transform: scale(0.85);  /* 縮小 15%，抵銷其他圖片的透明邊距，視覺大小統一 */
+            border: 2.5px solid #2d2d2d; /* 加上跟前三個徽章一樣的黑色手繪感外框 */
+            background-color: #fff;  /* 白底 */
+            padding: 2px;            /* 製造一點白邊層次感 */
+            box-sizing: border-box;
         }
+
+        .menu-label { font-size: 0.8rem; font-weight: 700; color: var(--text-dark); text-align: center; line-height: 1.2; }
         
-        /* 🟢 導覽列 (滿版毛玻璃 + 內容置中) */
+        @media (min-width: 768px) {
+            .menu-btn-img { width: 68px; height: 68px; }
+        }
+
+        /* Sticky Header */
         .sticky-header-group {
             position: sticky;
             top: 0;
             z-index: 1010;
+            background: var(--app-bg); 
         }
+
         .sticky-msg-bar {
             background-color: #ffe0b2;
             color: #e65100;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: bold;
             text-align: center;
-            padding: 10px;
+            padding: 8px 10px;
             border-bottom: 1px solid rgba(0,0,0,0.05);
             display: none; 
         }
-        .cat-nav-wrapper {
-            background: rgba(255, 255, 255, 0.92); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        }
+
         .cat-nav { 
-            display: flex; overflow-x: auto; white-space: nowrap; padding: 15px; gap: 10px; 
-            max-width: 1200px; margin: 0 auto;
+            display: flex; overflow-x: auto; white-space: nowrap; padding: 12px 15px; gap: 8px; 
+            background: rgba(255, 253, 245, 0.95); 
+            backdrop-filter: blur(8px); 
+            border-bottom: 1px solid rgba(0,0,0,0.05); 
         }
         .cat-nav::-webkit-scrollbar { display: none; }
         
-        .cat-pill { padding: 8px 20px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 25px; font-size: 0.95rem; font-weight: 700; transition: all 0.2s; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
-        .cat-pill:hover { background: #f8f9fa; }
-        .cat-pill.active { background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.2); transform: translateY(-2px); }
+        .cat-pill { padding: 6px 16px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .cat-pill.active { background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         
-        /* 🟢 商品內容區塊 */
+        /* 內容區塊 */
         .content-wrapper {
-            padding: 20px 15px;
-            max-width: 1200px; /* 電腦版最大寬度 */
-            margin: 0 auto;
+            padding: 10px 15px;
         }
 
-        .section-title { font-weight: 800; margin: 10px 0 20px 0; padding-left: 15px; border-left: 6px solid var(--accent); font-size: 1.3rem; color: var(--text-dark); }
-        
-        /* 商品卡片升級 (懸浮放大動畫) */
-        .product-card { 
-            background: #fff; border-radius: 20px; overflow: hidden; border: none; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.04); margin-bottom: 15px; position: relative; 
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .product-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-        }
-        .product-img { 
-            width: 100%; height: 160px; object-fit: cover; background: #eee; 
-            transition: transform 0.5s ease; 
-        }
-        .product-card:hover .product-img { transform: scale(1.05); } /* 照片內縮放效果 */
-        
-        @media (min-width: 768px) {
-            .product-img { height: 220px; } /* 電腦版照片拉高，比例更好看 */
-        }
-
-        .product-body { padding: 15px; position: relative; }
-        .product-name { font-size: 1rem; font-weight: bold; margin-bottom: 8px; color: #4e342e; }
-        .product-price { color: var(--primary); font-size: 1.2rem; font-weight: 900; }
-        .stock-info { font-size: 0.8rem; color: #888; background: #f5f5f5; padding: 3px 10px; border-radius: 6px; display: inline-block; margin-top: 6px; font-weight: 500; }
-        .badge-corner { position: absolute; top: 0; right: 0; background: #d32f2f; color: white; font-size: 0.8rem; font-weight: bold; padding: 6px 12px; border-bottom-left-radius: 12px; z-index: 10; box-shadow: -2px 2px 8px rgba(0,0,0,0.2); }
+        .section-title { font-weight: 800; margin: 10px 0 15px 0; padding-left: 12px; border-left: 5px solid var(--accent); font-size: 1.2rem; color: var(--text-dark); }
+        .product-card { background: #fff; border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.04); margin-bottom: 15px; position: relative; }
+        .product-img { width: 100%; height: 140px; object-fit: cover; background: #f9f9f9; }
+        .product-body { padding: 12px; position: relative; }
+        .product-name { font-size: 0.95rem; font-weight: bold; margin-bottom: 5px; color: #4e342e; }
+        .product-price { color: var(--primary); font-size: 1.1rem; font-weight: 900; }
+        .stock-info { font-size: 0.75rem; color: #888; background: #f5f5f5; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; }
+        .badge-corner { position: absolute; top: 0; right: 0; background: #d32f2f; color: white; font-size: 0.8rem; font-weight: bold; padding: 5px 10px; border-bottom-left-radius: 10px; z-index: 10; box-shadow: -2px 2px 5px rgba(0,0,0,0.2); }
         .product-card.oos-mode .product-img { opacity: 0.5; filter: grayscale(100%); }
         
-        .btn-add-only { position: absolute; bottom: 15px; right: 15px; width: 36px; height: 36px; background: var(--accent); color: var(--text-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.15); cursor: pointer; transition: 0.2s; }
-        .btn-add-only:hover { transform: scale(1.1); }
-        .qty-group { position: absolute; bottom: 15px; right: 15px; display: flex; align-items: center; background: #fff; border-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 1px solid var(--accent); overflow: hidden; }
-        .qty-btn { width: 32px; height: 32px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-        .qty-btn:hover { background: #e6a100; }
-        .qty-val { font-size: 1rem; font-weight: bold; width: 30px; text-align: center; }
+        .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 32px; height: 32px; background: var(--accent); color: var(--text-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); cursor: pointer; }
+        .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: #fff; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 1px solid var(--accent); }
+        .qty-btn { width: 28px; height: 28px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; }
+        .qty-val { font-size: 0.9rem; font-weight: bold; width: 24px; text-align: center; }
         
-        /* 🟢 購物車懸浮按鈕：置中對齊 */
+        /* 懸浮購物車 */
         .cart-bar { 
             position: fixed; 
             bottom: 25px; 
             left: 50%; 
             transform: translateX(-50%) translateY(150%); 
             width: 90%; 
-            max-width: 600px; /* 電腦版不會太寬 */
+            max-width: 700px; 
             background: rgba(62, 39, 35, 0.95); 
             color: #ffffff; 
             border-radius: 50px; 
-            padding: 15px 30px; 
+            padding: 12px 25px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             z-index: 1050; 
             cursor: pointer; 
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             border: 2px solid #ffb300; 
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 15px 30px rgba(0,0,0,0.4); 
-            backdrop-filter: blur(8px); 
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 10px 20px rgba(0,0,0,0.5); 
+            backdrop-filter: blur(5px); 
         }
         .cart-bar.show { transform: translateX(-50%) translateY(0); }
-        .cart-bar-total { color: #ffb300; font-weight: 900; font-size: 1.3rem; }
-        
+        .cart-bar-total { color: #ffb300; font-weight: 900; font-size: 1.25rem; }
         .btn-confirm { background: var(--primary); color: white; border: none; font-weight: bold; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3); }
         
         #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 9999; cursor: zoom-out; }
@@ -216,47 +207,50 @@
 <body>
 
 <div id="loader"><div class="dog-wrapper"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-3" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-2" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-1" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img main-dog" alt="Loading" referrerpolicy="no-referrer"></div><div class="spinner-border text-warning" role="status"></div><div class="mt-2 text-secondary fw-bold small">樂森良選 為您服務...</div></div>
-<div id="marquee-bar" class="marquee-container"><div id="marquee-text" class="marquee-content"></div></div>
-<div id="update-time-banner" style="display:none; padding: 5px 15px; font-size:0.8rem; color:#666; background: rgba(255,255,255,0.8); text-align: center;">庫存更新：<span id="stock-time"></span></div>
 
-<div class="banner-wrapper">
-    <img src="https://drive.google.com/thumbnail?id=1Htxmmsf4KyprRYI_3ZCBN99Pjk4Q5viq&sz=w2000" class="responsive-banner" id="hero-banner-img" alt="樂森良選" referrerpolicy="no-referrer">
-</div>
+<div class="app-layout">
+    
+    <div id="marquee-bar" class="marquee-container"><div id="marquee-text" class="marquee-content"></div></div>
+    <div id="update-time-banner" style="display:none; padding: 5px 15px; font-size:0.8rem; color:#666; background: rgba(255,255,255,0.8);">庫存更新：<span id="stock-time"></span></div>
 
-<div class="quick-menu">
-    <div class="menu-item" onclick="openCartModal()">
-        <img src="https://drive.google.com/thumbnail?id=1xM2Zbn4YW06eGcmWPV0DTQG6yQlDgTAd&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
-        <div class="menu-label">立即結帳</div>
+    <div class="banner-wrapper">
+        <img src="https://drive.google.com/thumbnail?id=1Htxmmsf4KyprRYI_3ZCBN99Pjk4Q5viq&sz=w2000" class="responsive-banner" id="hero-banner-img" alt="樂森良選" referrerpolicy="no-referrer">
     </div>
-    <div class="menu-item" onclick="openMyOrders()">
-        <img src="https://drive.google.com/thumbnail?id=1-gXteiqgQi24r2ZuljHT8f5hj1ntk_Rn&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
-        <div class="menu-label">查詢訂單</div>
-    </div>
-    <div class="menu-item" onclick="openSupport()">
-        <img src="https://drive.google.com/thumbnail?id=1SITi3RtcBJuShqo7kSRCS3JjP-zujbZ0&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
-        <div class="menu-label">聯絡客服</div>
-    </div>
-    <div class="menu-item" onclick="handleUserBlockClick()">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" class="menu-btn-img" id="member-btn-img" referrerpolicy="no-referrer">
-        <div class="menu-label" id="member-btn-label">LINE 登入</div>
-    </div>
-</div>
 
-<div class="sticky-header-group">
-    <div id="sticky-msg-bar" class="sticky-msg-bar"></div>
-    <div class="cat-nav-wrapper">
+    <div class="quick-menu">
+        <div class="menu-item" onclick="openCartModal()">
+            <img src="https://drive.google.com/thumbnail?id=1xM2Zbn4YW06eGcmWPV0DTQG6yQlDgTAd&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
+            <div class="menu-label">立即結帳</div>
+        </div>
+        <div class="menu-item" onclick="openMyOrders()">
+            <img src="https://drive.google.com/thumbnail?id=1-gXteiqgQi24r2ZuljHT8f5hj1ntk_Rn&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
+            <div class="menu-label">查詢訂單</div>
+        </div>
+        <div class="menu-item" onclick="openSupport()">
+            <img src="https://drive.google.com/thumbnail?id=1SITi3RtcBJuShqo7kSRCS3JjP-zujbZ0&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
+            <div class="menu-label">聯絡客服</div>
+        </div>
+        <div class="menu-item" onclick="handleUserBlockClick()">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" class="menu-btn-img" id="member-btn-img" referrerpolicy="no-referrer">
+            <div class="menu-label" id="member-btn-label">LINE 登入</div>
+        </div>
+    </div>
+
+    <div class="sticky-header-group">
+        <div id="sticky-msg-bar" class="sticky-msg-bar"></div>
         <div class="cat-nav" id="cat-nav"></div>
     </div>
-</div>
 
-<div class="content-wrapper">
-    <div class="container-fluid px-0" id="product-container"></div>
-</div>
+    <div class="content-wrapper">
+        <div class="container-fluid px-0">
+            <div class="row g-3" id="product-container"></div>
+        </div>
+    </div>
 
-<div class="cart-bar" id="cart-bar" onclick="openCartModal()">
+</div> <div class="cart-bar" id="cart-bar" onclick="openCartModal()">
     <div class="d-flex align-items-center">
-        <span class="badge bg-danger rounded-pill me-2 fs-5" id="cart-count">0</span>
-        <span class="fw-bold fs-5">去結帳</span>
+        <span class="badge bg-danger rounded-pill me-2 fs-6" id="cart-count">0</span>
+        <span class="fw-bold">去結帳</span>
     </div>
     <span class="cart-bar-total" id="cart-total">$0</span>
 </div>
@@ -279,7 +273,7 @@
 </div>
 
 <div class="modal fade" id="cartModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content border-0">
             <div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold text-dark"><i class="bi bi-basket-fill text-danger me-2"></i>購物清單</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
@@ -291,14 +285,12 @@
                 <div id="cart-modal-body"></div>
             </div>
             <div class="px-3 pb-3 bg-white border-top pt-3">
-                <div class="row g-2">
-                    <div class="col-md-6"><label class="form-label small fw-bold text-secondary">取餐聯絡人 <span class="text-danger">*</span></label><input type="text" id="order-contact-name" class="form-control rounded-pill bg-light" placeholder="請輸入姓名"></div>
-                    <div class="col-md-6"><label class="form-label small fw-bold text-secondary">聯絡電話 <span class="text-danger">*</span></label><input type="tel" id="order-contact-phone" class="form-control rounded-pill bg-light" placeholder="請輸入手機號碼"></div>
-                </div>
+                <div><label class="form-label small fw-bold text-secondary">取餐聯絡人 <span class="text-danger">*</span></label><input type="text" id="order-contact-name" class="form-control rounded-pill bg-light" placeholder="請輸入姓名"></div>
+                <div class="mt-2"><label class="form-label small fw-bold text-secondary">聯絡電話 <span class="text-danger">*</span></label><input type="tel" id="order-contact-phone" class="form-control rounded-pill bg-light" placeholder="請輸入手機號碼"></div>
             </div>
             <div class="modal-footer border-0 pt-0 d-block">
-                <div class="d-flex justify-content-between align-items-center mb-3"><span class="text-secondary fw-bold">總計金額</span><span class="h2 fw-bold text-danger m-0" id="modal-cart-total">$0</span></div>
-                <button class="btn btn-confirm w-100 py-3 rounded-pill fs-5 shadow-sm" id="btn-submit-order" onclick="submitOrder()">送出訂單</button>
+                <div class="d-flex justify-content-between align-items-center mb-3"><span class="text-secondary fw-bold">總計金額</span><span class="h3 fw-bold text-danger m-0" id="modal-cart-total">$0</span></div>
+                <button class="btn btn-confirm w-100 py-2 rounded-pill fs-5 shadow-sm" id="btn-submit-order" onclick="submitOrder()">送出訂單</button>
             </div>
         </div>
     </div>
@@ -319,7 +311,7 @@
                     <i class="bi bi-info-circle me-1"></i> 請點擊下方按鈕，將訂單明細傳送給官方帳號客服，以便確認取貨時間。
                 </div>
                 <div class="d-grid gap-2">
-                    <button class="btn btn-lg btn-success fw-bold shadow-sm rounded-pill py-3" onclick="finishOrderProcess('line')">
+                    <button class="btn btn-lg btn-success fw-bold shadow-sm rounded-pill" onclick="finishOrderProcess('line')">
                         <i class="bi bi-line me-2"></i>傳送訂單給客服
                     </button>
                     <button class="btn btn-light rounded-pill text-secondary mt-2" onclick="finishOrderProcess('close')">
@@ -340,14 +332,14 @@
             </div>
             <div class="modal-body" id="variant-list"></div>
             <div class="modal-footer border-0 pt-0">
-                <button class="btn btn-dark w-100 rounded-pill shadow-sm py-2" onclick="confirmVariantSelection()">確認加入</button>
+                <button class="btn btn-dark w-100 rounded-pill shadow-sm" onclick="confirmVariantSelection()">確認加入</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="announceModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-danger">📢 優惠活動 / 公告</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="announce-img-container" style="display:none;"></div><div id="announce-content" class="mt-2 text-center fw-bold text-dark"></div></div><div class="modal-footer border-0"><button type="button" class="btn btn-warning w-100 rounded-pill fw-bold text-dark shadow-sm py-2" data-bs-dismiss="modal">我知道了</button></div></div></div></div>
-<div class="modal fade" id="myOrdersModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable modal-lg"><div class="modal-content border-0"><div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold">🐶 歷史訂單查詢</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light" id="my-orders-list"></div></div></div></div>
+<div class="modal fade" id="announceModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-danger">📢 優惠活動 / 公告</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="announce-img-container" style="display:none;"></div><div id="announce-content" class="mt-2 text-center fw-bold text-dark"></div></div><div class="modal-footer border-0"><button type="button" class="btn btn-warning w-100 rounded-pill fw-bold text-dark shadow-sm" data-bs-dismiss="modal">我知道了</button></div></div></div></div>
+<div class="modal fade" id="myOrdersModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content border-0"><div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold">🐶 歷史訂單查詢</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light" id="my-orders-list"></div></div></div></div>
 <div id="lightbox" onclick="closeLightbox()"><img id="lightbox-img" src="" alt="放大圖片"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
