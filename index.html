@@ -12,28 +12,28 @@
         :root { 
             --primary: #d32f2f; 
             --accent: #ffb300; 
-            --app-bg: #fffdf5; /* APP 內層溫暖色 */
-            --body-bg: #f0f2f5; /* 電腦版外圍底色 */
+            --app-bg: #fffdf5; 
+            --body-bg: #f0f2f5; 
             --text-dark: #3e2723; 
         }
         
         body { 
             font-family: 'Noto Sans TC', sans-serif; 
-            background-color: var(--body-bg); /* 外圍深色讓中央 APP 浮現 */
+            background-color: var(--body-bg); 
             color: var(--text-dark); 
             margin: 0;
             overflow-x: hidden; 
         }
         
-        /* 🟢 新增：APP 核心容器 (控制電腦與平板的最大寬度與置中) */
+        /* APP 核心容器 */
         .app-layout {
-            max-width: 768px; /* 限制最大寬度，類似 iPad 直式尺寸 */
-            margin: 0 auto;   /* 畫面置中 */
+            max-width: 768px; 
+            margin: 0 auto;   
             background-color: var(--app-bg);
-            min-height: 100vh; /* 至少跟螢幕一樣高 */
-            box-shadow: 0 0 25px rgba(0,0,0,0.05); /* 電腦版立體陰影 */
+            min-height: 100vh; 
+            box-shadow: 0 0 25px rgba(0,0,0,0.05); 
             position: relative;
-            padding-bottom: 90px; /* 給底部購物車留空間 */
+            padding-bottom: 90px; 
         }
 
         /* 跑馬燈 */
@@ -57,24 +57,23 @@
             text-align: center; 
         }
 
-        /* 限制圖片大小，完美適應框架 */
         .responsive-banner {
             width: 100%;            
             height: auto;           
             max-height: 250px;      
             object-fit: contain;    
             border-radius: 15px;    
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); /* 微微浮起 */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
         }
 
-        /* 4 欄位快速選單 (卡片化設計) */
+        /* 4 欄位快速選單 */
         .quick-menu { 
             background: #fff; 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
             gap: 10px; 
             padding: 15px;
-            border-radius: 20px; /* 變成獨立的圓角卡片 */
+            border-radius: 20px; 
             box-shadow: 0 5px 15px rgba(0,0,0,0.04);
             margin: 10px 15px 15px 15px;
             position: relative;
@@ -92,12 +91,12 @@
         }
         .menu-label { font-size: 0.8rem; font-weight: 700; color: var(--text-dark); text-align: center; line-height: 1.2; }
         
-        /* Sticky Header (分類與置頂訊息) */
+        /* Sticky Header */
         .sticky-header-group {
             position: sticky;
             top: 0;
             z-index: 1010;
-            background: var(--app-bg); /* 與背景色融合 */
+            background: var(--app-bg); 
         }
 
         .sticky-msg-bar {
@@ -113,7 +112,7 @@
 
         .cat-nav { 
             display: flex; overflow-x: auto; white-space: nowrap; padding: 12px 15px; gap: 8px; 
-            background: rgba(255, 253, 245, 0.95); /* 毛玻璃透明感 */
+            background: rgba(255, 253, 245, 0.95); 
             backdrop-filter: blur(8px); 
             border-bottom: 1px solid rgba(0,0,0,0.05); 
         }
@@ -137,21 +136,19 @@
         .badge-corner { position: absolute; top: 0; right: 0; background: #d32f2f; color: white; font-size: 0.8rem; font-weight: bold; padding: 5px 10px; border-bottom-left-radius: 10px; z-index: 10; box-shadow: -2px 2px 5px rgba(0,0,0,0.2); }
         .product-card.oos-mode .product-img { opacity: 0.5; filter: grayscale(100%); }
         
-        /* 購物車按鈕樣式 */
         .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 32px; height: 32px; background: var(--accent); color: var(--text-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); cursor: pointer; }
         .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: #fff; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 1px solid var(--accent); }
         .qty-btn { width: 28px; height: 28px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; }
         .qty-val { font-size: 0.9rem; font-weight: bold; width: 24px; text-align: center; }
         
-        /* 🟢 懸浮購物車條：置中對齊 APP 容器 */
+        /* 懸浮購物車 */
         .cart-bar { 
             position: fixed; 
             bottom: 25px; 
             left: 50%; 
-            /* 讓它維持在中央，並負責隱藏/顯示動畫 */
             transform: translateX(-50%) translateY(150%); 
             width: 90%; 
-            max-width: 700px; /* 限制寬度，適應平板與電腦 */
+            max-width: 700px; 
             background: rgba(62, 39, 35, 0.95); 
             color: #ffffff; 
             border-radius: 50px; 
@@ -166,13 +163,10 @@
             box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 10px 20px rgba(0,0,0,0.5); 
             backdrop-filter: blur(5px); 
         }
-        .cart-bar.show { 
-            transform: translateX(-50%) translateY(0); 
-        }
+        .cart-bar.show { transform: translateX(-50%) translateY(0); }
         .cart-bar-total { color: #ffb300; font-weight: 900; font-size: 1.25rem; }
         .btn-confirm { background: var(--primary); color: white; border: none; font-weight: bold; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3); }
         
-        /* 其他 Modal 與 列表樣式 */
         #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 9999; cursor: zoom-out; }
         #lightbox img { max-width: 90%; max-height: 80%; border-radius: 8px; transform: scale(0.9); transition: 0.3s; }
         #lightbox.show img { transform: scale(1); }
@@ -232,7 +226,7 @@
 
     <div class="content-wrapper">
         <div class="container-fluid px-0">
-            <div class="row g-3" id="product-container"></div>
+            <div id="product-container"></div>
         </div>
     </div>
 
@@ -376,7 +370,6 @@
         } 
     }
 
-    // 更新使用者介面
     function updateUserUI(isLogin) {
         const btnLabel = document.getElementById('member-btn-label');
         const btnImg = document.getElementById('member-btn-img');
@@ -454,6 +447,7 @@
     function openSupport() { window.location.href = 'https://line.me/R/ti/p/@lawsonshop'; }
     function setCategory(cat) { currentCategory = cat; renderMenu(); }
     
+    // 🟢 完全修復商品渲染邏輯
     function renderMenu() {
         const nav = document.getElementById('cat-nav'); const container = document.getElementById('product-container');
         const hasClearanceItems = allData.products.some(p => Number(p.clearStock) > 0);
@@ -473,13 +467,24 @@
             allData.categories.forEach(cat => {
                 if (currentCategory !== 'all' && currentCategory !== cat) return;
                 const catItems = allData.products.filter(p => p.cat === cat); if(catItems.length === 0) return;
-                let grouped = {}; catItems.forEach(p => { const sub = p.subCat || '其他'; if(!grouped[sub]) grouped[sub] = []; grouped[sub].push(p); });
-                let html = `<div id="cat-${cat}" class="section-title">${cat}</div>`;
                 
-                // 🟢 替換原本的 row g-3 生成方式，不再建立新的 container.innerHTML 而是使用臨時變數
-                html += `<div class="row g-3">`; 
-                subItems.forEach(p => html += createProductCard(p)); 
-                html += `</div>`; 
+                let grouped = {}; 
+                catItems.forEach(p => { 
+                    const sub = p.subCat || '其他'; 
+                    if(!grouped[sub]) grouped[sub] = []; 
+                    grouped[sub].push(p); 
+                });
+                
+                let html = `<div id="cat-${cat}" class="section-title w-100">${cat}</div>`;
+                
+                for (const [subName, subItems] of Object.entries(grouped)) {
+                    if(subName && subName !== '' && subName !== '其他') {
+                        html += `<div class="w-100 text-secondary small fw-bold mb-2 ms-2"><i class="bi bi-tag-fill me-1"></i>${subName}</div>`; 
+                    }
+                    html += `<div class="row g-3 mb-4">`; 
+                    subItems.forEach(p => html += createProductCard(p)); 
+                    html += `</div>`; 
+                } 
                 container.innerHTML += html;
             });
             return;
@@ -487,8 +492,9 @@
 
         if (items.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前沒有相關商品</div>'; return; }
         
-        let html = `<div class="section-title">${currentCategory === 'top10' ? '🔥 熱銷推薦' : '⚠️ 即期良品專區'}</div>`;
-        html += items.map(p => createProductCard(p)).join(''); 
+        let html = `<div class="section-title">${currentCategory === 'top10' ? '🔥 熱銷推薦' : '⚠️ 即期良品專區'}</div><div class="row g-3 mb-4">`;
+        items.forEach(p => html += createProductCard(p)); 
+        html += `</div>`;
         container.innerHTML = html;
     }
 
@@ -515,7 +521,6 @@
         } 
         const cardClass = isOOS ? 'oos-mode' : ''; 
         
-        // 🟢 將原本的 col-6 col-md-4 改為支援電腦版的 col-lg-3 網格
         return `
         <div class="col-6 col-md-4 col-lg-3">
             <div class="product-card ${cardClass}">
