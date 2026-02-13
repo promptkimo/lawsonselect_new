@@ -9,11 +9,35 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     
     <style>
-        :root { --primary: #d32f2f; var(--accent): #ffb300; var(--bg-warm): #fffdf5; var(--text-dark): #3e2723; }
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-warm); color: var(--text-dark); padding-bottom: 100px; overflow-x: hidden; }
+        :root { 
+            --primary: #d32f2f; 
+            --accent: #ffb300; 
+            --app-bg: #fffdf5; /* APP 內層溫暖色 */
+            --body-bg: #f0f2f5; /* 電腦版外圍底色 */
+            --text-dark: #3e2723; 
+        }
         
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            background-color: var(--body-bg); /* 外圍深色讓中央 APP 浮現 */
+            color: var(--text-dark); 
+            margin: 0;
+            overflow-x: hidden; 
+        }
+        
+        /* 🟢 新增：APP 核心容器 (控制電腦與平板的最大寬度與置中) */
+        .app-layout {
+            max-width: 768px; /* 限制最大寬度，類似 iPad 直式尺寸 */
+            margin: 0 auto;   /* 畫面置中 */
+            background-color: var(--app-bg);
+            min-height: 100vh; /* 至少跟螢幕一樣高 */
+            box-shadow: 0 0 25px rgba(0,0,0,0.05); /* 電腦版立體陰影 */
+            position: relative;
+            padding-bottom: 90px; /* 給底部購物車留空間 */
+        }
+
         /* 跑馬燈 */
-        .marquee-container { background: #ffc107; color: #000; padding: 10px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 1rem; font-weight: 900; border-bottom: 2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .marquee-container { background: #ffc107; color: #000; padding: 10px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 1rem; font-weight: 900; border-bottom: 2px solid #000; }
         .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
         
@@ -27,58 +51,53 @@
         .ghost-3 { z-index: 7; opacity: 0.1; animation-delay: -0.45s; filter: blur(4px); }
         @keyframes runRightToLeft { 0% { transform: translateX(120vw); } 100% { transform: translateX(-120vw); } }
         
-        /* 🟢 Banner 容器：限縮範圍的框框 */
+        /* Banner 容器 */
         .banner-wrapper {
-            background: #fff; /* 白色背景 */
-            padding: 15px 15px 5px 15px; /* 上左右留白，下方少一點 */
-            text-align: center; /* 圖片置中 */
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 15px 15px 5px 15px; 
+            text-align: center; 
         }
 
-        /* 🟢 限制圖片大小，不讓它無限擴大 */
+        /* 限制圖片大小，完美適應框架 */
         .responsive-banner {
-            width: 100%;            /* 寬度佔滿容器 */
-            max-width: 800px;       /* 電腦版最大寬度限制 */
-            height: auto;           /* 高度自動 */
-            max-height: 250px;      /* 限制最大高度，避免手機版佔滿螢幕 */
-            object-fit: contain;    /* 保持比例，完整顯示整張圖 */
-            border-radius: 15px;    /* 圓角 */
+            width: 100%;            
+            height: auto;           
+            max-height: 250px;      
+            object-fit: contain;    
+            border-radius: 15px;    
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); /* 微微浮起 */
         }
 
-        /* 🟢 4 欄位快速選單 */
+        /* 4 欄位快速選單 (卡片化設計) */
         .quick-menu { 
-            background: #fff; /* 接續上方的白色背景 */
+            background: #fff; 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
             gap: 10px; 
-            padding: 5px 15px 20px 15px;
-            /* 下方圓角 */
-            border-bottom-left-radius: 25px;
-            border-bottom-right-radius: 25px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 20px; /* 變成獨立的圓角卡片 */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+            margin: 10px 15px 15px 15px;
             position: relative;
             z-index: 10;
         }
         .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; }
         .menu-item:active { transform: scale(0.95); opacity: 0.8; }
-        
         .menu-btn-img { 
             width: 55px; 
             height: 55px; 
             object-fit: contain; 
-            margin-bottom: 5px; 
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); 
-            border-radius: 50%; /* 圓形頭像 */
+            margin-bottom: 8px; 
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08)); 
+            border-radius: 50%; 
         }
         .menu-label { font-size: 0.8rem; font-weight: 700; color: var(--text-dark); text-align: center; line-height: 1.2; }
         
-        /* Sticky Header Group */
+        /* Sticky Header (分類與置頂訊息) */
         .sticky-header-group {
             position: sticky;
             top: 0;
             z-index: 1010;
-            background: var(--bg-warm);
+            background: var(--app-bg); /* 與背景色融合 */
         }
 
         .sticky-msg-bar {
@@ -94,40 +113,66 @@
 
         .cat-nav { 
             display: flex; overflow-x: auto; white-space: nowrap; padding: 12px 15px; gap: 8px; 
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08); border-bottom: 1px solid rgba(0,0,0,0.05); 
+            background: rgba(255, 253, 245, 0.95); /* 毛玻璃透明感 */
+            backdrop-filter: blur(8px); 
+            border-bottom: 1px solid rgba(0,0,0,0.05); 
         }
         .cat-nav::-webkit-scrollbar { display: none; }
         
-        .cat-pill { padding: 6px 16px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; transition: 0.2s; }
+        .cat-pill { padding: 6px 16px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
         .cat-pill.active { background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         
+        /* 內容區塊 */
         .content-wrapper {
-            background: rgba(255, 255, 255, 0.6); 
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            margin: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            padding: 10px 15px;
         }
 
-        .section-title { font-weight: 800; margin: 0 0 15px 0; padding-left: 15px; border-left: 5px solid var(--accent); font-size: 1.2rem; color: var(--text-dark); }
-        .product-card { background: rgba(255,255,255,0.95); border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 3px 10px rgba(0,0,0,0.05); margin-bottom: 15px; position: relative; }
-        .product-img { width: 100%; height: 140px; object-fit: cover; background: #eee; }
+        .section-title { font-weight: 800; margin: 10px 0 15px 0; padding-left: 12px; border-left: 5px solid var(--accent); font-size: 1.2rem; color: var(--text-dark); }
+        .product-card { background: #fff; border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.04); margin-bottom: 15px; position: relative; }
+        .product-img { width: 100%; height: 140px; object-fit: cover; background: #f9f9f9; }
         .product-body { padding: 12px; position: relative; }
         .product-name { font-size: 0.95rem; font-weight: bold; margin-bottom: 5px; color: #4e342e; }
         .product-price { color: var(--primary); font-size: 1.1rem; font-weight: 900; }
         .stock-info { font-size: 0.75rem; color: #888; background: #f5f5f5; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; }
         .badge-corner { position: absolute; top: 0; right: 0; background: #d32f2f; color: white; font-size: 0.8rem; font-weight: bold; padding: 5px 10px; border-bottom-left-radius: 10px; z-index: 10; box-shadow: -2px 2px 5px rgba(0,0,0,0.2); }
         .product-card.oos-mode .product-img { opacity: 0.5; filter: grayscale(100%); }
+        
+        /* 購物車按鈕樣式 */
         .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 32px; height: 32px; background: var(--accent); color: var(--text-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); cursor: pointer; }
         .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: #fff; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 1px solid var(--accent); }
         .qty-btn { width: 28px; height: 28px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; }
         .qty-val { font-size: 0.9rem; font-weight: bold; width: 24px; text-align: center; }
-        .cart-bar { position: fixed; bottom: 25px; left: 5%; width: 90%; background: rgba(62, 39, 35, 0.95); color: #ffffff; border-radius: 50px; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 1050; cursor: pointer; transition: 0.3s; transform: translateY(150%); border: 2px solid #ffb300; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 12px 25px rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
-        .cart-bar.show { transform: translateY(0); }
+        
+        /* 🟢 懸浮購物車條：置中對齊 APP 容器 */
+        .cart-bar { 
+            position: fixed; 
+            bottom: 25px; 
+            left: 50%; 
+            /* 讓它維持在中央，並負責隱藏/顯示動畫 */
+            transform: translateX(-50%) translateY(150%); 
+            width: 90%; 
+            max-width: 700px; /* 限制寬度，適應平板與電腦 */
+            background: rgba(62, 39, 35, 0.95); 
+            color: #ffffff; 
+            border-radius: 50px; 
+            padding: 12px 25px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            z-index: 1050; 
+            cursor: pointer; 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border: 2px solid #ffb300; 
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 10px 20px rgba(0,0,0,0.5); 
+            backdrop-filter: blur(5px); 
+        }
+        .cart-bar.show { 
+            transform: translateX(-50%) translateY(0); 
+        }
         .cart-bar-total { color: #ffb300; font-weight: 900; font-size: 1.25rem; }
         .btn-confirm { background: var(--primary); color: white; border: none; font-weight: bold; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3); }
+        
+        /* 其他 Modal 與 列表樣式 */
         #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 9999; cursor: zoom-out; }
         #lightbox img { max-width: 90%; max-height: 80%; border-radius: 8px; transform: scale(0.9); transition: 0.3s; }
         #lightbox.show img { transform: scale(1); }
@@ -142,13 +187,7 @@
         .step-val { width: 30px; text-align: center; font-weight: bold; font-size: 1rem; }
         .variant-tag { font-size: 0.75rem; background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
 
-        .cart-item-row.clearance-item {
-            background-color: #fff3cd; 
-            border-left: 5px solid #dc3545; 
-            padding-left: 10px;
-            margin-bottom: 4px;
-            border-radius: 4px;
-        }
+        .cart-item-row.clearance-item { background-color: #fff3cd; border-left: 5px solid #dc3545; padding-left: 10px; margin-bottom: 4px; border-radius: 4px; }
         .item-index { font-weight: 900; color: #aaa; min-width: 25px; font-size: 1rem; }
         .clearance-badge { font-size: 0.8rem; background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-weight: bold; animation: blink 2s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
@@ -157,53 +196,65 @@
 <body>
 
 <div id="loader"><div class="dog-wrapper"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-3" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-2" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-1" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img main-dog" alt="Loading" referrerpolicy="no-referrer"></div><div class="spinner-border text-warning" role="status"></div><div class="mt-2 text-secondary fw-bold small">樂森良選 為您服務...</div></div>
-<div id="marquee-bar" class="marquee-container"><div id="marquee-text" class="marquee-content"></div></div>
-<div id="update-time-banner" style="display:none">庫存更新：<span id="stock-time"></span></div>
 
-<div class="banner-wrapper">
-    <img src="https://drive.google.com/thumbnail?id=1Htxmmsf4KyprRYI_3ZCBN99Pjk4Q5viq&sz=w2000" class="responsive-banner" id="hero-banner-img" alt="樂森良選" referrerpolicy="no-referrer">
-</div>
+<div class="app-layout">
+    
+    <div id="marquee-bar" class="marquee-container"><div id="marquee-text" class="marquee-content"></div></div>
+    <div id="update-time-banner" style="display:none; padding: 5px 15px; font-size:0.8rem; color:#666; background: rgba(255,255,255,0.8);">庫存更新：<span id="stock-time"></span></div>
 
-<div class="quick-menu">
-    <div class="menu-item" onclick="openCartModal()">
-        <img src="https://drive.google.com/thumbnail?id=1xM2Zbn4YW06eGcmWPV0DTQG6yQlDgTAd&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
-        <div class="menu-label">立即結帳</div>
+    <div class="banner-wrapper">
+        <img src="https://drive.google.com/thumbnail?id=1Htxmmsf4KyprRYI_3ZCBN99Pjk4Q5viq&sz=w2000" class="responsive-banner" id="hero-banner-img" alt="樂森良選" referrerpolicy="no-referrer">
     </div>
-    <div class="menu-item" onclick="openMyOrders()">
-        <img src="https://drive.google.com/thumbnail?id=1-gXteiqgQi24r2ZuljHT8f5hj1ntk_Rn&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
-        <div class="menu-label">查詢訂單</div>
-    </div>
-    <div class="menu-item" onclick="openSupport()">
-        <img src="https://drive.google.com/thumbnail?id=1SITi3RtcBJuShqo7kSRCS3JjP-zujbZ0&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
-        <div class="menu-label">聯絡客服</div>
-    </div>
-    <div class="menu-item" onclick="handleUserBlockClick()">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" class="menu-btn-img" id="member-btn-img" referrerpolicy="no-referrer">
-        <div class="menu-label" id="member-btn-label">LINE 登入</div>
-    </div>
-</div>
 
-<div class="sticky-header-group">
-    <div id="sticky-msg-bar" class="sticky-msg-bar"></div>
-    <div class="cat-nav" id="cat-nav"></div>
-</div>
+    <div class="quick-menu">
+        <div class="menu-item" onclick="openCartModal()">
+            <img src="https://drive.google.com/thumbnail?id=1xM2Zbn4YW06eGcmWPV0DTQG6yQlDgTAd&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
+            <div class="menu-label">立即結帳</div>
+        </div>
+        <div class="menu-item" onclick="openMyOrders()">
+            <img src="https://drive.google.com/thumbnail?id=1-gXteiqgQi24r2ZuljHT8f5hj1ntk_Rn&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
+            <div class="menu-label">查詢訂單</div>
+        </div>
+        <div class="menu-item" onclick="openSupport()">
+            <img src="https://drive.google.com/thumbnail?id=1SITi3RtcBJuShqo7kSRCS3JjP-zujbZ0&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer">
+            <div class="menu-label">聯絡客服</div>
+        </div>
+        <div class="menu-item" onclick="handleUserBlockClick()">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" class="menu-btn-img" id="member-btn-img" referrerpolicy="no-referrer">
+            <div class="menu-label" id="member-btn-label">LINE 登入</div>
+        </div>
+    </div>
 
-<div class="content-wrapper">
-    <div class="container px-0" id="product-container"></div>
-</div>
+    <div class="sticky-header-group">
+        <div id="sticky-msg-bar" class="sticky-msg-bar"></div>
+        <div class="cat-nav" id="cat-nav"></div>
+    </div>
 
-<div class="cart-bar" id="cart-bar" onclick="openCartModal()"><div class="d-flex align-items-center"><span class="badge bg-danger rounded-pill me-2 fs-6" id="cart-count">0</span><span class="fw-bold">去結帳</span></div><span class="cart-bar-total" id="cart-total">$0</span></div>
+    <div class="content-wrapper">
+        <div class="container-fluid px-0">
+            <div class="row g-3" id="product-container"></div>
+        </div>
+    </div>
+
+</div> <div class="cart-bar" id="cart-bar" onclick="openCartModal()">
+    <div class="d-flex align-items-center">
+        <span class="badge bg-danger rounded-pill me-2 fs-6" id="cart-count">0</span>
+        <span class="fw-bold">去結帳</span>
+    </div>
+    <span class="cart-bar-total" id="cart-total">$0</span>
+</div>
 
 <div class="modal fade" id="logoutModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content">
+        <div class="modal-content border-0">
             <div class="modal-header border-0 pb-0">
-                <h6 class="modal-title fw-bold">會員功能</h6>
+                <h6 class="modal-title fw-bold">會員狀態</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body d-grid gap-2">
-                <button class="btn btn-outline-danger" onclick="performLogout()">
-                    <i class="bi bi-box-arrow-right me-2"></i>登出 (切換為訪客)
+            <div class="modal-body text-center pb-4">
+                <p class="text-muted small mb-3">您目前已登入 LINE</p>
+                <button class="btn btn-outline-danger w-100 rounded-pill" onclick="performLogout()">
+                    <i class="bi bi-box-arrow-right me-2"></i>切換為訪客
                 </button>
             </div>
         </div>
@@ -212,23 +263,23 @@
 
 <div class="modal fade" id="cartModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title fw-bold text-dark"><i class="bi bi-basket-fill text-danger"></i> 購物清單</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-content border-0">
+            <div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold text-dark"><i class="bi bi-basket-fill text-danger me-2"></i>購物清單</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
                 <div id="guest-login-prompt" style="display:none;" class="mb-3 p-3 bg-light rounded border border-success text-center">
                     <div class="fw-bold text-success mb-2">👋 尚未登入 LINE</div>
-                    <button class="btn btn-success w-100 fw-bold" onclick="loginWithLine()"><i class="bi bi-line me-2"></i>LINE 登入 (推薦)</button>
+                    <button class="btn btn-success w-100 fw-bold rounded-pill" onclick="loginWithLine()"><i class="bi bi-line me-2"></i>LINE 登入 (推薦)</button>
                     <div class="text-muted small mt-2">登入後可追蹤訂單狀態與累積點數</div>
                 </div>
                 <div id="cart-modal-body"></div>
             </div>
-            <div class="px-3 pb-3 bg-white border-top">
-                <div class="mt-3"><label class="form-label small fw-bold text-secondary">取餐聯絡人 <span class="text-danger">*</span></label><input type="text" id="order-contact-name" class="form-control rounded-pill bg-light" placeholder="請輸入姓名"></div>
+            <div class="px-3 pb-3 bg-white border-top pt-3">
+                <div><label class="form-label small fw-bold text-secondary">取餐聯絡人 <span class="text-danger">*</span></label><input type="text" id="order-contact-name" class="form-control rounded-pill bg-light" placeholder="請輸入姓名"></div>
                 <div class="mt-2"><label class="form-label small fw-bold text-secondary">聯絡電話 <span class="text-danger">*</span></label><input type="tel" id="order-contact-phone" class="form-control rounded-pill bg-light" placeholder="請輸入手機號碼"></div>
             </div>
             <div class="modal-footer border-0 pt-0 d-block">
                 <div class="d-flex justify-content-between align-items-center mb-3"><span class="text-secondary fw-bold">總計金額</span><span class="h3 fw-bold text-danger m-0" id="modal-cart-total">$0</span></div>
-                <button class="btn btn-confirm w-100 py-2 rounded-pill fs-5" id="btn-submit-order" onclick="submitOrder()">送出訂單</button>
+                <button class="btn btn-confirm w-100 py-2 rounded-pill fs-5 shadow-sm" id="btn-submit-order" onclick="submitOrder()">送出訂單</button>
             </div>
         </div>
     </div>
@@ -236,7 +287,7 @@
 
 <div class="modal fade" id="orderSuccessModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content border-0">
             <div class="modal-header border-0 bg-success text-white">
                 <h5 class="modal-title fw-bold"><i class="bi bi-check-circle-fill me-2"></i>訂單已傳送至後台！</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -245,14 +296,14 @@
                 <div class="fs-1 mb-2">🎉</div>
                 <h5 class="fw-bold text-dark">感謝您的購買</h5>
                 <p class="text-muted small mb-4">我們已經收到您的訂單資料。</p>
-                <div class="alert alert-warning small fw-bold text-start">
+                <div class="alert alert-warning small fw-bold text-start border-0 shadow-sm">
                     <i class="bi bi-info-circle me-1"></i> 請點擊下方按鈕，將訂單明細傳送給官方帳號客服，以便確認取貨時間。
                 </div>
                 <div class="d-grid gap-2">
-                    <button class="btn btn-lg btn-success fw-bold shadow-sm" onclick="finishOrderProcess('line')">
-                        <i class="bi bi-line me-2"></i>傳送訂單給官方帳號
+                    <button class="btn btn-lg btn-success fw-bold shadow-sm rounded-pill" onclick="finishOrderProcess('line')">
+                        <i class="bi bi-line me-2"></i>傳送訂單給客服
                     </button>
-                    <button class="btn btn-outline-secondary" onclick="finishOrderProcess('close')">
+                    <button class="btn btn-light rounded-pill text-secondary mt-2" onclick="finishOrderProcess('close')">
                         關閉視窗 (僅在後台存檔)
                     </button>
                 </div>
@@ -263,29 +314,27 @@
 
 <div class="modal fade" id="variantModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content border-0">
             <div class="modal-header border-0 pb-0">
                 <h5 class="modal-title fw-bold" id="variant-title"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="variant-list"></div>
             <div class="modal-footer border-0 pt-0">
-                <button class="btn btn-dark w-100 rounded-pill" onclick="confirmVariantSelection()">加入購物車</button>
+                <button class="btn btn-dark w-100 rounded-pill shadow-sm" onclick="confirmVariantSelection()">確認加入</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="announceModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-danger">📢 優惠活動 / 公告</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="announce-img-container" style="display:none;"></div><div id="announce-content" class="mt-2 text-center fw-bold text-dark"></div></div><div class="modal-footer border-0"><button type="button" class="btn btn-warning w-100 rounded-pill fw-bold text-dark" data-bs-dismiss="modal">我知道了</button></div></div></div></div>
-<div class="modal fade" id="myOrdersModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title fw-bold">🐶 歷史訂單查詢</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light" id="my-orders-list"></div></div></div></div>
+<div class="modal fade" id="announceModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-danger">📢 優惠活動 / 公告</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="announce-img-container" style="display:none;"></div><div id="announce-content" class="mt-2 text-center fw-bold text-dark"></div></div><div class="modal-footer border-0"><button type="button" class="btn btn-warning w-100 rounded-pill fw-bold text-dark shadow-sm" data-bs-dismiss="modal">我知道了</button></div></div></div></div>
+<div class="modal fade" id="myOrdersModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content border-0"><div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold">🐶 歷史訂單查詢</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light" id="my-orders-list"></div></div></div></div>
 <div id="lightbox" onclick="closeLightbox()"><img id="lightbox-img" src="" alt="放大圖片"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const LIFF_ID = "2009042792-5xuNohp3";
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxD140v33ChZm1tQsuW1jbwd5R14QTGyeFHWBSU8zkg41ortc_9Zra3T4pF1lL-ZjyA/exec";
-    
-    // 🟢 請確保這裡是您的官方帳號 ID
     const LINE_OA_ID = "@lawsonshop";
 
     let allData = {}; let cart = [];
@@ -327,17 +376,15 @@
         } 
     }
 
-    // 🟢 更新使用者介面：控制第四個按鈕顯示
+    // 更新使用者介面
     function updateUserUI(isLogin) {
         const btnLabel = document.getElementById('member-btn-label');
         const btnImg = document.getElementById('member-btn-img');
         
         if(isLogin) {
-            // 登入狀態：按鈕變成頭像 + 名字
             if(userProfile.pictureUrl) btnImg.src = userProfile.pictureUrl;
-            if(btnLabel) btnLabel.innerText = userProfile.displayName;
+            if(btnLabel) btnLabel.innerText = "切換訪客"; 
         } else {
-            // 訪客狀態：顯示 LINE Logo
             btnImg.src = "https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg"; 
             if(btnLabel) btnLabel.innerText = "LINE 登入";
         }
@@ -395,7 +442,6 @@
                     document.getElementById('sticky-msg-bar').style.display = 'none';
                 }
 
-                // 🟢 處理 Banner 自訂圖片
                 if (data.homeBannerImg && data.homeBannerImg.trim() !== "") {
                     document.getElementById('hero-banner-img').src = data.homeBannerImg;
                 }
@@ -429,18 +475,21 @@
                 const catItems = allData.products.filter(p => p.cat === cat); if(catItems.length === 0) return;
                 let grouped = {}; catItems.forEach(p => { const sub = p.subCat || '其他'; if(!grouped[sub]) grouped[sub] = []; grouped[sub].push(p); });
                 let html = `<div id="cat-${cat}" class="section-title">${cat}</div>`;
-                for (const [subName, subItems] of Object.entries(grouped)) {
-                    if(subName && subName !== '') html += `<div class="sub-cat-title text-secondary small fw-bold mb-2 ms-2"><i class="bi bi-tag-fill me-1"></i>${subName}</div>`; 
-                    html += `<div class="row g-3">`; subItems.forEach(p => html += createProductCard(p)); html += `</div>`; 
-                } container.innerHTML += html;
+                
+                // 🟢 替換原本的 row g-3 生成方式，不再建立新的 container.innerHTML 而是使用臨時變數
+                html += `<div class="row g-3">`; 
+                subItems.forEach(p => html += createProductCard(p)); 
+                html += `</div>`; 
+                container.innerHTML += html;
             });
             return;
         }
 
         if (items.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前沒有相關商品</div>'; return; }
-        let html = `<div class="section-title">${currentCategory === 'top10' ? '🔥 熱銷推薦' : '⚠️ 即期良品專區'}</div><div class="row g-3">`; 
-        items.forEach(p => html += createProductCard(p)); 
-        html += `</div>`; container.innerHTML = html;
+        
+        let html = `<div class="section-title">${currentCategory === 'top10' ? '🔥 熱銷推薦' : '⚠️ 即期良品專區'}</div>`;
+        html += items.map(p => createProductCard(p)).join(''); 
+        container.innerHTML = html;
     }
 
     function createProductCard(p) {
@@ -465,8 +514,10 @@
             cornerBadgeHtml = `<div class="badge-corner">即期出清</div>`; 
         } 
         const cardClass = isOOS ? 'oos-mode' : ''; 
+        
+        // 🟢 將原本的 col-6 col-md-4 改為支援電腦版的 col-lg-3 網格
         return `
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 col-lg-3">
             <div class="product-card ${cardClass}">
                 <div class="position-relative">${cornerBadgeHtml}${imgHtml}</div>
                 <div class="product-body">
@@ -654,7 +705,6 @@
         renderCartModal();
     }
     
-    // 🟢 送出訂單 (先傳後台，成功後再彈窗)
     function submitOrder() {
         const cName = document.getElementById('order-contact-name').value.trim(); const cPhone = document.getElementById('order-contact-phone').value.trim();
         if (!cName) { alert("請輸入取餐聯絡人姓名"); return; } if (!cPhone) { alert("請輸入聯絡電話"); return; }
@@ -683,7 +733,6 @@
         }).catch(e => alert("錯誤: " + e));
     }
 
-    // 🟢 處理訂單後續動作 (複製並跳轉 LINE)
     function finishOrderProcess(action) {
         orderSuccessModal.hide();
         
@@ -703,7 +752,6 @@
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
     
-    // 🟢 歷史訂單顯示 (包含缺貨樣式)
     function openMyOrders() { 
         if(!isLoggedIn) { alert("請先登入 LINE 才能查詢訂單！"); return; }
         myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-3">載入中...</div>';
@@ -718,7 +766,6 @@
                     let name = parts[0].trim(); 
                     const qty = parts[1] ? parts[1].trim() : '1'; 
                     
-                    // 處理缺貨顯示樣式
                     let itemStyle = "";
                     if (name.includes('[缺貨]')) {
                         name = name.replace('[缺貨]', '').trim();
