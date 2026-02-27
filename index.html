@@ -12,33 +12,32 @@
         :root { 
             --primary: #d32f2f; 
             --accent: #ffb300; 
-            --app-bg: #fffdf5; 
-            --body-bg: #f0f2f5; 
+            --app-bg: #fffdf5; /* 統一背景底色，讓整體更溫暖 */
             --text-dark: #3e2723; 
         }
         
         body { 
             font-family: 'Noto Sans TC', sans-serif; 
-            background-color: var(--body-bg); 
+            background-color: var(--app-bg); 
             color: var(--text-dark); 
             margin: 0;
             overflow-x: hidden; 
+            padding-bottom: 100px;
         }
         
+        /* 🟢 解放寬度：不再限制 768px，改為 100% 寬度 */
         .app-layout {
-            max-width: 768px; 
-            margin: 0 auto;   
-            background-color: var(--app-bg);
+            width: 100%; 
             min-height: 100vh; 
-            box-shadow: 0 0 25px rgba(0,0,0,0.05); 
             position: relative;
-            padding-bottom: 90px; 
         }
 
+        /* 跑馬燈 */
         .marquee-container { background: #ffc107; color: #000; padding: 10px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 1rem; font-weight: 900; border-bottom: 2px solid #000; }
         .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
         
+        /* Loading 動畫 */
         #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; overflow: hidden; }
         .dog-wrapper { position: relative; width: 100%; height: 180px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; }
         .loader-img { position: absolute; width: 180px; height: auto; object-fit: contain; animation: runRightToLeft 7s linear infinite; }
@@ -48,54 +47,156 @@
         .ghost-3 { z-index: 7; opacity: 0.1; animation-delay: -0.45s; filter: blur(4px); }
         @keyframes runRightToLeft { 0% { transform: translateX(120vw); } 100% { transform: translateX(-120vw); } }
         
-        .banner-wrapper { padding: 15px 15px 5px 15px; text-align: center; }
-        .responsive-banner { width: 100%; max-height: 250px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-
-        .quick-menu { 
-            background: #fff; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; 
-            padding: 15px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.04);
-            margin: 10px 15px 15px 15px; position: relative; z-index: 10;
+        /* 🟢 Banner 容器：電腦版自動展開並置中 */
+        .banner-wrapper {
+            padding: 15px 15px 0 15px; 
+            max-width: 1200px; /* 限制最大寬度，避免在 4K 螢幕過大 */
+            margin: 0 auto;    /* 讓圖片在電腦上置中 */
+            text-align: center; 
         }
-        .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; }
+        .responsive-banner {
+            width: 100%;            
+            height: auto;           
+            max-height: 400px;      /* 電腦版放寬高度 */
+            object-fit: cover;      /* 讓圖片飽滿不變形 */
+            border-radius: 20px;    
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+        }
+
+        /* 🟢 4 欄位快速選單：電腦版置中並疊加在圖片上 */
+        .quick-menu { 
+            background: #fff; 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 10px; 
+            padding: 15px;
+            border-radius: 20px; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+            max-width: 700px; /* 控制選單的寬度，不讓按鈕散太開 */
+            margin: -20px auto 20px auto; /* 負 Margin 製造疊加的高級層次感 */
+            position: relative;
+            z-index: 10;
+        }
+        @media (min-width: 768px) {
+            .quick-menu { margin: -40px auto 30px auto; padding: 20px; gap: 20px; } /* 電腦版再往上疊一點 */
+        }
+
+        .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.2s; }
+        .menu-item:hover { transform: translateY(-3px); } /* 增加電腦版滑鼠懸停效果 */
         .menu-item:active { transform: scale(0.95); opacity: 0.8; }
-        .menu-btn-img { width: 56px; height: 56px; object-fit: contain; margin-bottom: 8px; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.08)); border-radius: 50%; }
         
+        .menu-btn-img { 
+            width: 56px; 
+            height: 56px; 
+            object-fit: contain; 
+            margin-bottom: 8px; 
+            filter: drop-shadow(0 3px 5px rgba(0,0,0,0.08)); 
+            border-radius: 50%; 
+        }
         #member-btn-img {
             object-fit: cover; transform: scale(0.85); border: 2.5px solid #2d2d2d; 
             background-color: #fff; padding: 2px; box-sizing: border-box;
         }
-
-        .menu-label { font-size: 0.8rem; font-weight: 700; color: var(--text-dark); text-align: center; line-height: 1.2; }
-        @media (min-width: 768px) { .menu-btn-img { width: 68px; height: 68px; } }
-
-        .sticky-header-group { position: sticky; top: 0; z-index: 1010; background: var(--app-bg); }
-        .sticky-msg-bar { background-color: #ffe0b2; color: #e65100; font-size: 0.9rem; font-weight: bold; text-align: center; padding: 8px 10px; border-bottom: 1px solid rgba(0,0,0,0.05); display: none; }
-        .cat-nav { display: flex; overflow-x: auto; white-space: nowrap; padding: 12px 15px; gap: 8px; background: rgba(255, 253, 245, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .cat-nav::-webkit-scrollbar { display: none; }
-        .cat-pill { padding: 6px 16px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
-        .cat-pill.active { background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .menu-label { font-size: 0.85rem; font-weight: 700; color: var(--text-dark); text-align: center; line-height: 1.2; }
         
-        .content-wrapper { padding: 10px 15px; }
-        .section-title { font-weight: 800; margin: 10px 0 15px 0; padding-left: 12px; border-left: 5px solid var(--accent); font-size: 1.2rem; color: var(--text-dark); }
-        .product-card { background: #fff; border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.04); margin-bottom: 15px; position: relative; }
-        .product-img { width: 100%; height: 140px; object-fit: cover; background: #f9f9f9; }
-        .product-body { padding: 12px; position: relative; }
-        .product-name { font-size: 0.95rem; font-weight: bold; margin-bottom: 5px; color: #4e342e; }
-        .product-price { color: var(--primary); font-size: 1.1rem; font-weight: 900; }
-        .stock-info { font-size: 0.75rem; color: #888; background: #f5f5f5; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; }
-        .badge-corner { position: absolute; top: 0; right: 0; background: #d32f2f; color: white; font-size: 0.8rem; font-weight: bold; padding: 5px 10px; border-bottom-left-radius: 10px; z-index: 10; box-shadow: -2px 2px 5px rgba(0,0,0,0.2); }
+        @media (min-width: 768px) {
+            .menu-btn-img { width: 70px; height: 70px; }
+            .menu-label { font-size: 0.95rem; }
+        }
+
+        /* 🟢 Sticky 導覽列：滿版毛玻璃 + 內容置中 */
+        .sticky-header-group {
+            position: sticky;
+            top: 0;
+            z-index: 1010;
+        }
+        .sticky-msg-bar {
+            background-color: #ffe0b2; color: #e65100; font-size: 0.95rem; font-weight: bold;
+            text-align: center; padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); display: none; 
+        }
+        .cat-nav-wrapper {
+            background: rgba(255, 253, 245, 0.92); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        .cat-nav { 
+            display: flex; overflow-x: auto; white-space: nowrap; padding: 15px; gap: 10px; 
+            max-width: 1200px; margin: 0 auto; /* 電腦版置中 */
+        }
+        .cat-nav::-webkit-scrollbar { display: none; }
+        .cat-pill { padding: 8px 20px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 25px; font-size: 0.95rem; font-weight: 700; transition: all 0.2s; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .cat-pill:hover { background: #f8f9fa; }
+        .cat-pill.active { background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.2); transform: translateY(-2px); }
+        
+        /* 🟢 內容區塊：解放寬度，自動排列網格 */
+        .content-wrapper {
+            padding: 20px 15px;
+            max-width: 1200px; /* 電腦版最大內容寬度 */
+            margin: 0 auto;
+        }
+
+        .section-title { font-weight: 800; margin: 10px 0 20px 0; padding-left: 15px; border-left: 6px solid var(--accent); font-size: 1.3rem; color: var(--text-dark); }
+        
+        /* 商品卡片升級 (加入電腦版懸浮放大動畫) */
+        .product-card { 
+            background: #fff; border-radius: 20px; overflow: hidden; border: none; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.04); margin-bottom: 15px; position: relative; 
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        .product-img { 
+            width: 100%; height: 160px; object-fit: cover; background: #f9f9f9; 
+            transition: transform 0.5s ease; 
+        }
+        @media (min-width: 768px) { .product-img { height: 220px; } } /* 平板電腦版圖片拉高比例才好看 */
+        .product-card:hover .product-img { transform: scale(1.05); }
+
+        .product-body { padding: 15px; position: relative; }
+        .product-name { font-size: 1rem; font-weight: bold; margin-bottom: 8px; color: #4e342e; }
+        .product-price { color: var(--primary); font-size: 1.2rem; font-weight: 900; }
+        .stock-info { font-size: 0.8rem; color: #888; background: #f5f5f5; padding: 3px 10px; border-radius: 6px; display: inline-block; margin-top: 6px; font-weight: 500;}
+        .badge-corner { position: absolute; top: 0; right: 0; background: #d32f2f; color: white; font-size: 0.8rem; font-weight: bold; padding: 6px 12px; border-bottom-left-radius: 12px; z-index: 10; box-shadow: -2px 2px 8px rgba(0,0,0,0.2); }
         .product-card.oos-mode .product-img { opacity: 0.5; filter: grayscale(100%); }
         
-        .btn-add-only { position: absolute; bottom: 10px; right: 10px; width: 32px; height: 32px; background: var(--accent); color: var(--text-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); cursor: pointer; }
-        .qty-group { position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; background: #fff; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 1px solid var(--accent); }
-        .qty-btn { width: 28px; height: 28px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; }
-        .qty-val { font-size: 0.9rem; font-weight: bold; width: 24px; text-align: center; }
+        .btn-add-only { position: absolute; bottom: 15px; right: 15px; width: 36px; height: 36px; background: var(--accent); color: var(--text-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.15); cursor: pointer; transition: 0.2s;}
+        .btn-add-only:hover { transform: scale(1.1); background: #ffc107;}
+        .qty-group { position: absolute; bottom: 15px; right: 15px; display: flex; align-items: center; background: #fff; border-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 1px solid var(--accent); overflow: hidden;}
+        .qty-btn { width: 32px; height: 32px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;}
+        .qty-btn:hover { background: #ffc107; }
+        .qty-val { font-size: 1rem; font-weight: bold; width: 30px; text-align: center; }
         
-        .cart-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(150%); width: 90%; max-width: 700px; background: rgba(62, 39, 35, 0.95); color: #ffffff; border-radius: 50px; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 1050; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid #ffb300; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 10px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
+        /* 🟢 懸浮購物車：電腦版置中對齊 */
+        .cart-bar { 
+            position: fixed; 
+            bottom: 25px; 
+            left: 50%; 
+            transform: translateX(-50%) translateY(150%); 
+            width: 90%; 
+            max-width: 600px; /* 電腦版限制最大寬度，不會變一條超長海苔 */
+            background: rgba(62, 39, 35, 0.95); 
+            color: #ffffff; 
+            border-radius: 50px; 
+            padding: 15px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            z-index: 1050; 
+            cursor: pointer; 
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border: 2px solid #ffb300; 
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 15px 30px rgba(0,0,0,0.4); 
+            backdrop-filter: blur(8px); 
+        }
         .cart-bar.show { transform: translateX(-50%) translateY(0); }
-        .cart-bar-total { color: #ffb300; font-weight: 900; font-size: 1.25rem; }
+        .cart-bar-total { color: #ffb300; font-weight: 900; font-size: 1.3rem; }
+        
         .btn-confirm { background: var(--primary); color: white; border: none; font-weight: bold; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3); }
         
+        /* Modals */
         #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 9999; cursor: zoom-out; }
         #lightbox img { max-width: 90%; max-height: 80%; border-radius: 8px; transform: scale(0.9); transition: 0.3s; }
         #lightbox.show img { transform: scale(1); }
@@ -149,7 +250,9 @@
 
     <div class="sticky-header-group">
         <div id="sticky-msg-bar" class="sticky-msg-bar"></div>
-        <div class="cat-nav" id="cat-nav"></div>
+        <div class="cat-nav-wrapper">
+            <div class="cat-nav" id="cat-nav"></div>
+        </div>
     </div>
 
     <div class="content-wrapper">
@@ -160,8 +263,8 @@
 
 </div> <div class="cart-bar" id="cart-bar" onclick="openCartModal()">
     <div class="d-flex align-items-center">
-        <span class="badge bg-danger rounded-pill me-2 fs-6" id="cart-count">0</span>
-        <span class="fw-bold">去結帳</span>
+        <span class="badge bg-danger rounded-pill me-2 fs-5" id="cart-count">0</span>
+        <span class="fw-bold fs-5">去結帳</span>
     </div>
     <span class="cart-bar-total" id="cart-total">$0</span>
 </div>
@@ -184,7 +287,7 @@
 </div>
 
 <div class="modal fade" id="cartModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg">
         <div class="modal-content border-0">
             <div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold text-dark"><i class="bi bi-basket-fill text-danger me-2"></i>購物清單</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
@@ -196,12 +299,14 @@
                 <div id="cart-modal-body"></div>
             </div>
             <div class="px-3 pb-3 bg-white border-top pt-3">
-                <div><label class="form-label small fw-bold text-secondary">取餐聯絡人 <span class="text-danger">*</span></label><input type="text" id="order-contact-name" class="form-control rounded-pill bg-light" placeholder="請輸入姓名"></div>
-                <div class="mt-2"><label class="form-label small fw-bold text-secondary">聯絡電話 <span class="text-danger">*</span></label><input type="tel" id="order-contact-phone" class="form-control rounded-pill bg-light" placeholder="請輸入手機號碼"></div>
+                <div class="row g-2">
+                    <div class="col-md-6"><label class="form-label small fw-bold text-secondary">取餐聯絡人 <span class="text-danger">*</span></label><input type="text" id="order-contact-name" class="form-control rounded-pill bg-light" placeholder="請輸入姓名"></div>
+                    <div class="col-md-6"><label class="form-label small fw-bold text-secondary">聯絡電話 <span class="text-danger">*</span></label><input type="tel" id="order-contact-phone" class="form-control rounded-pill bg-light" placeholder="請輸入手機號碼"></div>
+                </div>
             </div>
             <div class="modal-footer border-0 pt-0 d-block">
-                <div class="d-flex justify-content-between align-items-center mb-3"><span class="text-secondary fw-bold">總計金額</span><span class="h3 fw-bold text-danger m-0" id="modal-cart-total">$0</span></div>
-                <button class="btn btn-confirm w-100 py-2 rounded-pill fs-5 shadow-sm" id="btn-submit-order" onclick="submitOrder()">送出訂單</button>
+                <div class="d-flex justify-content-between align-items-center mb-3"><span class="text-secondary fw-bold">總計金額</span><span class="h2 fw-bold text-danger m-0" id="modal-cart-total">$0</span></div>
+                <button class="btn btn-confirm w-100 py-3 rounded-pill fs-5 shadow-sm" id="btn-submit-order" onclick="submitOrder()">送出訂單</button>
             </div>
         </div>
     </div>
@@ -222,7 +327,7 @@
                     <i class="bi bi-info-circle me-1"></i> 請點擊下方按鈕，將訂單明細傳送給官方帳號客服，以便確認取貨時間。
                 </div>
                 <div class="d-grid gap-2">
-                    <button class="btn btn-lg btn-success fw-bold shadow-sm rounded-pill" onclick="finishOrderProcess('line')">
+                    <button class="btn btn-lg btn-success fw-bold shadow-sm rounded-pill py-3" onclick="finishOrderProcess('line')">
                         <i class="bi bi-line me-2"></i>傳送訂單給客服
                     </button>
                     <button class="btn btn-light rounded-pill text-secondary mt-2" onclick="finishOrderProcess('close')">
@@ -282,8 +387,6 @@
     async function initLiff() { 
         try { 
             await liff.init({ liffId: LIFF_ID }); 
-            
-            // 🟢 檢查是否有強制訪客的標記
             const forceGuest = localStorage.getItem('force_guest') === 'true';
 
             if (liff.isLoggedIn() && !forceGuest) { 
@@ -323,22 +426,13 @@
         }
     }
 
-    // 🟢 修復：處理手機版登出崩潰與 LINE APP 內無法登出的問題
     function performLogout() {
-        // 嘗試呼叫 LIFF 登出 (若在外部瀏覽器會生效)
-        try { 
-            if (liff.isLoggedIn()) liff.logout(); 
-        } catch(e) {}
-        
-        // 設定強制訪客標記，這樣重新整理後即使在 LINE App 內也不會自動登入
+        try { if (liff.isLoggedIn()) liff.logout(); } catch(e) {}
         localStorage.setItem('force_guest', 'true');
         localStorage.removeItem('pos_cart'); 
-        
-        // 使用安全的重新載入，避免 iOS TypeError 崩潰
         window.location.reload(); 
     }
 
-    // 🟢 修復：重新登入時清除強制訪客標記
     function loginWithLine() {
         localStorage.removeItem('force_guest');
         saveCartToLocal(); 
@@ -415,6 +509,7 @@
                     if(subName && subName !== '' && subName !== '其他') {
                         html += `<div class="w-100 text-secondary small fw-bold mb-2 ms-2"><i class="bi bi-tag-fill me-1"></i>${subName}</div>`; 
                     }
+                    // 🟢 響應式網格：手機 2 個 (col-6)，平板 3 個 (col-md-4)，電腦 4 個 (col-lg-3)
                     html += `<div class="row g-3 g-md-4 mb-4">`; 
                     subItems.forEach(p => html += createProductCard(p)); 
                     html += `</div>`; 
@@ -455,6 +550,7 @@
         } 
         const cardClass = isOOS ? 'oos-mode' : ''; 
         
+        // 🟢 Bootstrap RWD 網格設計
         return `
         <div class="col-6 col-md-4 col-lg-3">
             <div class="product-card ${cardClass}">
