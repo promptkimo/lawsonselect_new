@@ -25,7 +25,6 @@
             overflow-x: hidden; 
         }
         
-        /* APP 核心容器 */
         .app-layout {
             max-width: 768px; 
             margin: 0 auto;   
@@ -36,12 +35,10 @@
             padding-bottom: 90px; 
         }
 
-        /* 跑馬燈 */
         .marquee-container { background: #ffc107; color: #000; padding: 10px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 1rem; font-weight: 900; border-bottom: 2px solid #000; }
         .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
         
-        /* Loading 動畫 */
         #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; overflow: hidden; }
         .dog-wrapper { position: relative; width: 100%; height: 180px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; }
         .loader-img { position: absolute; width: 180px; height: auto; object-fit: contain; animation: runRightToLeft 7s linear infinite; }
@@ -51,98 +48,34 @@
         .ghost-3 { z-index: 7; opacity: 0.1; animation-delay: -0.45s; filter: blur(4px); }
         @keyframes runRightToLeft { 0% { transform: translateX(120vw); } 100% { transform: translateX(-120vw); } }
         
-        /* Banner 容器 */
-        .banner-wrapper {
-            padding: 15px 15px 5px 15px; 
-            text-align: center; 
-        }
+        .banner-wrapper { padding: 15px 15px 5px 15px; text-align: center; }
+        .responsive-banner { width: 100%; max-height: 250px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-        .responsive-banner {
-            width: 100%;            
-            height: auto;           
-            max-height: 250px;      
-            object-fit: contain;    
-            border-radius: 15px;    
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-        }
-
-        /* 4 欄位快速選單 */
         .quick-menu { 
-            background: #fff; 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 10px; 
-            padding: 15px;
-            border-radius: 20px; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.04);
-            margin: 10px 15px 15px 15px;
-            position: relative;
-            z-index: 10;
+            background: #fff; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; 
+            padding: 15px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+            margin: 10px 15px 15px 15px; position: relative; z-index: 10;
         }
         .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; }
         .menu-item:active { transform: scale(0.95); opacity: 0.8; }
+        .menu-btn-img { width: 56px; height: 56px; object-fit: contain; margin-bottom: 8px; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.08)); border-radius: 50%; }
         
-        /* 🟢 統一所有按鈕的外觀與大小 */
-        .menu-btn-img { 
-            width: 56px; 
-            height: 56px; 
-            object-fit: contain; 
-            margin-bottom: 8px; 
-            filter: drop-shadow(0 3px 5px rgba(0,0,0,0.08)); 
-            border-radius: 50%; 
-        }
-
-        /* 🟢 針對 LINE 頭像做視覺校正，與手繪徽章的風格完美融合 */
         #member-btn-img {
-            object-fit: cover;       /* 確保頭像填滿整個圓 */
-            transform: scale(0.85);  /* 縮小 15%，抵銷其他圖片的透明邊距，視覺大小統一 */
-            border: 2.5px solid #2d2d2d; /* 加上跟前三個徽章一樣的黑色手繪感外框 */
-            background-color: #fff;  /* 白底 */
-            padding: 2px;            /* 製造一點白邊層次感 */
-            box-sizing: border-box;
+            object-fit: cover; transform: scale(0.85); border: 2.5px solid #2d2d2d; 
+            background-color: #fff; padding: 2px; box-sizing: border-box;
         }
 
         .menu-label { font-size: 0.8rem; font-weight: 700; color: var(--text-dark); text-align: center; line-height: 1.2; }
-        
-        @media (min-width: 768px) {
-            .menu-btn-img { width: 68px; height: 68px; }
-        }
+        @media (min-width: 768px) { .menu-btn-img { width: 68px; height: 68px; } }
 
-        /* Sticky Header */
-        .sticky-header-group {
-            position: sticky;
-            top: 0;
-            z-index: 1010;
-            background: var(--app-bg); 
-        }
-
-        .sticky-msg-bar {
-            background-color: #ffe0b2;
-            color: #e65100;
-            font-size: 0.9rem;
-            font-weight: bold;
-            text-align: center;
-            padding: 8px 10px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            display: none; 
-        }
-
-        .cat-nav { 
-            display: flex; overflow-x: auto; white-space: nowrap; padding: 12px 15px; gap: 8px; 
-            background: rgba(255, 253, 245, 0.95); 
-            backdrop-filter: blur(8px); 
-            border-bottom: 1px solid rgba(0,0,0,0.05); 
-        }
+        .sticky-header-group { position: sticky; top: 0; z-index: 1010; background: var(--app-bg); }
+        .sticky-msg-bar { background-color: #ffe0b2; color: #e65100; font-size: 0.9rem; font-weight: bold; text-align: center; padding: 8px 10px; border-bottom: 1px solid rgba(0,0,0,0.05); display: none; }
+        .cat-nav { display: flex; overflow-x: auto; white-space: nowrap; padding: 12px 15px; gap: 8px; background: rgba(255, 253, 245, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(0,0,0,0.05); }
         .cat-nav::-webkit-scrollbar { display: none; }
-        
         .cat-pill { padding: 6px 16px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
         .cat-pill.active { background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         
-        /* 內容區塊 */
-        .content-wrapper {
-            padding: 10px 15px;
-        }
-
+        .content-wrapper { padding: 10px 15px; }
         .section-title { font-weight: 800; margin: 10px 0 15px 0; padding-left: 12px; border-left: 5px solid var(--accent); font-size: 1.2rem; color: var(--text-dark); }
         .product-card { background: #fff; border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.04); margin-bottom: 15px; position: relative; }
         .product-img { width: 100%; height: 140px; object-fit: cover; background: #f9f9f9; }
@@ -158,28 +91,7 @@
         .qty-btn { width: 28px; height: 28px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; }
         .qty-val { font-size: 0.9rem; font-weight: bold; width: 24px; text-align: center; }
         
-        /* 懸浮購物車 */
-        .cart-bar { 
-            position: fixed; 
-            bottom: 25px; 
-            left: 50%; 
-            transform: translateX(-50%) translateY(150%); 
-            width: 90%; 
-            max-width: 700px; 
-            background: rgba(62, 39, 35, 0.95); 
-            color: #ffffff; 
-            border-radius: 50px; 
-            padding: 12px 25px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            z-index: 1050; 
-            cursor: pointer; 
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            border: 2px solid #ffb300; 
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 10px 20px rgba(0,0,0,0.5); 
-            backdrop-filter: blur(5px); 
-        }
+        .cart-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(150%); width: 90%; max-width: 700px; background: rgba(62, 39, 35, 0.95); color: #ffffff; border-radius: 50px; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 1050; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid #ffb300; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 10px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
         .cart-bar.show { transform: translateX(-50%) translateY(0); }
         .cart-bar-total { color: #ffb300; font-weight: 900; font-size: 1.25rem; }
         .btn-confirm { background: var(--primary); color: white; border: none; font-weight: bold; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3); }
@@ -197,7 +109,6 @@
         .step-btn { width: 30px; height: 30px; border: none; background: transparent; color: #333; font-weight: bold; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .step-val { width: 30px; text-align: center; font-weight: bold; font-size: 1rem; }
         .variant-tag { font-size: 0.75rem; background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
-
         .cart-item-row.clearance-item { background-color: #fff3cd; border-left: 5px solid #dc3545; padding-left: 10px; margin-bottom: 4px; border-radius: 4px; }
         .item-index { font-weight: 900; color: #aaa; min-width: 25px; font-size: 1rem; }
         .clearance-badge { font-size: 0.8rem; background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-weight: bold; animation: blink 2s infinite; }
@@ -211,7 +122,7 @@
 <div class="app-layout">
     
     <div id="marquee-bar" class="marquee-container"><div id="marquee-text" class="marquee-content"></div></div>
-    <div id="update-time-banner" style="display:none; padding: 5px 15px; font-size:0.8rem; color:#666; background: rgba(255,255,255,0.8);">庫存更新：<span id="stock-time"></span></div>
+    <div id="update-time-banner" style="display:none; padding: 5px 15px; font-size:0.8rem; color:#666; background: rgba(255,255,255,0.8); text-align: center;">庫存更新：<span id="stock-time"></span></div>
 
     <div class="banner-wrapper">
         <img src="https://drive.google.com/thumbnail?id=1Htxmmsf4KyprRYI_3ZCBN99Pjk4Q5viq&sz=w2000" class="responsive-banner" id="hero-banner-img" alt="樂森良選" referrerpolicy="no-referrer">
@@ -243,7 +154,7 @@
 
     <div class="content-wrapper">
         <div class="container-fluid px-0">
-            <div class="row g-3" id="product-container"></div>
+            <div id="product-container"></div>
         </div>
     </div>
 
@@ -332,14 +243,14 @@
             </div>
             <div class="modal-body" id="variant-list"></div>
             <div class="modal-footer border-0 pt-0">
-                <button class="btn btn-dark w-100 rounded-pill shadow-sm" onclick="confirmVariantSelection()">確認加入</button>
+                <button class="btn btn-dark w-100 rounded-pill shadow-sm py-2" onclick="confirmVariantSelection()">確認加入</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="announceModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-danger">📢 優惠活動 / 公告</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="announce-img-container" style="display:none;"></div><div id="announce-content" class="mt-2 text-center fw-bold text-dark"></div></div><div class="modal-footer border-0"><button type="button" class="btn btn-warning w-100 rounded-pill fw-bold text-dark shadow-sm" data-bs-dismiss="modal">我知道了</button></div></div></div></div>
-<div class="modal fade" id="myOrdersModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content border-0"><div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold">🐶 歷史訂單查詢</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light" id="my-orders-list"></div></div></div></div>
+<div class="modal fade" id="announceModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-danger">📢 優惠活動 / 公告</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="announce-img-container" style="display:none;"></div><div id="announce-content" class="mt-2 text-center fw-bold text-dark"></div></div><div class="modal-footer border-0"><button type="button" class="btn btn-warning w-100 rounded-pill fw-bold text-dark shadow-sm py-2" data-bs-dismiss="modal">我知道了</button></div></div></div></div>
+<div class="modal fade" id="myOrdersModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable modal-lg"><div class="modal-content border-0"><div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold">🐶 歷史訂單查詢</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light" id="my-orders-list"></div></div></div></div>
 <div id="lightbox" onclick="closeLightbox()"><img id="lightbox-img" src="" alt="放大圖片"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -371,7 +282,11 @@
     async function initLiff() { 
         try { 
             await liff.init({ liffId: LIFF_ID }); 
-            if (liff.isLoggedIn()) { 
+            
+            // 🟢 檢查是否有強制訪客的標記
+            const forceGuest = localStorage.getItem('force_guest') === 'true';
+
+            if (liff.isLoggedIn() && !forceGuest) { 
                 const p = await liff.getProfile(); 
                 userProfile = p; 
                 isLoggedIn = true;
@@ -408,15 +323,24 @@
         }
     }
 
+    // 🟢 修復：處理手機版登出崩潰與 LINE APP 內無法登出的問題
     function performLogout() {
-        if (liff.isLoggedIn()) {
-            liff.logout();
-        }
+        // 嘗試呼叫 LIFF 登出 (若在外部瀏覽器會生效)
+        try { 
+            if (liff.isLoggedIn()) liff.logout(); 
+        } catch(e) {}
+        
+        // 設定強制訪客標記，這樣重新整理後即使在 LINE App 內也不會自動登入
+        localStorage.setItem('force_guest', 'true');
         localStorage.removeItem('pos_cart'); 
-        window.location.href = window.location.href.split('?')[0]; 
+        
+        // 使用安全的重新載入，避免 iOS TypeError 崩潰
+        window.location.reload(); 
     }
 
+    // 🟢 修復：重新登入時清除強制訪客標記
     function loginWithLine() {
+        localStorage.removeItem('force_guest');
         saveCartToLocal(); 
         liff.login({ redirectUri: window.location.href });
     }
