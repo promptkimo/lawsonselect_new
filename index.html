@@ -195,6 +195,17 @@
             if (liff.isLoggedIn() && !forceGuest) { 
                 userProfile = await liff.getProfile(); isLoggedIn = true; updateUserUI(true);
             } else { isLoggedIn = false; updateUserUI(false); } 
+            
+            // 🟢 發送流量紀錄 (每次開啟網頁只發一次)
+            if (!sessionStorage.getItem('visit_logged')) {
+                fetch(GAS_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: 'logVisit', payload: { userId: userProfile.userId, displayName: userProfile.displayName } }), 
+                    mode: 'no-cors' 
+                });
+                sessionStorage.setItem('visit_logged', 'true');
+            }
+
         } catch (e) { isLoggedIn = false; updateUserUI(false); } 
     }
 
@@ -258,7 +269,6 @@
         items.forEach(p => html += createProductCard(p)); html += `</div>`; container.innerHTML = html;
     }
 
-    // 🟢 修改：缺貨時顯示「貨到通知」按鈕
     function createProductCard(p) {
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat); const count = inCart ? inCart.count : 0; 
         const isOOS = p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || Number(p.clearStock) <= 0));
@@ -277,30 +287,13 @@
         return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}"><div class="position-relative overflow-hidden" style="border-radius: 15px 15px 0 0;">${badgeHtml}${imgHtml}</div><div class="product-body"><div class="product-name text-truncate">${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
     }
 
-    // 🟢 新增：處理貨到通知訂閱
     function handleRestockBtn(name, cat) {
-        if (!isLoggedIn) {
-            alert('⚠️ 請先點擊下方的「LINE 登入」，才能收到專屬的到貨通知喔！');
-            return;
-        }
+        if (!isLoggedIn) { alert('⚠️ 請先點擊下方的「LINE 登入」，才能收到專屬的到貨通知喔！'); return; }
         if (!confirm(`確定要訂閱【${name}】的到貨通知嗎？\n\n商品補貨完成時，系統會第一時間傳 LINE 給您！`)) return;
-
-        document.getElementById('loader').style.display = 'flex';
-        document.querySelector('#loader .fw-bold').innerText = "為您設定通知中...";
-
-        fetch(GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'subscribeRestock',
-                payload: { userId: userProfile.userId, displayName: userProfile.displayName, productName: name, cat: cat }
-            }),
-            mode: 'no-cors'
-        }).then(() => {
-            document.getElementById('loader').style.display = 'none';
-            alert('✅ 設定成功！商品到貨時會立刻由 LINE 官方帳號通知您。');
-        }).catch(err => {
-            document.getElementById('loader').style.display = 'none';
-        });
+        document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "為您設定通知中...";
+        fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'subscribeRestock', payload: { userId: userProfile.userId, displayName: userProfile.displayName, productName: name, cat: cat } }), mode: 'no-cors' })
+        .then(() => { document.getElementById('loader').style.display = 'none'; alert('✅ 設定成功！商品到貨時會立刻由 LINE 官方帳號通知您。'); })
+        .catch(err => { document.getElementById('loader').style.display = 'none'; });
     }
 
     function openVariantModal(name, cat) {
