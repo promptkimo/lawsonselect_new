@@ -47,15 +47,12 @@
         @media (min-width: 768px) { .product-img { height: 220px; } }
         .product-card:hover .product-img { transform: scale(1.05); }
         .product-body { padding: 15px; position: relative; }
-        .product-name { font-size: 1rem; font-weight: bold; margin-bottom: 8px; color: #4e342e; padding-right: 25px; } /* padding for heart */
+        .product-name { font-size: 1rem; font-weight: bold; margin-bottom: 8px; color: #4e342e; padding-right: 25px; }
         .product-price { color: var(--primary); font-size: 1.2rem; font-weight: 900; }
         .stock-info { font-size: 0.8rem; color: #888; background: #f5f5f5; padding: 3px 10px; border-radius: 6px; display: inline-block; margin-top: 6px; font-weight: 500;}
         .badge-corner { position: absolute; top: 0; left: 0; background: #d32f2f; color: white; font-size: 0.8rem; font-weight: bold; padding: 6px 12px; border-bottom-right-radius: 12px; z-index: 10; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); }
-        
-        /* 🟢 我的最愛愛心按鈕 */
         .fav-btn { position: absolute; top: 10px; right: 10px; z-index: 15; background: rgba(255,255,255,0.9); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s;}
         .fav-btn:active { transform: scale(0.8); }
-
         .product-card.oos-mode .product-img { opacity: 0.5; filter: grayscale(100%); }
         .btn-add-only { position: absolute; bottom: 15px; right: 15px; height: 36px; background: var(--accent); color: var(--text-dark); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.15); cursor: pointer; transition: 0.2s; padding: 0 12px;}
         .btn-add-only.circle { width: 36px; padding: 0; border-radius: 50%; }
@@ -215,10 +212,7 @@
     let userProfile = { userId: 'guest', displayName: '訪客' }; 
     let currentCategory = 'top10'; 
     let tempNormalQty = 0, tempClearanceQty = 0, tempProduct = null;
-    let isLoggedIn = false; 
-    let appliedPromo = null; 
-    let favorites = []; // 🟢 儲存我的最愛
-
+    let isLoggedIn = false; let appliedPromo = null; let favorites = []; 
     let cartModal, myOrdersModal, announceModal, variantModal, memberModal, orderSuccessModal, myRestockModal;
 
     window.onload = function() { 
@@ -229,7 +223,6 @@
         memberModal = new bootstrap.Modal(document.getElementById('memberModal'));
         myRestockModal = new bootstrap.Modal(document.getElementById('myRestockModal'));
         orderSuccessModal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
-
         loadCartFromLocal(); fetchMenu(); initLiff(); 
     };
 
@@ -239,7 +232,6 @@
             const forceGuest = localStorage.getItem('force_guest') === 'true';
             if (liff.isLoggedIn() && !forceGuest) { 
                 userProfile = await liff.getProfile(); isLoggedIn = true; updateUserUI(true);
-                // 讀取我的最愛
                 favorites = JSON.parse(localStorage.getItem('pos_fav_' + userProfile.userId)) || [];
             } else { isLoggedIn = false; updateUserUI(false); } 
             
@@ -253,10 +245,7 @@
     function updateUserUI(isLogin) {
         const btnLabel = document.getElementById('member-btn-label'); const btnImg = document.getElementById('member-btn-img');
         if(isLogin) { 
-            if(userProfile.pictureUrl) {
-                btnImg.src = userProfile.pictureUrl; 
-                document.getElementById('center-avatar').src = userProfile.pictureUrl;
-            }
+            if(userProfile.pictureUrl) { btnImg.src = userProfile.pictureUrl; document.getElementById('center-avatar').src = userProfile.pictureUrl; }
             document.getElementById('center-name').innerText = userProfile.displayName;
             if(btnLabel) btnLabel.innerText = "會員中心"; 
         } else { 
@@ -265,12 +254,8 @@
         }
     }
 
-    function handleUserBlockClick() { 
-        if (!isLoggedIn) loginWithLine(); 
-        else memberModal.show(); // 🟢 登入狀態點擊，打開會員中心
-    }
+    function handleUserBlockClick() { if (!isLoggedIn) loginWithLine(); else memberModal.show(); }
 
-    // 🟢 會員中心功能
     function viewFavorites() { memberModal.hide(); setCategory('favorites'); }
     
     function viewMyRestocks() {
@@ -280,10 +265,26 @@
         .then(r=>r.json()).then(res => {
             if(res.length === 0) { document.getElementById('my-restock-list').innerHTML = '<div class="text-muted text-center py-5">目前沒有等待中的商品喔！</div>'; return; }
             let html = '<ul class="list-group list-group-flush">';
-            res.forEach(item => { html += `<li class="list-group-item d-flex justify-content-between align-items-center py-3"><span><i class="bi bi-box-seam me-3 text-secondary"></i><span class="fw-bold">${item.name}</span></span><small class="text-muted">${item.time.split(' ')[0]}</small></li>`; });
+            res.forEach(item => { 
+                html += `<li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <div><i class="bi bi-box-seam me-2 text-secondary"></i><span class="fw-bold">${item.name}</span><br><small class="text-muted" style="margin-left:28px;">${item.time.split(' ')[0]}</small></div>
+                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="cancelRestock('${item.name}')">取消通知</button>
+                         </li>`; 
+            });
             html += '</ul>';
             document.getElementById('my-restock-list').innerHTML = html;
         }).catch(err => { document.getElementById('my-restock-list').innerHTML = '<div class="text-danger text-center py-5">讀取失敗</div>'; });
+    }
+
+    // 🟢 取消指定的到貨通知
+    function cancelRestock(name) {
+        if(!confirm(`確定要取消追蹤【${name}】的到貨通知嗎？`)) return;
+        document.getElementById('my-restock-list').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-danger"></div><div class="mt-2 small text-muted">取消中...</div></div>';
+        fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'deleteRestock', payload: { userId: userProfile.userId, productName: name } }),
+            mode: 'no-cors'
+        }).then(() => { setTimeout(viewMyRestocks, 800); }).catch(e => { viewMyRestocks(); });
     }
 
     function toggleFav(e, name) {
@@ -292,7 +293,7 @@
         const idx = favorites.indexOf(name);
         if (idx > -1) favorites.splice(idx, 1); else favorites.push(name);
         localStorage.setItem('pos_fav_' + userProfile.userId, JSON.stringify(favorites));
-        renderMenu(); // 刷新愛心狀態
+        renderMenu(); 
     }
 
     function performLogout() { try { if (liff.isLoggedIn()) liff.logout(); } catch(e) {} localStorage.setItem('force_guest', 'true'); localStorage.removeItem('pos_cart'); window.location.reload(); }
@@ -329,7 +330,6 @@
         if (currentCategory === 'top10') items = allData.products.filter(p => allData.top10.includes(p.name)); 
         else if (currentCategory === 'expiry') items = allData.products.filter(p => Number(p.clearStock) > 0); 
         else if (currentCategory === 'favorites') {
-            // 🟢 我的最愛專區
             items = allData.products.filter(p => favorites.includes(p.name));
             if (items.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted"><i class="bi bi-heart fs-1 d-block mb-3"></i>目前沒有收藏任何商品喔！</div>'; return; }
             let html = `<div class="section-title text-danger"><i class="bi bi-heart-fill me-2"></i>我的最愛</div><div class="row g-3 g-md-4 mb-4">`;
@@ -359,11 +359,8 @@
     function createProductCard(p) {
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat); const count = inCart ? inCart.count : 0; 
         const isOOS = p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || Number(p.clearStock) <= 0));
-        
-        // 🟢 加入我的最愛按鈕
         const isFav = favorites.includes(p.name);
         const heartHtml = `<div class="fav-btn" onclick="toggleFav(event, '${p.name}')"><i class="bi ${isFav ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary'} fs-5"></i></div>`;
-
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         let stockHtml = `<span class="stock-info">剩: ${p.stock}</span>`;
         let btnHtml = '';
@@ -373,7 +370,6 @@
         else btnHtml = (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', 1)">+</button></div>` : `<div class="btn-add-only circle" onclick="updateQty('${p.name}', '${p.cat}', 1)"><i class="bi bi-plus-lg"></i></div>`);
         
         const badgeHtml = Number(p.clearStock) > 0 ? `<div class="badge-corner">即期出清</div>` : ''; 
-        
         return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}"><div class="position-relative overflow-hidden" style="border-radius: 15px 15px 0 0;">${heartHtml}${badgeHtml}${imgHtml}</div><div class="product-body"><div class="product-name text-truncate">${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
     }
 
