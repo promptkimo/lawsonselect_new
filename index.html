@@ -276,14 +276,11 @@
         }).catch(err => { document.getElementById('my-restock-list').innerHTML = '<div class="text-danger text-center py-5">讀取失敗</div>'; });
     }
 
-    // 🟢 取消指定的到貨通知
     function cancelRestock(name) {
         if(!confirm(`確定要取消追蹤【${name}】的到貨通知嗎？`)) return;
         document.getElementById('my-restock-list').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-danger"></div><div class="mt-2 small text-muted">取消中...</div></div>';
         fetch(GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'deleteRestock', payload: { userId: userProfile.userId, productName: name } }),
-            mode: 'no-cors'
+            method: 'POST', body: JSON.stringify({ action: 'deleteRestock', payload: { userId: userProfile.userId, productName: name } }), mode: 'no-cors'
         }).then(() => { setTimeout(viewMyRestocks, 800); }).catch(e => { viewMyRestocks(); });
     }
 
@@ -457,7 +454,7 @@
 
         document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "狗狗跑腿送單中..."; cartModal.hide();
         
-        let itemsText = cart.map(i => `${i.name} x${i.count}`).join(', ');
+        let itemsText = cart.map(i => `${i.name} ($${i.price}) x${i.count}`).join(', ');
         let rawTotal = cart.reduce((s, i) => s + (i.price * i.count), 0); let finalTotal = rawTotal;
         if (appliedPromo) { finalTotal -= appliedPromo.discount; if(finalTotal < 0) finalTotal = 0; itemsText += `, [優惠碼 ${appliedPromo.code}] 折抵 $${appliedPromo.discount}`; }
 
