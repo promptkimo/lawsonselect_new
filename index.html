@@ -35,7 +35,6 @@
         .sticky-header-group { position: sticky; top: 0; z-index: 1010; }
         .sticky-msg-bar { background-color: #ffe0b2; color: #e65100; font-size: 0.95rem; font-weight: bold; text-align: center; padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); display: none; }
         
-        /* 🟢 新增：搜尋列樣式 */
         .search-bar-container { background: rgba(255, 253, 245, 0.96); padding: 10px 15px; border-bottom: 1px solid rgba(0,0,0,0.03); max-width: 1200px; margin: 0 auto; display: flex; justify-content: center; }
         .search-bar-container .input-group { max-width: 600px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 50px; overflow: hidden; background: #fff; }
         .search-bar-container input:focus { box-shadow: none; border-color: transparent; }
@@ -55,7 +54,10 @@
         @media (min-width: 768px) { .product-img { height: 220px; } }
         .product-card:hover .product-img { transform: scale(1.05); }
         .product-body { padding: 15px; position: relative; }
-        .product-name { font-size: 1rem; font-weight: bold; margin-bottom: 8px; color: #4e342e; padding-right: 25px; }
+        
+        /* 🟢 修復：移除單行截斷限制，並優化多行顯示的行高與折行設定 */
+        .product-name { font-size: 1rem; font-weight: bold; margin-bottom: 8px; color: #4e342e; line-height: 1.3; word-wrap: break-word; }
+        
         .product-price { color: var(--primary); font-size: 1.2rem; font-weight: 900; }
         .stock-info { font-size: 0.8rem; color: #888; background: #f5f5f5; padding: 3px 10px; border-radius: 6px; display: inline-block; margin-top: 6px; font-weight: 500;}
         .badge-corner { position: absolute; top: 0; left: 0; background: #d32f2f; color: white; font-size: 0.8rem; font-weight: bold; padding: 6px 12px; border-bottom-right-radius: 12px; z-index: 10; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); }
@@ -308,6 +310,8 @@
         const idx = favorites.indexOf(name);
         if (idx > -1) favorites.splice(idx, 1); else favorites.push(name);
         localStorage.setItem('pos_fav_' + userProfile.userId, JSON.stringify(favorites));
+        
+        // 為了讓切換愛心時，如果不小心把字給擋住了，可以重新 render
         renderMenu(); 
     }
 
@@ -331,7 +335,6 @@
     function checkAnnouncement(data) { const hasText = data.announcementText && data.announcementText.trim() !== ""; const hasImg = data.announcementImg && data.announcementImg.trim() !== ""; if (hasText || hasImg) { document.getElementById('announce-content').innerText = data.announcementText || ""; const imgDiv = document.getElementById('announce-img-container'); if (hasImg) { imgDiv.innerHTML = `<img src="${data.announcementImg}" referrerpolicy="no-referrer" style="width:100%; border-radius:15px;">`; imgDiv.style.display = "block"; } else { imgDiv.innerHTML = ""; imgDiv.style.display = "none"; } announceModal.show(); } }
     function openSupport() { window.location.href = 'https://line.me/R/ti/p/@lawsonshop'; }
     
-    // 🟢 搜尋與分類切換邏輯
     function setCategory(cat) { 
         document.getElementById('search-input').value = '';
         document.getElementById('clear-search-icon').style.display = 'none';
@@ -360,7 +363,7 @@
 
     function renderSearchResults(keyword) {
         const container = document.getElementById('product-container');
-        document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active')); // 取消分類的選中狀態
+        document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active'));
         
         const items = allData.products.filter(p => p.name.toLowerCase().includes(keyword) || (p.cat && p.cat.toLowerCase().includes(keyword)));
         
@@ -428,7 +431,9 @@
         else btnHtml = (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', 1)">+</button></div>` : `<div class="btn-add-only circle" onclick="updateQty('${p.name}', '${p.cat}', 1)"><i class="bi bi-plus-lg"></i></div>`);
         
         const badgeHtml = Number(p.clearStock) > 0 ? `<div class="badge-corner">即期出清</div>` : ''; 
-        return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}"><div class="position-relative overflow-hidden" style="border-radius: 15px 15px 0 0;">${heartHtml}${badgeHtml}${imgHtml}</div><div class="product-body"><div class="product-name text-truncate">${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
+        
+        // 🟢 修改這裡：<div class="product-name"> 移除了 text-truncate
+        return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}"><div class="position-relative overflow-hidden" style="border-radius: 15px 15px 0 0;">${heartHtml}${badgeHtml}${imgHtml}</div><div class="product-body"><div class="product-name">${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
     }
 
     function handleRestockBtn(name, cat) {
