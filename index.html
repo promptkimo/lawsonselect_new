@@ -180,11 +180,6 @@
             </div>
             
             <div class="bg-white pt-2 border-top">
-                <div id="yongqi-discount-row" class="px-3 py-1 mb-1 d-flex justify-content-between align-items-center" style="display:none !important;">
-                    <span class="text-danger small fw-bold"><i class="bi bi-tag-fill me-1"></i>永圻滿2件95折</span>
-                    <span class="text-danger fw-bold m-0" id="modal-yongqi-discount">-$0</span>
-                </div>
-
                 <div id="promo-code-section" style="display:none;" class="px-3 mb-2">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-white text-danger border-end-0"><i class="bi bi-gift-fill"></i></span>
@@ -194,7 +189,7 @@
                     <small id="promo-msg" class="d-block mt-1"></small>
                 </div>
 
-                <div class="px-3 pb-3">
+                <div class="px-3 pb-3 mt-3">
                     <div class="row g-2">
                         <div class="col-md-6"><label class="form-label small fw-bold text-secondary">取餐聯絡人 <span class="text-danger">*</span></label><input type="text" id="order-contact-name" class="form-control rounded-pill bg-light" placeholder="請輸入姓名"></div>
                         <div class="col-md-6"><label class="form-label small fw-bold text-secondary">聯絡電話 <span class="text-danger">*</span></label><input type="tel" id="order-contact-phone" class="form-control rounded-pill bg-light" placeholder="請輸入手機號碼"></div>
@@ -246,7 +241,6 @@
         loadCartFromLocal(); fetchMenu(); initLiff(); 
     };
 
-    // 🟢 判斷是否為活動品牌
     function isYongqi(name, cat) { return (cat && cat.includes('永圻')) || (name && name.includes('永圻')); }
     function isTongxin(name, cat) { return (cat && cat.includes('童心')) || (name && name.includes('童心')); }
 
@@ -401,19 +395,18 @@
 
     function createProductCard(p) {
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat); const count = inCart ? inCart.count : 0; 
-        
         const isTQ = isTongxin(p.name, p.cat);
         const isYQ = isYongqi(p.name, p.cat);
         
-        // 🟢 童心好食館 永遠允許加入購物車 (無視庫存)
+        // 🟢 童心好食館 解鎖庫存限制
         const isOOS = !isTQ && (p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || Number(p.clearStock) <= 0)));
         
         const isFav = favorites.includes(p.name);
         const heartHtml = `<div class="fav-btn" onclick="toggleFav(event, '${p.name}')"><i class="bi ${isFav ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary'} fs-5"></i></div>`;
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         
-        // 🟢 童心好食館 顯示較長備貨，隱藏庫存數字
-        let stockHtml = isTQ ? `<span class="stock-info" style="background:#ffeeba; color:#856404;">較長備貨</span>` : `<span class="stock-info">剩: ${p.stock}</span>`;
+        // 🟢 童心好食館 顯示專屬警告徽章
+        let stockHtml = isTQ ? `<div class="mt-2"><span class="badge bg-warning text-dark border border-warning shadow-sm px-2 py-1" style="font-size:0.8rem;"><i class="bi bi-clock-history me-1"></i>較長備貨</span></div>` : `<span class="stock-info">剩: ${p.stock}</span>`;
         
         let btnHtml = '';
         if (isOOS) { btnHtml = `<div class="btn-add-only bg-danger text-white w-auto px-3 shadow-sm" style="border-radius:20px; font-size:0.85rem;" onclick="handleRestockBtn('${p.name}', '${p.cat}')"><i class="bi bi-bell-fill me-1"></i>貨到通知</div>`; }
@@ -422,8 +415,8 @@
         
         const badgeHtml = Number(p.clearStock) > 0 ? `<div class="badge-corner">即期出清</div>` : ''; 
         
-        // 🟢 永圻 標籤標示
-        let yqBadge = isYQ ? `<span class="badge bg-danger mb-1 d-inline-block" style="font-size:0.75rem;">兩件95折</span><br>` : '';
+        // 🟢 永圻 兩件95折徽章
+        let yqBadge = isYQ ? `<span class="badge bg-danger mb-2 d-inline-block shadow-sm px-2 py-1" style="font-size:0.75rem;"><i class="bi bi-tags-fill me-1"></i>任兩件 95折</span><br>` : '';
 
         return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}"><div class="position-relative overflow-hidden" style="border-radius: 15px 15px 0 0;">${heartHtml}${badgeHtml}${imgHtml}</div><div class="product-body"><div class="product-name">${yqBadge}${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
     }
@@ -467,7 +460,6 @@
         const product = allData.products.find(p => p.name === name && p.cat === cat); const idx = cart.findIndex(c => c.name === name && c.cat === cat); 
         if (delta > 0 && product) { 
             const currentQty = idx > -1 ? cart[idx].count : 0; 
-            // 🟢 童心好食館 阻擋取消
             if (!isTongxin(product.name, product.cat) && currentQty >= product.stock) { alert(`庫存不足！目前剩餘 ${product.stock} 個`); return; } 
         }
         if (idx > -1) { cart[idx].count += delta; if (cart[idx].count <= 0) cart.splice(idx, 1); } else if (delta > 0) { cart.push({ name, price: product.price, cat, count: 1 }); } 
@@ -485,34 +477,29 @@
         }
     }
 
+    // 🟢 精準計算購物車金額 (包含自動湊對 95 折)
     function updateCartUI() { 
         let rawTotal = cart.reduce((s, i) => s + (i.price * i.count), 0); const count = cart.reduce((s, i) => s + i.count, 0); 
         
-        // 🟢 永圻 兩件 95 折 (5% off) 邏輯計算
+        let yqDiscounts = new Array(cart.length).fill(0);
         let yqItems = [];
-        cart.forEach(i => {
+        cart.forEach((i, idx) => {
             if (isYongqi(i.name, i.cat)) {
-                for (let k = 0; k < i.count; k++) yqItems.push(i.price);
+                for (let k = 0; k < i.count; k++) yqItems.push({ price: i.price, idx: idx });
             }
         });
-        yqItems.sort((a, b) => a - b); // 從便宜的開始排
-        let yqDiscountAmount = 0;
-        let pairs = Math.floor(yqItems.length / 2); // 兩件一組
+        yqItems.sort((a, b) => a.price - b.price); 
+        let pairs = Math.floor(yqItems.length / 2); 
         for(let j = 0; j < pairs * 2; j++) {
-            yqDiscountAmount += yqItems[j] * 0.05;
+            yqDiscounts[yqItems[j].idx] += yqItems[j].price * 0.05;
         }
-        yqDiscountAmount = Math.round(yqDiscountAmount); // 四捨五入
-        window.currentYqDiscount = yqDiscountAmount; // 儲存供送出訂單時使用
+        yqDiscounts = yqDiscounts.map(d => Math.round(d));
+        let yqDiscountAmount = yqDiscounts.reduce((a,b)=>a+b,0);
+        
+        window.currentYqDiscount = yqDiscountAmount; 
+        window.cartYqDiscounts = yqDiscounts;
 
         let finalTotal = rawTotal - yqDiscountAmount;
-
-        const yqRow = document.getElementById('yongqi-discount-row');
-        if (yqDiscountAmount > 0) {
-            document.getElementById('modal-yongqi-discount').innerText = `-$${yqDiscountAmount}`;
-            yqRow.style.setProperty("display", "flex", "important");
-        } else {
-            yqRow.style.setProperty("display", "none", "important");
-        }
 
         const discountRow = document.getElementById('discount-display-row');
         if (appliedPromo && count > 0) {
@@ -525,6 +512,7 @@
 
     function openCartModal() { appliedPromo = null; document.getElementById('promo-code-input').value = ''; document.getElementById('promo-msg').innerText = ''; renderCartModal(); cartModal.show(); }
     
+    // 🟢 結帳畫面紅線畫掉與較長備貨提示
     function renderCartModal() { 
         const body = document.getElementById('cart-modal-body'); const loginPrompt = document.getElementById('guest-login-prompt'); const submitBtn = document.getElementById('btn-submit-order'); const promoSec = document.getElementById('promo-code-section');
         if (isLoggedIn) { loginPrompt.style.display = 'none'; promoSec.style.display = 'block'; submitBtn.innerText = "送出訂單"; submitBtn.classList.remove('btn-secondary'); submitBtn.classList.add('btn-confirm'); } 
@@ -535,7 +523,43 @@
         cart.forEach((i, index) => {
             const isClearance = i.name.includes('(即期品)'); const rowClass = isClearance ? 'cart-item-row clearance-item' : 'cart-item-row border-bottom'; const badgeHtml = isClearance ? `<span class="clearance-badge">⚠️ 即期良品</span>` : ``; let dateInfo = '';
             if (isClearance) { const rawName = i.name.replace(" (即期品)", ""); const p = allData.products.find(x => x.name === rawName && x.cat === i.cat); if (p && p.arrivalDate) { const d = new Date(p.arrivalDate); if (!isNaN(d.getTime())) dateInfo = `<div class="small text-danger fw-bold"><i class="bi bi-calendar-event"></i> 效期：${d.getMonth()+1}/${d.getDate()}</div>`; } }
-            html += `<div class="d-flex justify-content-between align-items-center py-2 ${rowClass}"><div class="me-2 item-index">${index + 1}.</div><div style="flex:1"><div>${badgeHtml} <span class="fw-bold text-dark">${i.name.replace(" (即期品)", "")}</span></div>${dateInfo}<small class="text-secondary fw-bold">$${i.price}</small></div><div class="d-flex align-items-center"><button class="btn btn-sm btn-outline-warning text-dark border fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',-1)">-</button><span class="px-3 fw-bold">${i.count}</span><button class="btn btn-sm btn-warning text-dark fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',1)">+</button></div></div>`;
+            
+            let isTQ = isTongxin(i.name, i.cat);
+            let tqBadge = isTQ ? `<div class="mt-1 mb-1"><span class="badge bg-warning text-dark"><i class="bi bi-clock-history"></i> 較長備貨 (請耐心等候)</span></div>` : '';
+
+            let originalRowTotal = i.price * i.count;
+            let rowDiscount = window.cartYqDiscounts ? window.cartYqDiscounts[index] : 0;
+            let priceHtml = '';
+
+            // 🟢 用紅色刪除線畫掉
+            if (rowDiscount > 0) {
+                priceHtml = `<div class="mt-1">
+                                <span class="text-secondary small me-2">$${i.price} x ${i.count}</span><br>
+                                <span class="text-secondary fw-bold text-decoration-line-through" style="text-decoration-color:#dc3545 !important; font-size: 0.95rem;">$${originalRowTotal}</span> 
+                                <span class="text-danger fw-bold ms-2 fs-5">$${originalRowTotal - rowDiscount}</span>
+                                <span class="badge bg-danger ms-2" style="font-size:0.65rem;">95折</span>
+                             </div>`;
+            } else {
+                priceHtml = `<div class="mt-1">
+                                <span class="text-secondary small me-2">$${i.price} x ${i.count}</span><br>
+                                <span class="text-dark fw-bold fs-6">$${originalRowTotal}</span>
+                             </div>`;
+            }
+
+            html += `<div class="d-flex justify-content-between align-items-center py-2 ${rowClass}">
+                        <div class="me-2 item-index">${index + 1}.</div>
+                        <div style="flex:1">
+                            <div>${badgeHtml} <span class="fw-bold text-dark">${i.name.replace(" (即期品)", "")}</span></div>
+                            ${tqBadge}
+                            ${dateInfo}
+                            ${priceHtml}
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-outline-warning text-dark border fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',-1)">-</button>
+                            <span class="px-3 fw-bold">${i.count}</span>
+                            <button class="btn btn-sm btn-warning text-dark fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',1)">+</button>
+                        </div>
+                    </div>`;
         });
         body.innerHTML = html;
     }
@@ -546,7 +570,6 @@
         
         if (delta > 0 && product) { 
             const maxStock = isClearance ? product.clearStock : product.stock; 
-            // 🟢 童心好食館 阻擋取消
             if (!isTongxin(product.name, product.cat) && currentQty >= maxStock) { alert(`庫存不足！目前剩餘 ${maxStock} 個`); return; } 
         }
         if (idx > -1) { cart[idx].count += delta; if (cart[idx].count <= 0) cart.splice(idx, 1); }
@@ -564,7 +587,6 @@
         let rawTotal = cart.reduce((s, i) => s + (i.price * i.count), 0); 
         let finalTotal = rawTotal - (window.currentYqDiscount || 0);
 
-        // 🟢 永圻優惠字串寫入後台訂單明細
         if (window.currentYqDiscount > 0) {
             itemsText += `, [永圻滿件95折] 折抵 $${window.currentYqDiscount}`;
         }
