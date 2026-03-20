@@ -517,7 +517,6 @@
             document.getElementById('modal-discount-amount').innerText = `-$${appliedPromo.discount}`; discountRow.style.setProperty("display", "flex", "important");
         } else { discountRow.style.setProperty("display", "none", "important"); }
         
-        // 🟢 滿千集點提醒邏輯
         let pointsContainer = document.getElementById('points-alert-container');
         if (finalTotal > 0) {
             let currentPoints = Math.floor(finalTotal / 1000);
@@ -535,7 +534,7 @@
             pointsContainer.innerHTML = `<div class="bg-warning bg-opacity-10 border border-warning rounded p-2 text-center shadow-sm">
                 <div class="fw-bold text-dark mb-1"><i class="bi bi-star-fill text-warning me-1"></i>現場取貨滿千積點活動</div>
                 <div style="font-size:0.95rem;">${pointMsg}</div>
-                <div class="small text-secondary mt-1" style="font-size:0.75rem;"><i class="bi bi-gift text-danger me-1"></i>兌換禮：5點高湯 / 10點鬆餅 / 15點寶寶吐司 / 20點羊肩排</div>
+                <div class="small text-secondary mt-1" style="font-size:0.75rem;"><i class="bi bi-gift text-danger me-1"></i>積點兌換禮：5點可換高湯 / 10點可換寶寶鬆餅 / 15點可換寶寶吐司 / 20點可換羊肩排</div>
             </div>`;
             pointsContainer.style.setProperty('display', 'block', 'important');
         } else {
