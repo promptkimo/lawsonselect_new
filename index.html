@@ -180,6 +180,11 @@
             </div>
             
             <div class="bg-white pt-2 border-top">
+                <div id="yongqi-discount-row" class="px-3 py-1 mb-1 d-flex justify-content-between align-items-center" style="display:none !important;">
+                    <span class="text-danger small fw-bold"><i class="bi bi-tag-fill me-1"></i>永圻滿2件95折</span>
+                    <span class="text-danger fw-bold m-0" id="modal-yongqi-discount">-$0</span>
+                </div>
+
                 <div id="promo-code-section" style="display:none;" class="px-3 mb-2">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-white text-danger border-end-0"><i class="bi bi-gift-fill"></i></span>
@@ -195,6 +200,9 @@
                         <div class="col-md-6"><label class="form-label small fw-bold text-secondary">聯絡電話 <span class="text-danger">*</span></label><input type="tel" id="order-contact-phone" class="form-control rounded-pill bg-light" placeholder="請輸入手機號碼"></div>
                     </div>
                 </div>
+
+                <div id="points-alert-container" style="display:none;" class="px-3 pb-3 w-100"></div>
+
             </div>
 
             <div class="modal-footer border-0 pt-0 d-block">
@@ -398,14 +406,11 @@
         const isTQ = isTongxin(p.name, p.cat);
         const isYQ = isYongqi(p.name, p.cat);
         
-        // 🟢 童心好食館 解鎖庫存限制
         const isOOS = !isTQ && (p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || Number(p.clearStock) <= 0)));
-        
         const isFav = favorites.includes(p.name);
         const heartHtml = `<div class="fav-btn" onclick="toggleFav(event, '${p.name}')"><i class="bi ${isFav ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary'} fs-5"></i></div>`;
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         
-        // 🟢 童心好食館 顯示專屬警告徽章
         let stockHtml = isTQ ? `<div class="mt-2"><span class="badge bg-warning text-dark border border-warning shadow-sm px-2 py-1" style="font-size:0.8rem;"><i class="bi bi-clock-history me-1"></i>較長備貨</span></div>` : `<span class="stock-info">剩: ${p.stock}</span>`;
         
         let btnHtml = '';
@@ -414,8 +419,6 @@
         else btnHtml = (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', 1)">+</button></div>` : `<div class="btn-add-only circle" onclick="updateQty('${p.name}', '${p.cat}', 1)"><i class="bi bi-plus-lg"></i></div>`);
         
         const badgeHtml = Number(p.clearStock) > 0 ? `<div class="badge-corner">即期出清</div>` : ''; 
-        
-        // 🟢 永圻 兩件95折徽章
         let yqBadge = isYQ ? `<span class="badge bg-danger mb-2 d-inline-block shadow-sm px-2 py-1" style="font-size:0.75rem;"><i class="bi bi-tags-fill me-1"></i>任兩件 95折</span><br>` : '';
 
         return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}"><div class="position-relative overflow-hidden" style="border-radius: 15px 15px 0 0;">${heartHtml}${badgeHtml}${imgHtml}</div><div class="product-body"><div class="product-name">${yqBadge}${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
@@ -477,7 +480,6 @@
         }
     }
 
-    // 🟢 精準計算購物車金額 (包含自動湊對 95 折)
     function updateCartUI() { 
         let rawTotal = cart.reduce((s, i) => s + (i.price * i.count), 0); const count = cart.reduce((s, i) => s + i.count, 0); 
         
@@ -501,18 +503,50 @@
 
         let finalTotal = rawTotal - yqDiscountAmount;
 
+        const yqRow = document.getElementById('yongqi-discount-row');
+        if (yqDiscountAmount > 0) {
+            document.getElementById('modal-yongqi-discount').innerText = `-$${yqDiscountAmount}`;
+            yqRow.style.setProperty("display", "flex", "important");
+        } else {
+            yqRow.style.setProperty("display", "none", "important");
+        }
+
         const discountRow = document.getElementById('discount-display-row');
         if (appliedPromo && count > 0) {
             finalTotal -= appliedPromo.discount; if(finalTotal < 0) finalTotal = 0;
             document.getElementById('modal-discount-amount').innerText = `-$${appliedPromo.discount}`; discountRow.style.setProperty("display", "flex", "important");
         } else { discountRow.style.setProperty("display", "none", "important"); }
         
+        // 🟢 滿千集點提醒邏輯
+        let pointsContainer = document.getElementById('points-alert-container');
+        if (finalTotal > 0) {
+            let currentPoints = Math.floor(finalTotal / 1000);
+            let needed = 1000 - (finalTotal % 1000);
+            let pointMsg = '';
+            if (currentPoints === 0) {
+                pointMsg = `再消費 <strong class="text-danger">$${needed}</strong> 元，即可獲得 1 點！`;
+            } else {
+                if(needed === 1000) {
+                    pointMsg = `目前剛好獲得 <strong class="text-success">${currentPoints}</strong> 點！再消費 <strong class="text-danger">$1000</strong> 元可多得 1 點！`;
+                } else {
+                    pointMsg = `目前可獲得 <strong class="text-success">${currentPoints}</strong> 點！再消費 <strong class="text-danger">$${needed}</strong> 元可多得 1 點！`;
+                }
+            }
+            pointsContainer.innerHTML = `<div class="bg-warning bg-opacity-10 border border-warning rounded p-2 text-center shadow-sm">
+                <div class="fw-bold text-dark mb-1"><i class="bi bi-star-fill text-warning me-1"></i>現場取貨滿千積點活動</div>
+                <div style="font-size:0.95rem;">${pointMsg}</div>
+                <div class="small text-secondary mt-1" style="font-size:0.75rem;"><i class="bi bi-gift text-danger me-1"></i>兌換禮：5點高湯 / 10點鬆餅 / 15點寶寶吐司 / 20點羊肩排</div>
+            </div>`;
+            pointsContainer.style.setProperty('display', 'block', 'important');
+        } else {
+            pointsContainer.style.setProperty('display', 'none', 'important');
+        }
+
         document.getElementById('cart-count').innerText = count; document.getElementById('cart-total').innerText = '$' + rawTotal; document.getElementById('modal-cart-total').innerText = '$' + finalTotal; document.getElementById('cart-bar').classList.toggle('show', count > 0); if (count === 0) cartModal.hide(); 
     }
 
     function openCartModal() { appliedPromo = null; document.getElementById('promo-code-input').value = ''; document.getElementById('promo-msg').innerText = ''; renderCartModal(); cartModal.show(); }
     
-    // 🟢 結帳畫面紅線畫掉與較長備貨提示
     function renderCartModal() { 
         const body = document.getElementById('cart-modal-body'); const loginPrompt = document.getElementById('guest-login-prompt'); const submitBtn = document.getElementById('btn-submit-order'); const promoSec = document.getElementById('promo-code-section');
         if (isLoggedIn) { loginPrompt.style.display = 'none'; promoSec.style.display = 'block'; submitBtn.innerText = "送出訂單"; submitBtn.classList.remove('btn-secondary'); submitBtn.classList.add('btn-confirm'); } 
@@ -531,7 +565,6 @@
             let rowDiscount = window.cartYqDiscounts ? window.cartYqDiscounts[index] : 0;
             let priceHtml = '';
 
-            // 🟢 用紅色刪除線畫掉
             if (rowDiscount > 0) {
                 priceHtml = `<div class="mt-1">
                                 <span class="text-secondary small me-2">$${i.price} x ${i.count}</span><br>
