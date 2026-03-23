@@ -77,9 +77,9 @@
         #lightbox img { max-width: 90%; max-height: 80%; border-radius: 8px; transform: scale(0.9); transition: 0.3s; }
         #lightbox.show img { transform: scale(1); }
         .order-item-list { list-style: none; padding: 0; margin: 5px 0; }
-        .order-item-list li { padding: 6px 0; border-bottom: 1px dashed #eee; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: flex-start; }
+        .order-item-list li { padding: 4px 0; border-bottom: 1px dashed #eee; font-size: 0.95rem; display: flex; justify-content: space-between; }
         .order-item-list li:last-child { border-bottom: none; }
-        .item-qty-badge { background-color: #3e2723; color: #ffb300; padding: 1px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; margin-left: 10px; white-space: nowrap; }
+        .item-qty-badge { background-color: #3e2723; color: #ffb300; padding: 1px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
         .variant-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #eee; }
         .variant-row:last-child { border-bottom: none; }
         .qty-stepper { display: flex; align-items: center; background: #f8f9fa; border-radius: 20px; border: 1px solid #ddd; }
@@ -655,7 +655,7 @@
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
     
-    // 🟢 加強錯誤防呆與顯示新版 [刪除] / [新增] 標籤
+    // 🟢 修復：正確拆解字串，顯示訂單歷史
     function openMyOrders() { 
         if(!isLoggedIn) { alert("請先登入 LINE 才能查詢訂單！"); return; }
         myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
@@ -692,7 +692,8 @@
                     if (lastX !== -1) {
                         let potentialQty = parseInt(cleanStr.substring(lastX + 2));
                         if (!isNaN(potentialQty)) {
-                            name = cleanName.substring(0, lastX).trim();
+                            // 🟢 修正：此處使用 cleanStr 而不是 cleanName
+                            name = cleanStr.substring(0, lastX).trim();
                             qty = potentialQty;
                         }
                     }
