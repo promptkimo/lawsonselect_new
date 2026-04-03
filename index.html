@@ -77,9 +77,9 @@
         #lightbox img { max-width: 90%; max-height: 80%; border-radius: 8px; transform: scale(0.9); transition: 0.3s; }
         #lightbox.show img { transform: scale(1); }
         .order-item-list { list-style: none; padding: 0; margin: 5px 0; }
-        .order-item-list li { padding: 4px 0; border-bottom: 1px dashed #eee; font-size: 0.95rem; display: flex; justify-content: space-between; }
+        .order-item-list li { padding: 6px 0; border-bottom: 1px dashed #eee; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: flex-start; }
         .order-item-list li:last-child { border-bottom: none; }
-        .item-qty-badge { background-color: #3e2723; color: #ffb300; padding: 1px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
+        .item-qty-badge { background-color: #3e2723; color: #ffb300; padding: 1px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; margin-left: 10px; white-space: nowrap; }
         .variant-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #eee; }
         .variant-row:last-child { border-bottom: none; }
         .qty-stepper { display: flex; align-items: center; background: #f8f9fa; border-radius: 20px; border: 1px solid #ddd; }
@@ -90,6 +90,16 @@
         .item-index { font-weight: 900; color: #aaa; min-width: 25px; font-size: 1rem; }
         .clearance-badge { font-size: 0.8rem; background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-weight: bold; animation: blink 2s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        /* 🟢 新增：蝦皮風格進度條專用 CSS */
+        .tracking-wrap { display: flex; justify-content: space-between; position: relative; margin: 15px 0 10px 0; padding: 0 5px; }
+        .tracking-wrap::before { content: ''; position: absolute; top: 14px; left: 15%; right: 15%; height: 2px; background: #e0e0e0; z-index: 1; }
+        .tracking-step { flex: 1; text-align: center; position: relative; z-index: 2; }
+        .tracking-icon { width: 30px; height: 30px; margin: 0 auto 5px auto; background: #e0e0e0; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; border: 3px solid #fff; box-shadow: 0 0 0 1px #e0e0e0; transition: 0.3s; }
+        .tracking-step.active .tracking-icon { background: #28a745; box-shadow: 0 0 0 1px #28a745; }
+        .tracking-text { font-size: 0.75rem; color: #888; font-weight: bold; line-height: 1.4; }
+        .tracking-step.active .tracking-text { color: #28a745; }
+        .tracking-time { font-size: 0.65rem; color: #aaa; font-weight: normal; display: block; min-height: 14px; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -655,7 +665,6 @@
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
     
-    // 🟢 修復：正確拆解字串，顯示訂單歷史
     function openMyOrders() { 
         if(!isLoggedIn) { alert("請先登入 LINE 才能查詢訂單！"); return; }
         myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
@@ -692,7 +701,6 @@
                     if (lastX !== -1) {
                         let potentialQty = parseInt(cleanStr.substring(lastX + 2));
                         if (!isNaN(potentialQty)) {
-                            // 🟢 修正：此處使用 cleanStr 而不是 cleanName
                             name = cleanStr.substring(0, lastX).trim();
                             qty = potentialQty;
                         }
@@ -707,7 +715,33 @@
                     itemsHtml += `<li><span ${itemStyle}>${icon} ${name}</span><span class="item-qty-badge">x${qty}</span></li>`; 
                 });
                 itemsHtml += '</ul>';
-                html += `<div class="card mb-3 border-0 shadow-sm"><div class="card-header bg-white d-flex justify-content-between align-items-center"><span class="badge ${o.status === '已完成' ? 'bg-success' : 'bg-warning text-dark'}">${o.status}</span><small class="text-secondary">${o.date}</small></div><div class="card-body p-3"><div class="d-flex justify-content-between align-items-center mb-2"><span class="fw-bold text-dark">#${o.id}</span><span class="text-danger fw-bold">$${o.total}</span></div><div class="bg-light p-2 rounded">${itemsHtml}</div></div></div>`;
+
+                // 🟢 產生蝦皮風格進度條
+                let step1 = "active";
+                let step2 = (o.status === "處理中" || o.status === "已完成") ? "active" : "";
+                let step3 = (o.status === "已完成") ? "active" : "";
+
+                let time1 = o.date ? o.date.substring(5, 16) : "";
+                let time2 = o.processingTime ? o.processingTime.substring(5, 16) : "";
+                let time3 = o.completedTime ? o.completedTime.substring(5, 16) : "";
+
+                let trackerHtml = `
+                <div class="tracking-wrap">
+                    <div class="tracking-step ${step1}">
+                        <div class="tracking-icon"><i class="bi bi-receipt"></i></div>
+                        <div class="tracking-text">訂單成立<br><span class="tracking-time">${time1}</span></div>
+                    </div>
+                    <div class="tracking-step ${step2}">
+                        <div class="tracking-icon"><i class="bi bi-box-seam"></i></div>
+                        <div class="tracking-text">撿貨中<br><span class="tracking-time">${time2}</span></div>
+                    </div>
+                    <div class="tracking-step ${step3}">
+                        <div class="tracking-icon"><i class="bi bi-check2-circle"></i></div>
+                        <div class="tracking-text">可取貨<br><span class="tracking-time">${time3}</span></div>
+                    </div>
+                </div>`;
+
+                html += `<div class="card mb-3 border-0 shadow-sm"><div class="card-header bg-white d-flex justify-content-between align-items-center"><span class="badge ${o.status === '已完成' ? 'bg-success' : 'bg-warning text-dark'}">${o.status}</span><span class="fw-bold text-dark">#${o.id}</span></div><div class="card-body p-3">${trackerHtml}<div class="bg-light p-2 rounded mt-3 mb-2">${itemsHtml}</div><div class="text-end"><span class="text-secondary small me-2">總計:</span><span class="text-danger fw-bold fs-5">$${o.total}</span></div></div></div>`;
             });
             document.getElementById('my-orders-list').innerHTML = html;
         }).catch(err => { 
