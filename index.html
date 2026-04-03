@@ -20,10 +20,10 @@
         .loader-img { position: absolute; width: 180px; height: auto; object-fit: contain; animation: runRightToLeft 7s linear infinite; }
         .main-dog { z-index: 10; opacity: 1; } .ghost-1 { z-index: 9; opacity: 0.6; animation-delay: -0.15s; filter: blur(1px); } .ghost-2 { z-index: 8; opacity: 0.3; animation-delay: -0.3s; filter: blur(2px); } .ghost-3 { z-index: 7; opacity: 0.1; animation-delay: -0.45s; filter: blur(4px); }
         @keyframes runRightToLeft { 0% { transform: translateX(120vw); } 100% { transform: translateX(-120vw); } }
-        .banner-wrapper { padding: 15px 15px 0 15px; max-width: 1200px; margin: 0 auto; text-align: center; }
-        .responsive-banner { width: 100%; height: auto; max-height: 400px; object-fit: cover; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
-        .quick-menu { background: #fff; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.06); max-width: 700px; margin: -20px auto 20px auto; position: relative; z-index: 10; }
-        @media (min-width: 768px) { .quick-menu { margin: -40px auto 30px auto; padding: 20px; gap: 20px; } }
+        
+        /* 🟢 統一寬度為 800px 並置中 */
+        .quick-menu { background: #fff; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.06); max-width: 800px; margin: 20px auto; position: relative; z-index: 10; }
+        @media (min-width: 768px) { .quick-menu { padding: 20px; gap: 20px; } }
         .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.2s; }
         .menu-item:hover { transform: translateY(-3px); }
         .menu-item:active { transform: scale(0.95); opacity: 0.8; }
@@ -35,8 +35,9 @@
         .sticky-header-group { position: sticky; top: 0; z-index: 1010; }
         .sticky-msg-bar { background-color: #ffe0b2; color: #e65100; font-size: 0.95rem; font-weight: bold; text-align: center; padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); display: none; }
         
-        .search-bar-container { background: rgba(255, 253, 245, 0.96); padding: 10px 15px; border-bottom: 1px solid rgba(0,0,0,0.03); max-width: 1200px; margin: 0 auto; display: flex; justify-content: center; }
-        .search-bar-container .input-group { max-width: 600px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 50px; overflow: hidden; background: #fff; }
+        /* 🟢 搜尋欄最大寬度改為 800px */
+        .search-bar-container { background: rgba(255, 253, 245, 0.96); padding: 10px 15px; border-bottom: 1px solid rgba(0,0,0,0.03); width: 100%; margin: 0 auto; display: flex; justify-content: center; }
+        .search-bar-container .input-group { max-width: 800px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 50px; overflow: hidden; background: #fff; }
         .search-bar-container input:focus { box-shadow: none; border-color: transparent; }
         
         .cat-nav-wrapper { background: rgba(255, 253, 245, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
@@ -107,10 +108,6 @@
 <div class="app-layout">
     <div id="marquee-bar" class="marquee-container" style="display:none;"><div id="marquee-text" class="marquee-content"></div></div>
     <div id="update-time-banner" style="display:none; padding: 5px 15px; font-size:0.8rem; color:#666; background: rgba(255,255,255,0.8); text-align: center;">庫存更新：<span id="stock-time"></span></div>
-
-    <div class="banner-wrapper">
-        <img src="https://drive.google.com/thumbnail?id=1Htxmmsf4KyprRYI_3ZCBN99Pjk4Q5viq&sz=w2000" class="responsive-banner" id="hero-banner-img" alt="樂森良選" referrerpolicy="no-referrer">
-    </div>
 
     <div class="quick-menu">
         <div class="menu-item" onclick="openCartModal()"><img src="https://drive.google.com/thumbnail?id=1xM2Zbn4YW06eGcmWPV0DTQG6yQlDgTAd&sz=w1000" class="menu-btn-img" referrerpolicy="no-referrer"><div class="menu-label">立即結帳</div></div>
@@ -344,7 +341,7 @@
             if(data.marqueeText && data.marqueeText.trim() !== "") { document.getElementById('marquee-text').innerText = data.marqueeText; document.getElementById('marquee-bar').style.display = 'block'; }
             if(data.lastUpdateTime) { document.getElementById('stock-time').innerText = data.lastUpdateTime; document.getElementById('update-time-banner').style.display = 'block'; }
             if (data.stickyMsg && data.stickyMsg.trim() !== "") { document.getElementById('sticky-msg-bar').innerText = data.stickyMsg; document.getElementById('sticky-msg-bar').style.display = 'block'; } else { document.getElementById('sticky-msg-bar').style.display = 'none'; }
-            if (data.homeBannerImg && data.homeBannerImg.trim() !== "") document.getElementById('hero-banner-img').src = data.homeBannerImg;
+            
             renderMenu(); checkAnnouncement(data); document.getElementById('loader').style.display = 'none';
         }).catch(err => { document.getElementById('loader').innerHTML = '<div class="text-danger p-4 text-center">載入失敗</div>'; });
     }
@@ -561,13 +558,10 @@
     function clearCart() {
         if(cart.length === 0) return;
         if(confirm("確定要清空購物車嗎？")) {
-            cart = [];
-            appliedPromo = null;
+            cart = []; appliedPromo = null;
             document.getElementById('promo-code-input').value = '';
             document.getElementById('promo-msg').innerText = '';
-            saveCartToLocal();
-            updateCartUI();
-            renderMenu();
+            saveCartToLocal(); updateCartUI(); renderMenu();
         }
     }
 
@@ -644,7 +638,12 @@
         document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "狗狗跑腿送單中..."; cartModal.hide();
         
         let itemsTextArr = [];
-        cart.forEach(i => { itemsTextArr.push(`${i.name} ($${i.price}) x${i.count}`); });
+        cart.forEach((i, idx) => {
+            let rowDisc = window.cartYqDiscounts ? window.cartYqDiscounts[idx] : 0;
+            let rowTotal = i.price * i.count;
+            // 這裡送出最原始的結構，後端排版引擎會自動攔截重組
+            itemsTextArr.push(`${i.name} ($${i.price}) x${i.count}`);
+        });
         let itemsText = itemsTextArr.join(', ');
         
         let rawTotal = cart.reduce((s, i) => s + (i.price * i.count), 0); 
@@ -664,6 +663,7 @@
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
     
+    // 🟢 歷史訂單的顯示完美相容新格式
     function openMyOrders() { 
         if(!isLoggedIn) { alert("請先登入 LINE 才能查詢訂單！"); return; }
         myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
