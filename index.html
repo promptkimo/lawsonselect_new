@@ -79,7 +79,6 @@
         .order-item-list { list-style: none; padding: 0; margin: 5px 0; }
         .order-item-list li { padding: 6px 0; border-bottom: 1px dashed #eee; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: flex-start; }
         .order-item-list li:last-child { border-bottom: none; }
-        .item-qty-badge { background-color: #3e2723; color: #ffb300; padding: 1px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; margin-left: 10px; white-space: nowrap; }
         .variant-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #eee; }
         .variant-row:last-child { border-bottom: none; }
         .qty-stepper { display: flex; align-items: center; background: #f8f9fa; border-radius: 20px; border: 1px solid #ddd; }
@@ -91,7 +90,6 @@
         .clearance-badge { font-size: 0.8rem; background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-weight: bold; animation: blink 2s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
-        /* 🟢 新增：蝦皮風格進度條專用 CSS */
         .tracking-wrap { display: flex; justify-content: space-between; position: relative; margin: 15px 0 10px 0; padding: 0 5px; }
         .tracking-wrap::before { content: ''; position: absolute; top: 14px; left: 15%; right: 15%; height: 2px; background: #e0e0e0; z-index: 1; }
         .tracking-step { flex: 1; text-align: center; position: relative; z-index: 2; }
@@ -637,6 +635,7 @@
         updateCartUI(); saveCartToLocal(); renderCartModal();
     }
     
+    // 🟢 將折扣直接寫入送出的字串中
     function submitOrder() {
         const cName = document.getElementById('order-contact-name').value.trim(); const cPhone = document.getElementById('order-contact-phone').value.trim();
         if (!cName) { alert("請輸入取餐聯絡人姓名"); return; } if (!cPhone) { alert("請輸入聯絡電話"); return; }
@@ -644,14 +643,22 @@
 
         document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "狗狗跑腿送單中..."; cartModal.hide();
         
-        let itemsText = cart.map(i => `${i.name} ($${i.price}) x${i.count}`).join(', ');
+        let itemsTextArr = [];
+        cart.forEach((i, idx) => {
+            let rowDisc = window.cartYqDiscounts ? window.cartYqDiscounts[idx] : 0;
+            let rowTotal = i.price * i.count;
+            if (rowDisc > 0) {
+                itemsTextArr.push(`${i.name} ($${i.price}) x${i.count} ➔ $${rowTotal - rowDisc} (95折)`);
+            } else {
+                itemsTextArr.push(`${i.name} ($${i.price}) x${i.count}`);
+            }
+        });
+        let itemsText = itemsTextArr.join(', ');
+        
         let rawTotal = cart.reduce((s, i) => s + (i.price * i.count), 0); 
         let finalTotal = rawTotal - (window.currentYqDiscount || 0);
 
-        if (window.currentYqDiscount > 0) {
-            itemsText += `, [永圻滿件95折] 折抵 $${window.currentYqDiscount}`;
-        }
-
+        if (window.currentYqDiscount > 0) itemsText += `, [永圻滿件95折] 折抵 $${window.currentYqDiscount}`;
         if (appliedPromo) { finalTotal -= appliedPromo.discount; if(finalTotal < 0) finalTotal = 0; itemsText += `, [優惠碼 ${appliedPromo.code}] 折抵 $${appliedPromo.discount}`; }
 
         const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: itemsText, total: finalTotal, cartItems: cart, contactName: cName, contactPhone: cPhone } };
@@ -665,6 +672,7 @@
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
     
+    // 🟢 歷史訂單的顯示完美相容新格式
     function openMyOrders() { 
         if(!isLoggedIn) { alert("請先登入 LINE 才能查詢訂單！"); return; }
         myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
@@ -696,27 +704,31 @@
                     let isAdd = itemStr.includes('[新增]');
                     let cleanStr = itemStr.replace(/\[缺貨\]|\[刪除\]|\[新增\]/g, '').trim();
                     
-                    const lastX = cleanStr.lastIndexOf(' x'); 
-                    let name = cleanStr; let qty = '1';
+                    let lastX = cleanStr.lastIndexOf(' x'); 
+                    let name = cleanStr; let qtyStr = 'x1';
                     if (lastX !== -1) {
-                        let potentialQty = parseInt(cleanStr.substring(lastX + 2));
-                        if (!isNaN(potentialQty)) {
+                        let remainder = cleanStr.substring(lastX + 2); 
+                        let qtyMatch = remainder.match(/^(\d+)/);
+                        if (qtyMatch) {
                             name = cleanStr.substring(0, lastX).trim();
-                            qty = potentialQty;
+                            qtyStr = "x" + remainder; 
                         }
                     }
+                    
+                    if (qtyStr.includes('➔')) {
+                        let parts = qtyStr.split('➔');
+                        qtyStr = `${parts[0]}<span class="text-danger ms-1">➔${parts[1]}</span>`;
+                    }
 
-                    let itemStyle = "";
-                    let icon = "▪";
+                    let itemStyle = ""; let icon = "▪";
                     if (isDel) { itemStyle = 'style="text-decoration: line-through; color: #dc3545;"'; icon = "❌"; } 
                     else if (isAdd) { itemStyle = 'style="color: #0d6efd; font-weight: bold;"'; icon = "➕"; }
                     else if (name.includes('(即期品)')) { itemStyle = 'class="text-danger fw-bold"'; }
 
-                    itemsHtml += `<li><span ${itemStyle}>${icon} ${name}</span><span class="item-qty-badge">x${qty}</span></li>`; 
+                    itemsHtml += `<li><span ${itemStyle}>${icon} ${name}</span><span class="fw-bold text-dark ms-2" style="font-size:0.9rem; white-space:nowrap;">${qtyStr}</span></li>`; 
                 });
                 itemsHtml += '</ul>';
 
-                // 🟢 產生蝦皮風格進度條
                 let step1 = "active";
                 let step2 = (o.status === "處理中" || o.status === "已完成") ? "active" : "";
                 let step3 = (o.status === "已完成") ? "active" : "";
