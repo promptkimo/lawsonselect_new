@@ -102,7 +102,7 @@
 </head>
 <body>
 
-<div id="loader"><div class="dog-wrapper"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-3" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-2" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-1" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img main-dog" alt="Loading" referrerpolicy="no-referrer"></div><div class="spinner-border text-warning" role="status"></div><div class="mt-2 text-secondary fw-bold small">樂森良選 為您服務...</div></div>
+<div id="loader"><div class="dog-wrapper"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-3" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-2" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img main-dog" alt="Loading" referrerpolicy="no-referrer"></div><div class="spinner-border text-warning" role="status"></div><div class="mt-2 text-secondary fw-bold small">樂森良選 為您服務...</div></div>
 
 <div class="app-layout">
     <div id="marquee-bar" class="marquee-container" style="display:none;"><div id="marquee-text" class="marquee-content"></div></div>
@@ -635,7 +635,7 @@
         updateCartUI(); saveCartToLocal(); renderCartModal();
     }
     
-    // 🟢 將折扣直接寫入送出的字串中
+    // 🟢 送出訂單時，僅送出基礎字串，由後端引擎接手排版
     function submitOrder() {
         const cName = document.getElementById('order-contact-name').value.trim(); const cPhone = document.getElementById('order-contact-phone').value.trim();
         if (!cName) { alert("請輸入取餐聯絡人姓名"); return; } if (!cPhone) { alert("請輸入聯絡電話"); return; }
@@ -644,15 +644,7 @@
         document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "狗狗跑腿送單中..."; cartModal.hide();
         
         let itemsTextArr = [];
-        cart.forEach((i, idx) => {
-            let rowDisc = window.cartYqDiscounts ? window.cartYqDiscounts[idx] : 0;
-            let rowTotal = i.price * i.count;
-            if (rowDisc > 0) {
-                itemsTextArr.push(`${i.name} ($${i.price}) x${i.count} ➔ $${rowTotal - rowDisc} (95折)`);
-            } else {
-                itemsTextArr.push(`${i.name} ($${i.price}) x${i.count}`);
-            }
-        });
+        cart.forEach(i => { itemsTextArr.push(`${i.name} ($${i.price}) x${i.count}`); });
         let itemsText = itemsTextArr.join(', ');
         
         let rawTotal = cart.reduce((s, i) => s + (i.price * i.count), 0); 
@@ -672,7 +664,6 @@
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
     
-    // 🟢 歷史訂單的顯示完美相容新格式
     function openMyOrders() { 
         if(!isLoggedIn) { alert("請先登入 LINE 才能查詢訂單！"); return; }
         myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
@@ -693,6 +684,7 @@
             }
             let html = '';
             orders.forEach(o => {
+                // 🟢 使用正則完美解析後端排版字串
                 let itemsHtml = '<ul class="order-item-list">';
                 String(o.items).split(', ').forEach(itemStr => { 
                     if(itemStr.includes('折抵 $') || itemStr.includes('滿件95折')) { 
@@ -704,28 +696,15 @@
                     let isAdd = itemStr.includes('[新增]');
                     let cleanStr = itemStr.replace(/\[缺貨\]|\[刪除\]|\[新增\]/g, '').trim();
                     
-                    let lastX = cleanStr.lastIndexOf(' x'); 
-                    let name = cleanStr; let qtyStr = 'x1';
-                    if (lastX !== -1) {
-                        let remainder = cleanStr.substring(lastX + 2); 
-                        let qtyMatch = remainder.match(/^(\d+)/);
-                        if (qtyMatch) {
-                            name = cleanStr.substring(0, lastX).trim();
-                            qtyStr = "x" + remainder; 
-                        }
-                    }
-                    
-                    if (qtyStr.includes('➔')) {
-                        let parts = qtyStr.split('➔');
-                        qtyStr = `${parts[0]}<span class="text-danger ms-1">➔${parts[1]}</span>`;
-                    }
+                    cleanStr = cleanStr.replace(/➔\s*\$(\d+)\s*\(95折\)/, '<span class="text-danger fw-bold ms-1">➔$$$1(95折)</span>');
+                    cleanStr = cleanStr.replace(/=\s*\$(\d+)$/, '<span class="text-secondary ms-1">=$$$1</span>');
 
                     let itemStyle = ""; let icon = "▪";
                     if (isDel) { itemStyle = 'style="text-decoration: line-through; color: #dc3545;"'; icon = "❌"; } 
                     else if (isAdd) { itemStyle = 'style="color: #0d6efd; font-weight: bold;"'; icon = "➕"; }
-                    else if (name.includes('(即期品)')) { itemStyle = 'class="text-danger fw-bold"'; }
+                    else if (cleanStr.includes('(即期品)')) { itemStyle = 'class="text-danger fw-bold"'; }
 
-                    itemsHtml += `<li><span ${itemStyle}>${icon} ${name}</span><span class="fw-bold text-dark ms-2" style="font-size:0.9rem; white-space:nowrap;">${qtyStr}</span></li>`; 
+                    itemsHtml += `<li><span ${itemStyle}>${icon} ${cleanStr}</span></li>`; 
                 });
                 itemsHtml += '</ul>';
 
