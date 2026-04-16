@@ -247,7 +247,6 @@
     let isLoggedIn = false; let appliedPromo = null; let favorites = []; 
     let cartModal, myOrdersModal, announceModal, variantModal, memberModal, orderSuccessModal, myRestockModal;
 
-    // 🟢 安全字串防護罩 (避免傳輸過程中被切斷)
     const escHTML = (s) => String(s || '').replace(/"/g, "&quot;").replace(/'/g, "\\'");
 
     window.onload = function() { 
@@ -263,6 +262,39 @@
 
     function isYongqi(name, cat) { return (cat && cat.includes('永圻')) || (name && name.includes('永圻')); }
     function isTongxin(name, cat) { return (cat && cat.includes('童心')) || (name && name.includes('童心')); }
+
+    function formatOrderItems(itemsStr, yqMap) {
+        let items = itemsStr.split(', '); let parsed = []; let promos = [];
+        items.forEach(item => {
+            if(item.includes('折抵 $') || item.includes('滿件95折')) {
+                if (!item.includes('滿件95折')) promos.push(item);
+            } else {
+                let isDel = item.includes('[缺貨]') || item.includes('[刪除]'); let isAdd = item.includes('[新增]');
+                let cleanName = item.replace(/\[缺貨\]|\[刪除\]|\[新增\]/g, '').trim();
+                let priceMatch = cleanName.match(/\(\$(\d+)\)/); let qtyMatch = cleanName.match(/x(\d+)/);
+                let price = priceMatch ? parseInt(priceMatch[1]) : 0; let qty = qtyMatch ? parseInt(qtyMatch[1]) : 1;
+                let pureName = cleanName.replace(/\(\$\d+\)/, '').replace(/x\d+.*$/, '').replace(/\s*\(即期品\)/g, '').replace(/【贈品】/g, '').trim();
+                let nameWithPrice = pureName; if(cleanName.includes('(即期品)')) nameWithPrice += " (即期品)";
+                let searchName = pureName.replace(/^【.*?】/, '').trim();
+                let isYQ = searchName.includes('永圻') || (yqMap && yqMap[searchName]);
+                parsed.push({ raw: item, pureName: pureName, nameWithPrice: nameWithPrice, price: price, qty: qty, isDel: isDel, isAdd: isAdd, isYQ: isYQ });
+            }
+        });
+        
+        let yqEligible = [];
+        parsed.forEach((item, idx) => { if (!item.isDel && item.isYQ) { for(let k=0; k<item.qty; k++) yqEligible.push({ price: item.price, idx: idx }); } });
+        yqEligible.sort((a,b) => a.price - b.price); let yqDiscounts = new Array(parsed.length).fill(0);
+        let pairs = Math.floor(yqEligible.length / 2); for(let j=0; j<pairs*2; j++) yqDiscounts[yqEligible[j].idx] += yqEligible[j].price * 0.05;
+        
+        let resultItems = [];
+        parsed.forEach((item, idx) => {
+            let rowTotal = item.price * item.qty; let disc = Math.round(yqDiscounts[idx]);
+            let suffix = ` = $${rowTotal}`; if (disc > 0 && !item.isDel) suffix = ` ➔ $${rowTotal - disc} (95折)`;
+            let textStr = `${item.nameWithPrice} ($${item.price}) x${item.qty}${suffix}`;
+            resultItems.push({ raw: item.raw, isDel: item.isDel, isAdd: item.isAdd, name: item.nameWithPrice, qty: item.qty, price: item.price, rowTotal: rowTotal, disc: disc, text: textStr });
+        });
+        return { items: resultItems, promos: promos };
+    }
 
     async function initLiff() { 
         try { 
@@ -321,7 +353,6 @@
         }).then(() => { setTimeout(viewMyRestocks, 800); }).catch(e => { viewMyRestocks(); });
     }
 
-    // 🟢 點擊事件一律改用產品本身的獨立 UID，絕對不會因為引號卡住！
     function toggleFavByUid(e, uid) {
         e.stopPropagation();
         if(!isLoggedIn) { alert('請先點擊下方 LINE 登入，才能使用我的最愛功能喔！'); return; }
@@ -342,7 +373,6 @@
         fetch(GAS_URL + "?page=json&t=" + Date.now()).then(res => res.json()).then(data => {
             if (data.error) { alert("錯誤: " + data.message); return; }
             allData = data; 
-            // 🟢 配發 UID 供前端使用
             if (allData.products) allData.products.forEach((p, i) => p._uid = i);
 
             if(data.marqueeText && data.marqueeText.trim() !== "") { document.getElementById('marquee-text').innerText = data.marqueeText; document.getElementById('marquee-bar').style.display = 'block'; }
@@ -419,7 +449,6 @@
         items.forEach(p => html += createProductCard(p)); html += `</div>`; container.innerHTML = html;
     }
 
-    // 🟢 所有的 onClick 全部改用 UID ( _uid ) 傳遞
     function createProductCard(p) {
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat); const count = inCart ? inCart.count : 0; 
         const isTQ = isTongxin(p.name, p.cat);
@@ -573,13 +602,10 @@
     function clearCart() {
         if(cart.length === 0) return;
         if(confirm("確定要清空購物車嗎？")) {
-            cart = [];
-            appliedPromo = null;
+            cart = []; appliedPromo = null;
             document.getElementById('promo-code-input').value = '';
             document.getElementById('promo-msg').innerText = '';
-            saveCartToLocal();
-            updateCartUI();
-            renderMenu();
+            saveCartToLocal(); updateCartUI(); renderMenu();
         }
     }
 
@@ -592,15 +618,20 @@
         updateCartUI();
         if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } 
         let html = ''; 
-        cart.forEach((i, index) => {
+        
+        let sortedCart = [...cart].sort((a, b) => a.cat.localeCompare(b.cat, 'zh-TW'));
+        
+        sortedCart.forEach((i, index) => {
             const isClearance = i.name.includes('(即期品)'); const rowClass = isClearance ? 'cart-item-row clearance-item' : 'cart-item-row border-bottom'; const badgeHtml = isClearance ? `<span class="clearance-badge">⚠️ 即期良品</span>` : ``; let dateInfo = '';
             if (isClearance) { const rawName = i.name.replace(" (即期品)", ""); const p = allData.products.find(x => x.name === rawName && x.cat === i.cat); if (p && p.arrivalDate) { const d = new Date(p.arrivalDate); if (!isNaN(d.getTime())) dateInfo = `<div class="small text-danger fw-bold"><i class="bi bi-calendar-event"></i> 效期：${d.getMonth()+1}/${d.getDate()}</div>`; } }
             
             let isTQ = isTongxin(i.name, i.cat);
             let tqBadge = isTQ ? `<div class="mt-1 mb-1"><span class="badge bg-warning text-dark"><i class="bi bi-clock-history"></i> 較長備貨 (請耐心等候)</span></div>` : '';
 
+            // 🟢 在排序後的陣列中，我們需要找回原本在購物車的索引來取折扣
+            let originalIndex = cart.indexOf(i);
             let originalRowTotal = i.price * i.count;
-            let rowDiscount = window.cartYqDiscounts ? window.cartYqDiscounts[index] : 0;
+            let rowDiscount = window.cartYqDiscounts ? window.cartYqDiscounts[originalIndex] : 0;
             let priceHtml = '';
 
             if (rowDiscount > 0) {
@@ -620,22 +651,21 @@
             html += `<div class="d-flex justify-content-between align-items-center py-2 ${rowClass}">
                         <div class="me-2 item-index">${index + 1}.</div>
                         <div style="flex:1">
-                            <div>${badgeHtml} <span class="fw-bold text-dark">${i.name.replace(" (即期品)", "")}</span></div>
+                            <div>${badgeHtml} <span class="badge bg-light text-secondary border me-1">【${i.cat}】</span><span class="fw-bold text-dark">${i.name.replace(" (即期品)", "")}</span></div>
                             ${tqBadge}
                             ${dateInfo}
                             ${priceHtml}
                         </div>
                         <div class="d-flex align-items-center">
-                            <button class="btn btn-sm btn-outline-warning text-dark border fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart(${index}, -1)">-</button>
+                            <button class="btn btn-sm btn-outline-warning text-dark border fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart(${originalIndex}, -1)">-</button>
                             <span class="px-3 fw-bold">${i.count}</span>
-                            <button class="btn btn-sm btn-warning text-dark fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart(${index}, 1)">+</button>
+                            <button class="btn btn-sm btn-warning text-dark fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart(${originalIndex}, 1)">+</button>
                         </div>
                     </div>`;
         });
         body.innerHTML = html;
     }
 
-    // 🟢 購物車的按鈕也改為靠索引操作，免疫引號干擾
     function updateQtyInCart(cartIndex, delta) {
         const cartItem = cart[cartIndex];
         if(!cartItem) return;
@@ -658,10 +688,12 @@
 
         document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "狗狗跑腿送單中..."; cartModal.hide();
         
+        let sortedCart = [...cart].sort((a, b) => a.cat.localeCompare(b.cat, 'zh-TW'));
         let itemsTextArr = [];
-        cart.forEach((i, idx) => {
-            // 這裡送出最原始的結構，後端排版引擎會自動攔截重組
-            itemsTextArr.push(`${i.name} ($${i.price}) x${i.count}`);
+        sortedCart.forEach((i) => {
+            let catStr = `【${i.cat}】`;
+            let finalName = i.name.startsWith(catStr) ? i.name : `${catStr}${i.name}`;
+            itemsTextArr.push(`${finalName} ($${i.price}) x${i.count}`);
         });
         let itemsText = itemsTextArr.join(', ');
         
@@ -702,27 +734,25 @@
             }
             let html = '';
             orders.forEach(o => {
+                let formatted = formatOrderItems(o.items, allData.yqMap || {});
                 let itemsHtml = '<ul class="order-item-list">';
-                String(o.items).split(', ').forEach(itemStr => { 
-                    if(itemStr.includes('折抵 $') || itemStr.includes('滿件95折')) { 
-                        itemsHtml += `<li class="text-success fw-bold border-0 mt-1"><i class="bi bi-tag-fill me-1"></i>${itemStr}</li>`; 
-                        return; 
-                    }
-                    
-                    let isDel = itemStr.includes('[缺貨]') || itemStr.includes('[刪除]');
-                    let isAdd = itemStr.includes('[新增]');
-                    let cleanStr = itemStr.replace(/\[缺貨\]|\[刪除\]|\[新增\]/g, '').trim();
-                    
-                    cleanStr = cleanStr.replace(/➔\s*\$(\d+)\s*\(95折\)/, '<span class="text-danger fw-bold ms-1">➔$$$1(95折)</span>');
-                    cleanStr = cleanStr.replace(/=\s*\$(\d+)$/, '<span class="text-secondary ms-1">=$$$1</span>');
-
+                
+                formatted.items.forEach(i => {
                     let itemStyle = ""; let icon = "▪";
-                    if (isDel) { itemStyle = 'style="text-decoration: line-through; color: #dc3545;"'; icon = "❌"; } 
-                    else if (isAdd) { itemStyle = 'style="color: #0d6efd; font-weight: bold;"'; icon = "➕"; }
-                    else if (cleanStr.includes('(即期品)')) { itemStyle = 'class="text-danger fw-bold"'; }
+                    if (i.isDel) { itemStyle = 'style="text-decoration: line-through; color: #dc3545;"'; icon = "❌"; } 
+                    else if (i.isAdd) { itemStyle = 'style="color: #0d6efd; font-weight: bold;"'; icon = "➕"; }
+                    else if (i.name.includes('(即期品)')) { itemStyle = 'class="text-danger fw-bold"'; }
 
-                    itemsHtml += `<li><span ${itemStyle}>${icon} ${cleanStr}</span></li>`; 
+                    let cleanText = i.text.replace(/➔\s*\$(\d+)\s*\(95折\)/, '<span class="text-danger fw-bold ms-1">➔$$$1(95折)</span>')
+                                          .replace(/=\s*\$(\d+)$/, '<span class="text-secondary ms-1">=$$$1</span>');
+
+                    itemsHtml += `<li><span ${itemStyle}>${icon} ${cleanText}</span></li>`; 
                 });
+                
+                formatted.promos.forEach(p => {
+                    itemsHtml += `<li class="text-success fw-bold border-0 mt-1"><i class="bi bi-tag-fill me-1"></i>${p}</li>`;
+                });
+                
                 itemsHtml += '</ul>';
 
                 let step1 = "active";
