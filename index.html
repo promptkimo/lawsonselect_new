@@ -21,7 +21,6 @@
         .main-dog { z-index: 10; opacity: 1; } .ghost-1 { z-index: 9; opacity: 0.6; animation-delay: -0.15s; filter: blur(1px); } .ghost-2 { z-index: 8; opacity: 0.3; animation-delay: -0.3s; filter: blur(2px); } .ghost-3 { z-index: 7; opacity: 0.1; animation-delay: -0.45s; filter: blur(4px); }
         @keyframes runRightToLeft { 0% { transform: translateX(120vw); } 100% { transform: translateX(-120vw); } }
         
-        /* 🟢 統一寬度為 800px 並置中 */
         .quick-menu { background: #fff; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.06); max-width: 800px; margin: 20px auto; position: relative; z-index: 10; }
         @media (min-width: 768px) { .quick-menu { padding: 20px; gap: 20px; } }
         .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.2s; }
@@ -35,7 +34,6 @@
         .sticky-header-group { position: sticky; top: 0; z-index: 1010; }
         .sticky-msg-bar { background-color: #ffe0b2; color: #e65100; font-size: 0.95rem; font-weight: bold; text-align: center; padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); display: none; }
         
-        /* 🟢 搜尋欄最大寬度改為 800px */
         .search-bar-container { background: rgba(255, 253, 245, 0.96); padding: 10px 15px; border-bottom: 1px solid rgba(0,0,0,0.03); width: 100%; margin: 0 auto; display: flex; justify-content: center; }
         .search-bar-container .input-group { max-width: 800px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 50px; overflow: hidden; background: #fff; }
         .search-bar-container input:focus { box-shadow: none; border-color: transparent; }
@@ -249,6 +247,9 @@
     let isLoggedIn = false; let appliedPromo = null; let favorites = []; 
     let cartModal, myOrdersModal, announceModal, variantModal, memberModal, orderSuccessModal, myRestockModal;
 
+    // 🟢 安全字串防護罩：確保單引號雙引號不會破壞 HTML 結構
+    const safeStr = (str) => String(str || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+
     window.onload = function() { 
         cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
         myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
@@ -304,7 +305,7 @@
             res.forEach(item => { 
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center py-3">
                             <div><i class="bi bi-box-seam me-2 text-secondary"></i><span class="fw-bold">${item.name}</span><br><small class="text-muted" style="margin-left:28px;">${item.time.split(' ')[0]}</small></div>
-                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="cancelRestock('${item.name}')">取消通知</button>
+                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="cancelRestock('${safeStr(item.name)}')">取消通知</button>
                          </li>`; 
             });
             html += '</ul>';
@@ -419,15 +420,17 @@
         
         const isOOS = !isTQ && (p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || Number(p.clearStock) <= 0)));
         const isFav = favorites.includes(p.name);
-        const heartHtml = `<div class="fav-btn" onclick="toggleFav(event, '${p.name}')"><i class="bi ${isFav ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary'} fs-5"></i></div>`;
+        
+        // 🟢 加入 safeStr 保護單引號問題
+        const heartHtml = `<div class="fav-btn" onclick="toggleFav(event, '${safeStr(p.name)}')"><i class="bi ${isFav ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary'} fs-5"></i></div>`;
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         
         let stockHtml = isTQ ? `<div class="mt-2"><span class="badge bg-warning text-dark border border-warning shadow-sm px-2 py-1" style="font-size:0.8rem;"><i class="bi bi-clock-history me-1"></i>較長備貨</span></div>` : `<span class="stock-info">剩: ${p.stock}</span>`;
         
         let btnHtml = '';
-        if (isOOS) { btnHtml = `<div class="btn-add-only bg-danger text-white w-auto px-3 shadow-sm" style="border-radius:20px; font-size:0.85rem;" onclick="handleRestockBtn('${p.name}', '${p.cat}')"><i class="bi bi-bell-fill me-1"></i>貨到通知</div>`; }
-        else if (Number(p.clearStock) > 0) btnHtml = `<div class="btn-add-only" style="width:auto; padding:0 12px; border-radius:20px; font-size:0.9rem;" onclick="openVariantModal('${p.name}', '${p.cat}')">選購</div>`;
-        else btnHtml = (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${p.name}', '${p.cat}', 1)">+</button></div>` : `<div class="btn-add-only circle" onclick="updateQty('${p.name}', '${p.cat}', 1)"><i class="bi bi-plus-lg"></i></div>`);
+        if (isOOS) { btnHtml = `<div class="btn-add-only bg-danger text-white w-auto px-3 shadow-sm" style="border-radius:20px; font-size:0.85rem;" onclick="handleRestockBtn('${safeStr(p.name)}', '${safeStr(p.cat)}')"><i class="bi bi-bell-fill me-1"></i>貨到通知</div>`; }
+        else if (Number(p.clearStock) > 0) btnHtml = `<div class="btn-add-only" style="width:auto; padding:0 12px; border-radius:20px; font-size:0.9rem;" onclick="openVariantModal('${safeStr(p.name)}', '${safeStr(p.cat)}')">選購</div>`;
+        else btnHtml = (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQty('${safeStr(p.name)}', '${safeStr(p.cat)}', -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQty('${safeStr(p.name)}', '${safeStr(p.cat)}', 1)">+</button></div>` : `<div class="btn-add-only circle" onclick="updateQty('${safeStr(p.name)}', '${safeStr(p.cat)}', 1)"><i class="bi bi-plus-lg"></i></div>`);
         
         const badgeHtml = Number(p.clearStock) > 0 ? `<div class="badge-corner">即期出清</div>` : ''; 
         let yqBadge = isYQ ? `<span class="badge bg-danger mb-2 d-inline-block shadow-sm px-2 py-1" style="font-size:0.75rem;"><i class="bi bi-tags-fill me-1"></i>任兩件 95折</span><br>` : '';
@@ -608,9 +611,9 @@
                             ${priceHtml}
                         </div>
                         <div class="d-flex align-items-center">
-                            <button class="btn btn-sm btn-outline-warning text-dark border fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',-1)">-</button>
+                            <button class="btn btn-sm btn-outline-warning text-dark border fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${safeStr(i.name)}','${safeStr(i.cat)}',-1)">-</button>
                             <span class="px-3 fw-bold">${i.count}</span>
-                            <button class="btn btn-sm btn-warning text-dark fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${i.name}','${i.cat}',1)">+</button>
+                            <button class="btn btn-sm btn-warning text-dark fw-bold rounded-circle" style="width:28px;height:28px;padding:0" onclick="updateQtyInCart('${safeStr(i.name)}','${safeStr(i.cat)}',1)">+</button>
                         </div>
                     </div>`;
         });
@@ -629,7 +632,6 @@
         updateCartUI(); saveCartToLocal(); renderCartModal();
     }
     
-    // 🟢 送出訂單時，僅送出基礎字串，由後端引擎接手排版
     function submitOrder() {
         const cName = document.getElementById('order-contact-name').value.trim(); const cPhone = document.getElementById('order-contact-phone').value.trim();
         if (!cName) { alert("請輸入取餐聯絡人姓名"); return; } if (!cPhone) { alert("請輸入聯絡電話"); return; }
@@ -638,12 +640,7 @@
         document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "狗狗跑腿送單中..."; cartModal.hide();
         
         let itemsTextArr = [];
-        cart.forEach((i, idx) => {
-            let rowDisc = window.cartYqDiscounts ? window.cartYqDiscounts[idx] : 0;
-            let rowTotal = i.price * i.count;
-            // 這裡送出最原始的結構，後端排版引擎會自動攔截重組
-            itemsTextArr.push(`${i.name} ($${i.price}) x${i.count}`);
-        });
+        cart.forEach((i, idx) => { itemsTextArr.push(`${i.name} ($${i.price}) x${i.count}`); });
         let itemsText = itemsTextArr.join(', ');
         
         let rawTotal = cart.reduce((s, i) => s + (i.price * i.count), 0); 
@@ -663,7 +660,6 @@
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('show'); setTimeout(() => lb.style.display = 'none', 300); }
     
-    // 🟢 歷史訂單的顯示完美相容新格式
     function openMyOrders() { 
         if(!isLoggedIn) { alert("請先登入 LINE 才能查詢訂單！"); return; }
         myOrdersModal.show(); document.getElementById('my-orders-list').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
@@ -684,7 +680,6 @@
             }
             let html = '';
             orders.forEach(o => {
-                // 🟢 使用正則完美解析後端排版字串
                 let itemsHtml = '<ul class="order-item-list">';
                 String(o.items).split(', ').forEach(itemStr => { 
                     if(itemStr.includes('折抵 $') || itemStr.includes('滿件95折')) { 
@@ -696,6 +691,7 @@
                     let isAdd = itemStr.includes('[新增]');
                     let cleanStr = itemStr.replace(/\[缺貨\]|\[刪除\]|\[新增\]/g, '').trim();
                     
+                    // 解析排版引擎的字串
                     cleanStr = cleanStr.replace(/➔\s*\$(\d+)\s*\(95折\)/, '<span class="text-danger fw-bold ms-1">➔$$$1(95折)</span>');
                     cleanStr = cleanStr.replace(/=\s*\$(\d+)$/, '<span class="text-secondary ms-1">=$$$1</span>');
 
