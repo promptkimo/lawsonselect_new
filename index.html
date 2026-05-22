@@ -681,11 +681,15 @@
         updateCartUI(); saveCartToLocal(); renderCartModal(); renderMenu();
     }
     
+    let isSubmitting = false;
     function submitOrder() {
+        if (isSubmitting) return;
         const cName = document.getElementById('order-contact-name').value.trim(); const cPhone = document.getElementById('order-contact-phone').value.trim();
         if (!cName) { alert("請輸入取餐聯絡人姓名"); return; } if (!cPhone) { alert("請輸入聯絡電話"); return; }
         if(!isLoggedIn && !confirm("⚠️ 您目前是訪客身分，將無法收到訂單狀態通知與優惠折扣。\n\n確定要送出嗎？")) return;
 
+        isSubmitting = true;
+        const submitBtn = document.getElementById('btn-submit-order'); if (submitBtn) submitBtn.disabled = true;
         document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "狗狗跑腿送單中..."; cartModal.hide();
         
         let sortedCart = [...cart].sort((a, b) => a.cat.localeCompare(b.cat, 'zh-TW'));
@@ -708,7 +712,12 @@
         fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' }).then(() => { 
             document.getElementById('loader').style.display = 'none';
             cart = []; appliedPromo = null; saveCartToLocal(); updateCartUI(); renderMenu(); orderSuccessModal.show();
-        }).catch(e => alert("錯誤: " + e));
+            isSubmitting = false; if (submitBtn) submitBtn.disabled = false;
+        }).catch(e => {
+            document.getElementById('loader').style.display = 'none';
+            isSubmitting = false; if (submitBtn) submitBtn.disabled = false;
+            alert("送單時發生問題，請確認網路後再試一次：" + e);
+        });
     }
     
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
