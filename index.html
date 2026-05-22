@@ -146,10 +146,25 @@
                     <h6 id="center-name" class="fw-bold m-0"></h6>
                 </div>
                 <div class="list-group list-group-flush text-center">
+                    <button class="list-group-item list-group-item-action py-3 fw-bold text-warning" onclick="viewMyCoupons()"><i class="bi bi-ticket-perforated-fill me-2"></i>我的優惠券 <span id="member-coupon-count" class="badge bg-danger rounded-pill ms-1" style="display:none;"></span></button>
                     <button class="list-group-item list-group-item-action py-3 fw-bold text-danger" onclick="viewFavorites()"><i class="bi bi-heart-fill me-2"></i>我的最愛</button>
                     <button class="list-group-item list-group-item-action py-3 fw-bold text-success" onclick="viewMyRestocks()"><i class="bi bi-bell-fill me-2"></i>到貨通知品項</button>
                     <button class="list-group-item list-group-item-action py-3 fw-bold text-secondary" onclick="performLogout()"><i class="bi bi-box-arrow-right me-2"></i>切換為訪客 (登出)</button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="myCouponModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0">
+            <div class="modal-header bg-warning border-0">
+                <h6 class="modal-title fw-bold"><i class="bi bi-ticket-perforated-fill me-2"></i>我的專屬優惠券</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3" id="my-coupon-modal-list">
+                <div class="text-center py-4"><div class="spinner-border text-warning"></div></div>
             </div>
         </div>
     </div>
@@ -194,6 +209,13 @@
                     <span class="text-danger fw-bold m-0" id="modal-yongqi-discount">-$0</span>
                 </div>
 
+                <div id="my-coupon-section" style="display:none;" class="px-3 mb-2">
+                    <div class="border border-warning rounded p-2 bg-warning bg-opacity-10">
+                        <div class="small fw-bold text-warning-emphasis mb-2"><i class="bi bi-ticket-perforated-fill me-1"></i>您的專屬優惠券</div>
+                        <div id="my-coupon-list"></div>
+                    </div>
+                </div>
+
                 <div id="promo-code-section" style="display:none;" class="px-3 mb-2">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-white text-danger border-end-0"><i class="bi bi-gift-fill"></i></span>
@@ -218,6 +240,10 @@
                 <div id="discount-display-row" class="d-flex justify-content-between align-items-center mb-1" style="display:none !important;">
                     <span class="text-success small fw-bold"><i class="bi bi-tag-fill me-1"></i>優惠碼折抵</span>
                     <span class="text-success fw-bold m-0" id="modal-discount-amount">-$0</span>
+                </div>
+                <div id="coupon-display-row" class="d-flex justify-content-between align-items-center mb-1" style="display:none !important;">
+                    <span class="text-warning-emphasis small fw-bold"><i class="bi bi-ticket-perforated-fill me-1"></i>專屬券折抵</span>
+                    <span class="text-warning-emphasis fw-bold m-0" id="modal-coupon-amount">-$0</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-secondary fw-bold">實付金額</span>
@@ -245,7 +271,8 @@
     let currentCategory = 'top10'; 
     let tempNormalQty = 0, tempClearanceQty = 0, tempProduct = null;
     let isLoggedIn = false; let appliedPromo = null; let favorites = []; 
-    let cartModal, myOrdersModal, announceModal, variantModal, memberModal, orderSuccessModal, myRestockModal;
+    let myCoupons = []; let selectedCoupon = null;
+    let cartModal, myOrdersModal, announceModal, variantModal, memberModal, orderSuccessModal, myRestockModal, myCouponModal;
 
     const escHTML = (s) => String(s || '').replace(/"/g, "&quot;").replace(/'/g, "\\'");
 
@@ -256,6 +283,7 @@
         variantModal = new bootstrap.Modal(document.getElementById('variantModal'));
         memberModal = new bootstrap.Modal(document.getElementById('memberModal'));
         myRestockModal = new bootstrap.Modal(document.getElementById('myRestockModal'));
+        myCouponModal = new bootstrap.Modal(document.getElementById('myCouponModal'));
         orderSuccessModal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
         loadCartFromLocal(); fetchMenu(); initLiff(); 
     };
@@ -303,6 +331,7 @@
             if (liff.isLoggedIn() && !forceGuest) { 
                 userProfile = await liff.getProfile(); isLoggedIn = true; updateUserUI(true);
                 favorites = JSON.parse(localStorage.getItem('pos_fav_' + userProfile.userId)) || [];
+                loadMyCoupons();
             } else { isLoggedIn = false; updateUserUI(false); } 
             
             if (!sessionStorage.getItem('visit_logged')) {
@@ -352,6 +381,62 @@
             method: 'POST', body: JSON.stringify({ action: 'deleteRestock', payload: { userId: userProfile.userId, productName: name } }), mode: 'no-cors'
         }).then(() => { setTimeout(viewMyRestocks, 800); }).catch(e => { viewMyRestocks(); });
     }
+
+    // ========== 專屬優惠券 ==========
+    function loadMyCoupons() {
+        if (!isLoggedIn || userProfile.userId === 'guest') { myCoupons = []; updateCouponBadge(); return; }
+        fetch(GAS_URL + "?page=myCoupons&uid=" + userProfile.userId + "&t=" + Date.now())
+            .then(r => r.json())
+            .then(res => { myCoupons = Array.isArray(res) ? res : []; updateCouponBadge(); })
+            .catch(() => { myCoupons = []; updateCouponBadge(); });
+    }
+
+    function updateCouponBadge() {
+        const badge = document.getElementById('member-coupon-count');
+        if (!badge) return;
+        if (myCoupons.length > 0) { badge.innerText = myCoupons.length; badge.style.display = 'inline-block'; }
+        else { badge.style.display = 'none'; }
+    }
+
+    function viewMyCoupons() {
+        memberModal.hide(); myCouponModal.show();
+        const box = document.getElementById('my-coupon-modal-list');
+        if (myCoupons.length === 0) { box.innerHTML = '<div class="text-muted text-center py-5"><i class="bi bi-ticket-perforated fs-1 d-block mb-2 text-secondary"></i>目前沒有可用的優惠券</div>'; return; }
+        box.innerHTML = myCoupons.map(c => `
+            <div class="border border-warning rounded p-3 mb-2 d-flex justify-content-between align-items-center bg-warning bg-opacity-10">
+                <div>
+                    <div class="h4 fw-bold text-danger m-0">折抵 $${c.amount}</div>
+                    <small class="text-muted">${c.expiry ? '使用期限：' + c.expiry : '不限使用期限'}</small>
+                </div>
+                <i class="bi bi-ticket-perforated-fill text-warning" style="font-size:2rem;"></i>
+            </div>`).join('');
+    }
+
+    function renderCouponPicker() {
+        const sec = document.getElementById('my-coupon-section');
+        const list = document.getElementById('my-coupon-list');
+        if (!sec || !list) return;
+        if (!isLoggedIn || myCoupons.length === 0) { sec.style.display = 'none'; return; }
+        sec.style.display = 'block';
+        let html = myCoupons.map(c => {
+            let isSel = selectedCoupon && selectedCoupon.couponId === c.couponId;
+            return `<div class="d-flex justify-content-between align-items-center py-1">
+                        <div class="small"><span class="fw-bold text-danger">折抵 $${c.amount}</span> <span class="text-muted">${c.expiry ? '(至 ' + c.expiry + ')' : ''}</span></div>
+                        <button class="btn btn-sm ${isSel ? 'btn-warning' : 'btn-outline-warning'} py-0 px-2" onclick="${isSel ? 'clearCoupon()' : `selectCoupon('${escHTML(c.couponId)}')`}">${isSel ? '✓ 已選用' : '使用'}</button>
+                    </div>`;
+        }).join('');
+        list.innerHTML = html;
+    }
+
+    function selectCoupon(couponId) {
+        let c = myCoupons.find(x => x.couponId === couponId);
+        if (!c) return;
+        selectedCoupon = c;
+        if (appliedPromo) { appliedPromo = null; document.getElementById('promo-code-input').value = ''; document.getElementById('promo-msg').innerText = ''; }
+        renderCouponPicker(); updateCartUI();
+    }
+
+    function clearCoupon() { selectedCoupon = null; renderCouponPicker(); updateCartUI(); }
 
     function toggleFavByUid(e, uid) {
         e.stopPropagation();
@@ -529,6 +614,7 @@
         if(!input) return;
         if (allData.promoCodes && allData.promoCodes[input]) {
             appliedPromo = { code: input, discount: Number(allData.promoCodes[input]) };
+            if (selectedCoupon) { selectedCoupon = null; renderCouponPicker(); }
             msgBox.innerHTML = `✅ 套用成功！已為您折抵 <span class="fw-bold">$${appliedPromo.discount}</span>`; msgBox.className = "text-success d-block mt-1"; updateCartUI();
         } else {
             appliedPromo = null; msgBox.innerText = `❌ 無效的優惠碼`; msgBox.className = "text-danger d-block mt-1"; updateCartUI();
@@ -571,6 +657,13 @@
             finalTotal -= appliedPromo.discount; if(finalTotal < 0) finalTotal = 0;
             document.getElementById('modal-discount-amount').innerText = `-$${appliedPromo.discount}`; discountRow.style.setProperty("display", "flex", "important");
         } else { discountRow.style.setProperty("display", "none", "important"); }
+
+        const couponRow = document.getElementById('coupon-display-row');
+        if (selectedCoupon && count > 0) {
+            let cAmt = Number(selectedCoupon.amount) || 0;
+            finalTotal -= cAmt; if(finalTotal < 0) finalTotal = 0;
+            document.getElementById('modal-coupon-amount').innerText = `-$${cAmt}`; couponRow.style.setProperty("display", "flex", "important");
+        } else { couponRow.style.setProperty("display", "none", "important"); }
         
         let pointsContainer = document.getElementById('points-alert-container');
         if (finalTotal > 0) {
@@ -609,12 +702,12 @@
         }
     }
 
-    function openCartModal() { appliedPromo = null; document.getElementById('promo-code-input').value = ''; document.getElementById('promo-msg').innerText = ''; renderCartModal(); cartModal.show(); }
+    function openCartModal() { appliedPromo = null; selectedCoupon = null; document.getElementById('promo-code-input').value = ''; document.getElementById('promo-msg').innerText = ''; renderCartModal(); cartModal.show(); }
     
     function renderCartModal() { 
         const body = document.getElementById('cart-modal-body'); const loginPrompt = document.getElementById('guest-login-prompt'); const submitBtn = document.getElementById('btn-submit-order'); const promoSec = document.getElementById('promo-code-section');
-        if (isLoggedIn) { loginPrompt.style.display = 'none'; promoSec.style.display = 'block'; submitBtn.innerText = "送出訂單"; submitBtn.classList.remove('btn-secondary'); submitBtn.classList.add('btn-confirm'); } 
-        else { loginPrompt.style.display = 'block'; promoSec.style.display = 'none'; appliedPromo = null; submitBtn.innerText = "以訪客身分送單"; submitBtn.classList.remove('btn-confirm'); submitBtn.classList.add('btn-secondary'); }
+        if (isLoggedIn) { loginPrompt.style.display = 'none'; promoSec.style.display = 'block'; submitBtn.innerText = "送出訂單"; submitBtn.classList.remove('btn-secondary'); submitBtn.classList.add('btn-confirm'); renderCouponPicker(); } 
+        else { loginPrompt.style.display = 'block'; promoSec.style.display = 'none'; appliedPromo = null; selectedCoupon = null; document.getElementById('my-coupon-section').style.display = 'none'; submitBtn.innerText = "以訪客身分送單"; submitBtn.classList.remove('btn-confirm'); submitBtn.classList.add('btn-secondary'); }
         updateCartUI();
         if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } 
         let html = ''; 
@@ -707,12 +800,20 @@
         if (window.currentYqDiscount > 0) itemsText += `, [永圻滿件95折] 折抵 $${window.currentYqDiscount}`;
         if (appliedPromo) { finalTotal -= appliedPromo.discount; if(finalTotal < 0) finalTotal = 0; itemsText += `, [優惠碼 ${appliedPromo.code}] 折抵 $${appliedPromo.discount}`; }
 
-        const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: itemsText, total: finalTotal, cartItems: cart, contactName: cName, contactPhone: cPhone } };
+        let couponClaimed = 0; let couponId = '';
+        if (selectedCoupon && isLoggedIn) {
+            couponClaimed = Number(selectedCoupon.amount) || 0;
+            finalTotal -= couponClaimed; if(finalTotal < 0) finalTotal = 0;
+            couponId = selectedCoupon.couponId;
+        }
+
+        const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: itemsText, total: finalTotal, cartItems: cart, contactName: cName, contactPhone: cPhone, couponId: couponId, couponClaimed: couponClaimed } };
         
         fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' }).then(() => { 
             document.getElementById('loader').style.display = 'none';
             cart = []; appliedPromo = null; saveCartToLocal(); updateCartUI(); renderMenu(); orderSuccessModal.show();
             isSubmitting = false; if (submitBtn) submitBtn.disabled = false;
+            if (selectedCoupon) { selectedCoupon = null; loadMyCoupons(); }
         }).catch(e => {
             document.getElementById('loader').style.display = 'none';
             isSubmitting = false; if (submitBtn) submitBtn.disabled = false;
