@@ -59,6 +59,10 @@
         .badge-corner { position: absolute; top: 0; left: 0; background: #d32f2f; color: white; font-size: 0.8rem; font-weight: bold; padding: 6px 12px; border-bottom-right-radius: 12px; z-index: 10; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); }
         .fav-btn { position: absolute; top: 10px; right: 10px; z-index: 15; background: rgba(255,255,255,0.9); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s;}
         .fav-btn:active { transform: scale(0.8); }
+        .share-btn { position: absolute; top: 10px; right: 48px; z-index: 15; background: rgba(255,255,255,0.9); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s;}
+        .share-btn:active { transform: scale(0.8); }
+        @keyframes cardFlash { 0%,100% { box-shadow: 0 5px 15px rgba(0,0,0,0.04); } 30%,70% { box-shadow: 0 0 0 4px #ffb300, 0 8px 25px rgba(255,179,0,0.4); } }
+        .product-card.flash-highlight { animation: cardFlash 1.2s ease-in-out 2; }
         .product-card.oos-mode .product-img { opacity: 0.5; filter: grayscale(100%); }
         .btn-add-only { position: absolute; bottom: 15px; right: 15px; height: 36px; background: var(--accent); color: var(--text-dark); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.15); cursor: pointer; transition: 0.2s; padding: 0 12px;}
         .btn-add-only.circle { width: 36px; padding: 0; border-radius: 50%; }
@@ -151,6 +155,26 @@
                     <button class="list-group-item list-group-item-action py-3 fw-bold text-success" onclick="viewMyRestocks()"><i class="bi bi-bell-fill me-2"></i>到貨通知品項</button>
                     <button class="list-group-item list-group-item-action py-3 fw-bold text-secondary" onclick="performLogout()"><i class="bi bi-box-arrow-right me-2"></i>切換為訪客 (登出)</button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="shareModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0 bg-primary text-white">
+                <h6 class="modal-title fw-bold"><i class="bi bi-share-fill me-2"></i>分享這個商品</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3">
+                <div id="share-product-preview" class="d-flex align-items-center gap-3 mb-3 p-2 bg-light rounded"></div>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success btn-lg d-flex align-items-center justify-content-center gap-2" onclick="shareToLine()"><i class="bi bi-line"></i> 分享到 LINE</button>
+                    <button class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-center gap-2" onclick="copyShareLink()"><i class="bi bi-link-45deg"></i> 複製商品連結</button>
+                    <button class="btn btn-outline-secondary btn-lg d-flex align-items-center justify-content-center gap-2" id="btn-native-share" onclick="nativeShare()"><i class="bi bi-box-arrow-up"></i> 更多分享方式</button>
+                </div>
+                <p id="share-copy-msg" class="text-success text-center small mt-2 mb-0" style="display:none;"><i class="bi bi-check-circle-fill me-1"></i>連結已複製！</p>
             </div>
         </div>
     </div>
@@ -272,7 +296,7 @@
     let tempNormalQty = 0, tempClearanceQty = 0, tempProduct = null;
     let isLoggedIn = false; let appliedPromo = null; let favorites = []; 
     let myCoupons = []; let selectedCoupon = null;
-    let cartModal, myOrdersModal, announceModal, variantModal, memberModal, orderSuccessModal, myRestockModal, myCouponModal;
+    let cartModal, myOrdersModal, announceModal, variantModal, memberModal, orderSuccessModal, myRestockModal, myCouponModal, shareModal;
 
     const escHTML = (s) => String(s || '').replace(/"/g, "&quot;").replace(/'/g, "\\'");
 
@@ -284,6 +308,7 @@
         memberModal = new bootstrap.Modal(document.getElementById('memberModal'));
         myRestockModal = new bootstrap.Modal(document.getElementById('myRestockModal'));
         myCouponModal = new bootstrap.Modal(document.getElementById('myCouponModal'));
+        shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
         orderSuccessModal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
         loadCartFromLocal(); fetchMenu(); initLiff(); 
     };
@@ -465,6 +490,7 @@
             if (data.stickyMsg && data.stickyMsg.trim() !== "") { document.getElementById('sticky-msg-bar').innerText = data.stickyMsg; document.getElementById('sticky-msg-bar').style.display = 'block'; } else { document.getElementById('sticky-msg-bar').style.display = 'none'; }
             
             renderMenu(); checkAnnouncement(data); document.getElementById('loader').style.display = 'none';
+            handleSharedProduct();
         }).catch(err => { document.getElementById('loader').innerHTML = '<div class="text-danger p-4 text-center">載入失敗</div>'; });
     }
 
@@ -543,6 +569,7 @@
         const isFav = favorites.includes(p.name);
         
         const heartHtml = `<div class="fav-btn" onclick="toggleFavByUid(event, ${p._uid})"><i class="bi ${isFav ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary'} fs-5"></i></div>`;
+        const shareHtml = `<div class="share-btn" onclick="openShareByUid(event, ${p._uid})"><i class="bi bi-share-fill text-primary" style="font-size:0.95rem;"></i></div>`;
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         
         let stockHtml = isTQ ? `<div class="mt-2"><span class="badge bg-warning text-dark border border-warning shadow-sm px-2 py-1" style="font-size:0.8rem;"><i class="bi bi-clock-history me-1"></i>較長備貨</span></div>` : `<span class="stock-info">剩: ${p.stock}</span>`;
@@ -555,7 +582,89 @@
         const badgeHtml = Number(p.clearStock) > 0 ? `<div class="badge-corner">即期出清</div>` : ''; 
         let yqBadge = isYQ ? `<span class="badge bg-danger mb-2 d-inline-block shadow-sm px-2 py-1" style="font-size:0.75rem;"><i class="bi bi-tags-fill me-1"></i>任兩件 95折</span><br>` : '';
 
-        return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}"><div class="position-relative overflow-hidden" style="border-radius: 15px 15px 0 0;">${heartHtml}${badgeHtml}${imgHtml}</div><div class="product-body"><div class="product-name">${yqBadge}${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
+        return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}" data-pname="${escHTML(p.name)}"><div class="position-relative overflow-hidden" style="border-radius: 15px 15px 0 0;">${heartHtml}${shareHtml}${badgeHtml}${imgHtml}</div><div class="product-body"><div class="product-name">${yqBadge}${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
+    }
+
+    // ========== 商品分享功能 ==========
+    let shareTarget = null;
+
+    // 組出商品專屬分享連結（用商品名稱當識別，重整也不變）
+    function buildShareUrl(productName) {
+        return GAS_URL + "?page=index&pid=" + encodeURIComponent(productName);
+    }
+
+    function openShareByUid(event, uid) {
+        event.stopPropagation();
+        const p = allData.products.find(x => x._uid === uid);
+        if (!p) return;
+        shareTarget = p;
+        const preview = document.getElementById('share-product-preview');
+        const imgPart = p.img ? `<img src="${p.img}" referrerpolicy="no-referrer" style="width:56px;height:56px;object-fit:cover;border-radius:10px;">` : `<div style="width:56px;height:56px;border-radius:10px;" class="bg-secondary-subtle d-flex align-items-center justify-content-center"><i class="bi bi-camera text-muted"></i></div>`;
+        preview.innerHTML = `${imgPart}<div><div class="fw-bold text-dark">${p.name}</div><div class="text-danger fw-bold">$${p.price}</div></div>`;
+        document.getElementById('share-copy-msg').style.display = 'none';
+        document.getElementById('btn-native-share').style.display = navigator.share ? 'flex' : 'none';
+        shareModal.show();
+    }
+
+    function shareToLine() {
+        if (!shareTarget) return;
+        const url = buildShareUrl(shareTarget.name);
+        const text = `推薦你這個商品：${shareTarget.name}（$${shareTarget.price}）\n${url}`;
+        const lineUrl = "https://line.me/R/msg/text/?" + encodeURIComponent(text);
+        window.open(lineUrl, '_blank');
+    }
+
+    function copyShareLink() {
+        if (!shareTarget) return;
+        const url = buildShareUrl(shareTarget.name);
+        const msg = document.getElementById('share-copy-msg');
+        const done = () => { msg.style.display = 'block'; setTimeout(() => { msg.style.display = 'none'; }, 2500); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(done).catch(() => fallbackCopy(url, done));
+        } else { fallbackCopy(url, done); }
+    }
+
+    function fallbackCopy(text, cb) {
+        const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); cb(); } catch (e) { prompt('請手動複製此連結：', text); }
+        document.body.removeChild(ta);
+    }
+
+    function nativeShare() {
+        if (!shareTarget || !navigator.share) return;
+        const url = buildShareUrl(shareTarget.name);
+        navigator.share({
+            title: shareTarget.name,
+            text: `推薦你這個商品：${shareTarget.name}（$${shareTarget.price}）`,
+            url: url
+        }).catch(() => {});
+    }
+
+    // 開頁時若帶 ?pid=商品名，捲動到該商品並高亮閃爍
+    function handleSharedProduct() {
+        const params = new URLSearchParams(window.location.search);
+        const pid = params.get('pid');
+        if (!pid) return;
+        const targetName = decodeURIComponent(pid);
+        setTimeout(() => {
+            let card = document.querySelector(`.product-card[data-pname="${cssEscape(targetName)}"]`);
+            if (!card) {
+                currentCategory = 'all'; renderMenu();
+                setTimeout(() => {
+                    let c2 = document.querySelector(`.product-card[data-pname="${cssEscape(targetName)}"]`);
+                    if (c2) highlightCard(c2);
+                }, 300);
+            } else { highlightCard(card); }
+        }, 600);
+    }
+
+    function cssEscape(s) { return String(s).replace(/["\\]/g, '\\$&'); }
+
+    function highlightCard(card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('flash-highlight');
+        setTimeout(() => card.classList.remove('flash-highlight'), 2600);
     }
 
     function handleRestockByUid(uid) {
