@@ -587,10 +587,21 @@
 
     // ========== 商品分享功能 ==========
     let shareTarget = null;
+    const SHARE_BASE = "https://liff.line.me/2009042792-5xuNohp3"; // 客人進入商店的 LIFF 網址
+
+    // 取得店名（後台設定的 appTitle），空的話用後備文字
+    function getShopName() {
+        return (allData && allData.appTitle && allData.appTitle.trim()) ? allData.appTitle.trim() : '本店';
+    }
 
     // 組出商品專屬分享連結（用商品名稱當識別，重整也不變）
     function buildShareUrl(productName) {
-        return GAS_URL + "?page=index&pid=" + encodeURIComponent(productName);
+        return SHARE_BASE + "?pid=" + encodeURIComponent(productName);
+    }
+
+    // 組出分享文字（含店名）
+    function buildShareText(p) {
+        return `【${getShopName()}】推薦你這個商品：${p.name}（$${p.price}）`;
     }
 
     function openShareByUid(event, uid) {
@@ -609,7 +620,7 @@
     function shareToLine() {
         if (!shareTarget) return;
         const url = buildShareUrl(shareTarget.name);
-        const text = `推薦你這個商品：${shareTarget.name}（$${shareTarget.price}）\n${url}`;
+        const text = `${buildShareText(shareTarget)}\n${url}`;
         const lineUrl = "https://line.me/R/msg/text/?" + encodeURIComponent(text);
         window.open(lineUrl, '_blank');
     }
@@ -635,16 +646,15 @@
         if (!shareTarget || !navigator.share) return;
         const url = buildShareUrl(shareTarget.name);
         navigator.share({
-            title: shareTarget.name,
-            text: `推薦你這個商品：${shareTarget.name}（$${shareTarget.price}）`,
+            title: `${getShopName()}｜${shareTarget.name}`,
+            text: buildShareText(shareTarget),
             url: url
         }).catch(() => {});
     }
 
     // 開頁時若帶 ?pid=商品名，捲動到該商品並高亮閃爍
     function handleSharedProduct() {
-        const params = new URLSearchParams(window.location.search);
-        const pid = params.get('pid');
+        let pid = getPidFromUrl();
         if (!pid) return;
         const targetName = decodeURIComponent(pid);
         setTimeout(() => {
@@ -657,6 +667,24 @@
                 }, 300);
             } else { highlightCard(card); }
         }, 600);
+    }
+
+    // 取得 pid 參數：相容一般網址 query 與 LIFF 的 liff.state 包裝
+    function getPidFromUrl() {
+        try {
+            let params = new URLSearchParams(window.location.search);
+            if (params.get('pid')) return params.get('pid');
+            // LIFF 有時把原始 query 包進 liff.state（例如 ?liff.state=%3Fpid%3D...）
+            let state = params.get('liff.state');
+            if (state) {
+                let inner = new URLSearchParams(state.charAt(0) === '?' ? state.slice(1) : state);
+                if (inner.get('pid')) return inner.get('pid');
+            }
+            // 後備：直接從完整網址用正則抓
+            let m = window.location.href.match(/[?&]pid=([^&]+)/);
+            if (m) return m[1];
+        } catch (e) {}
+        return null;
     }
 
     function cssEscape(s) { return String(s).replace(/["\\]/g, '\\$&'); }
