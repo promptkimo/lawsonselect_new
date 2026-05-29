@@ -562,17 +562,16 @@
 
     function createProductCard(p) {
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat); const count = inCart ? inCart.count : 0; 
-        const isTQ = isTongxin(p.name, p.cat);
         const isYQ = isYongqi(p.name, p.cat);
         
-        const isOOS = !isTQ && (p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || Number(p.clearStock) <= 0)));
+        const isOOS = (p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || Number(p.clearStock) <= 0)));
         const isFav = favorites.includes(p.name);
         
         const heartHtml = `<div class="fav-btn" onclick="toggleFavByUid(event, ${p._uid})"><i class="bi ${isFav ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary'} fs-5"></i></div>`;
         const shareHtml = `<div class="share-btn" onclick="openShareByUid(event, ${p._uid})"><i class="bi bi-share-fill text-primary" style="font-size:0.95rem;"></i></div>`;
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         
-        let stockHtml = isTQ ? `<div class="mt-2"><span class="badge bg-warning text-dark border border-warning shadow-sm px-2 py-1" style="font-size:0.8rem;"><i class="bi bi-clock-history me-1"></i>較長備貨</span></div>` : `<span class="stock-info">剩: ${p.stock}</span>`;
+        let stockHtml = `<span class="stock-info">剩: ${p.stock}</span>`;
         
         let btnHtml = '';
         if (isOOS) { btnHtml = `<div class="btn-add-only bg-danger text-white w-auto px-3 shadow-sm" style="border-radius:20px; font-size:0.85rem;" onclick="handleRestockByUid(${p._uid})"><i class="bi bi-bell-fill me-1"></i>貨到通知</div>`; }
@@ -715,14 +714,13 @@
     function renderVariantModal() {
         const list = document.getElementById('variant-list'); list.innerHTML = '';
         let dateStr = ''; if (tempProduct.arrivalDate) { const d = new Date(tempProduct.arrivalDate); if (!isNaN(d.getTime())) dateStr = `效期: ${(d.getMonth()+1)}/${d.getDate()}`; }
-        if (tempProduct.stock > 0 || isTongxin(tempProduct.name, tempProduct.cat)) list.innerHTML += `<div class="variant-row"><div class="flex-grow-1"><div class="fw-bold">正常品 ${isTongxin(tempProduct.name, tempProduct.cat) ? '<small class="text-warning">較長備貨</small>' : `<small class="text-muted fw-normal">剩${tempProduct.stock}</small>`}</div><div class="text-danger fw-bold">$${tempProduct.price}</div></div><div class="qty-stepper"><button class="step-btn" onclick="updateTempQty('normal', -1)">-</button><div class="step-val">${tempNormalQty}</div><button class="step-btn" onclick="updateTempQty('normal', 1)">+</button></div></div>`;
+        if (tempProduct.stock > 0) list.innerHTML += `<div class="variant-row"><div class="flex-grow-1"><div class="fw-bold">正常品 <small class="text-muted fw-normal">剩${tempProduct.stock}</small></div><div class="text-danger fw-bold">$${tempProduct.price}</div></div><div class="qty-stepper"><button class="step-btn" onclick="updateTempQty('normal', -1)">-</button><div class="step-val">${tempNormalQty}</div><button class="step-btn" onclick="updateTempQty('normal', 1)">+</button></div></div>`;
         if (Number(tempProduct.clearStock) > 0) list.innerHTML += `<div class="variant-row"><div class="flex-grow-1"><div class="fw-bold text-danger">即期品 <span class="variant-tag">${dateStr}</span></div><div class="text-danger fw-bold">$${tempProduct.clearPrice} <small class="text-muted fw-normal">剩${tempProduct.clearStock}</small></div></div><div class="qty-stepper"><button class="step-btn" onclick="updateTempQty('clearance', -1)">-</button><div class="step-val">${tempClearanceQty}</div><button class="step-btn" onclick="updateTempQty('clearance', 1)">+</button></div></div>`;
     }
     function updateTempQty(type, delta) { 
         if (type === 'normal') { 
             const n = tempNormalQty + delta; 
-            const isTQ = isTongxin(tempProduct.name, tempProduct.cat);
-            if (n >= 0 && (isTQ || n <= tempProduct.stock)) tempNormalQty = n; 
+            if (n >= 0 && n <= tempProduct.stock) tempNormalQty = n;
         } else { 
             const n = tempClearanceQty + delta; 
             if (n >= 0 && n <= tempProduct.clearStock) tempClearanceQty = n; 
@@ -739,7 +737,7 @@
         const idx = cart.findIndex(c => c.name === product.name && c.cat === product.cat); 
         if (delta > 0) { 
             const currentQty = idx > -1 ? cart[idx].count : 0; 
-            if (!isTongxin(product.name, product.cat) && currentQty >= product.stock) { alert(`庫存不足！目前剩餘 ${product.stock} 個`); return; } 
+            if (currentQty >= product.stock) { alert(`庫存不足！目前剩餘 ${product.stock} 個`); return; } 
         }
         if (idx > -1) { cart[idx].count += delta; if (cart[idx].count <= 0) cart.splice(idx, 1); } 
         else if (delta > 0) { cart.push({ name: product.name, price: product.price, cat: product.cat, count: 1 }); } 
@@ -855,8 +853,7 @@
             const isClearance = i.name.includes('(即期品)'); const rowClass = isClearance ? 'cart-item-row clearance-item' : 'cart-item-row border-bottom'; const badgeHtml = isClearance ? `<span class="clearance-badge">⚠️ 即期良品</span>` : ``; let dateInfo = '';
             if (isClearance) { const rawName = i.name.replace(" (即期品)", ""); const p = allData.products.find(x => x.name === rawName && x.cat === i.cat); if (p && p.arrivalDate) { const d = new Date(p.arrivalDate); if (!isNaN(d.getTime())) dateInfo = `<div class="small text-danger fw-bold"><i class="bi bi-calendar-event"></i> 效期：${d.getMonth()+1}/${d.getDate()}</div>`; } }
             
-            let isTQ = isTongxin(i.name, i.cat);
-            let tqBadge = isTQ ? `<div class="mt-1 mb-1"><span class="badge bg-warning text-dark"><i class="bi bi-clock-history"></i> 較長備貨 (請耐心等候)</span></div>` : '';
+            let tqBadge = '';
 
             // 🟢 在排序後的陣列中，我們需要找回原本在購物車的索引來取折扣
             let originalIndex = cart.indexOf(i);
@@ -904,7 +901,7 @@
         
         if (delta > 0 && product) { 
             const maxStock = isClearance ? product.clearStock : product.stock; 
-            if (!isTongxin(product.name, product.cat) && cartItem.count >= maxStock) { alert(`庫存不足！目前剩餘 ${maxStock} 個`); return; } 
+            if (cartItem.count >= maxStock) { alert(`庫存不足！目前剩餘 ${maxStock} 個`); return; } 
         }
         cartItem.count += delta; 
         if (cartItem.count <= 0) cart.splice(cartIndex, 1); 
