@@ -39,8 +39,14 @@
         .search-bar-container input:focus { box-shadow: none; border-color: transparent; }
         
         .cat-nav-wrapper { background: rgba(255, 253, 245, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .cat-nav { display: flex; overflow-x: auto; white-space: nowrap; padding: 12px 15px; gap: 10px; max-width: 1200px; margin: 0 auto; }
+        .cat-nav { display: flex; overflow-x: auto; white-space: nowrap; padding: 12px 15px; gap: 10px; max-width: 1200px; margin: 0 auto; scroll-behavior: smooth; scrollbar-width: none; }
         .cat-nav::-webkit-scrollbar { display: none; }
+        .cat-scroll-btn { position: absolute; top: 50%; transform: translateY(-50%); z-index: 20; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.08); background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #555; transition: 0.2s; padding: 0; }
+        .cat-scroll-btn:hover { background: #ffc107; color: #000; }
+        .cat-scroll-left { left: 6px; }
+        .cat-scroll-right { right: 6px; }
+        /* 手機以觸控滑動為主，隱藏箭頭 */
+        @media (max-width: 768px) { .cat-scroll-btn { display: none; } }
         .cat-pill { padding: 8px 20px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 25px; font-size: 0.95rem; font-weight: 700; transition: all 0.2s; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
         .cat-pill:hover { background: #f8f9fa; }
         .cat-pill.active { background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.2); transform: translateY(-2px); }
@@ -59,10 +65,6 @@
         .badge-corner { position: absolute; top: 0; left: 0; background: #d32f2f; color: white; font-size: 0.8rem; font-weight: bold; padding: 6px 12px; border-bottom-right-radius: 12px; z-index: 10; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); }
         .fav-btn { position: absolute; top: 10px; right: 10px; z-index: 15; background: rgba(255,255,255,0.9); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s;}
         .fav-btn:active { transform: scale(0.8); }
-        .share-btn { position: absolute; top: 10px; right: 48px; z-index: 15; background: rgba(255,255,255,0.9); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s;}
-        .share-btn:active { transform: scale(0.8); }
-        @keyframes cardFlash { 0%,100% { box-shadow: 0 5px 15px rgba(0,0,0,0.04); } 30%,70% { box-shadow: 0 0 0 4px #ffb300, 0 8px 25px rgba(255,179,0,0.4); } }
-        .product-card.flash-highlight { animation: cardFlash 1.2s ease-in-out 2; }
         .product-card.oos-mode .product-img { opacity: 0.5; filter: grayscale(100%); }
         .btn-add-only { position: absolute; bottom: 15px; right: 15px; height: 36px; background: var(--accent); color: var(--text-dark); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.15); cursor: pointer; transition: 0.2s; padding: 0 12px;}
         .btn-add-only.circle { width: 36px; padding: 0; border-radius: 50%; }
@@ -127,7 +129,11 @@
                 <span class="input-group-text bg-white border-0 text-secondary pe-3" style="cursor:pointer;" onclick="clearSearch()"><i class="bi bi-x-circle-fill" id="clear-search-icon" style="display:none; font-size: 1.1rem;"></i></span>
             </div>
         </div>
-        <div class="cat-nav-wrapper"><div class="cat-nav" id="cat-nav"></div></div>
+        <div class="cat-nav-wrapper" style="position:relative;">
+            <button class="cat-scroll-btn cat-scroll-left" onclick="scrollCatNav(-300)" aria-label="向左"><i class="bi bi-chevron-left"></i></button>
+            <div class="cat-nav" id="cat-nav"></div>
+            <button class="cat-scroll-btn cat-scroll-right" onclick="scrollCatNav(300)" aria-label="向右"><i class="bi bi-chevron-right"></i></button>
+        </div>
     </div>
 
     <div class="content-wrapper"><div class="container-fluid px-0"><div id="product-container"></div></div></div>
@@ -150,45 +156,10 @@
                     <h6 id="center-name" class="fw-bold m-0"></h6>
                 </div>
                 <div class="list-group list-group-flush text-center">
-                    <button class="list-group-item list-group-item-action py-3 fw-bold text-warning" onclick="viewMyCoupons()"><i class="bi bi-ticket-perforated-fill me-2"></i>我的優惠券 <span id="member-coupon-count" class="badge bg-danger rounded-pill ms-1" style="display:none;"></span></button>
                     <button class="list-group-item list-group-item-action py-3 fw-bold text-danger" onclick="viewFavorites()"><i class="bi bi-heart-fill me-2"></i>我的最愛</button>
                     <button class="list-group-item list-group-item-action py-3 fw-bold text-success" onclick="viewMyRestocks()"><i class="bi bi-bell-fill me-2"></i>到貨通知品項</button>
                     <button class="list-group-item list-group-item-action py-3 fw-bold text-secondary" onclick="performLogout()"><i class="bi bi-box-arrow-right me-2"></i>切換為訪客 (登出)</button>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="shareModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-header border-0 bg-primary text-white">
-                <h6 class="modal-title fw-bold"><i class="bi bi-share-fill me-2"></i>分享這個商品</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-3">
-                <div id="share-product-preview" class="d-flex align-items-center gap-3 mb-3 p-2 bg-light rounded"></div>
-                <div class="d-grid gap-2">
-                    <button class="btn btn-success btn-lg d-flex align-items-center justify-content-center gap-2" onclick="shareToLine()"><i class="bi bi-line"></i> 分享到 LINE</button>
-                    <button class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-center gap-2" onclick="copyShareLink()"><i class="bi bi-link-45deg"></i> 複製商品連結</button>
-                    <button class="btn btn-outline-secondary btn-lg d-flex align-items-center justify-content-center gap-2" id="btn-native-share" onclick="nativeShare()"><i class="bi bi-box-arrow-up"></i> 更多分享方式</button>
-                </div>
-                <p id="share-copy-msg" class="text-success text-center small mt-2 mb-0" style="display:none;"><i class="bi bi-check-circle-fill me-1"></i>連結已複製！</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="myCouponModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content border-0">
-            <div class="modal-header bg-warning border-0">
-                <h6 class="modal-title fw-bold"><i class="bi bi-ticket-perforated-fill me-2"></i>我的專屬優惠券</h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-3" id="my-coupon-modal-list">
-                <div class="text-center py-4"><div class="spinner-border text-warning"></div></div>
             </div>
         </div>
     </div>
@@ -233,13 +204,6 @@
                     <span class="text-danger fw-bold m-0" id="modal-yongqi-discount">-$0</span>
                 </div>
 
-                <div id="my-coupon-section" style="display:none;" class="px-3 mb-2">
-                    <div class="border border-warning rounded p-2 bg-warning bg-opacity-10">
-                        <div class="small fw-bold text-warning-emphasis mb-2"><i class="bi bi-ticket-perforated-fill me-1"></i>您的專屬優惠券</div>
-                        <div id="my-coupon-list"></div>
-                    </div>
-                </div>
-
                 <div id="promo-code-section" style="display:none;" class="px-3 mb-2">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-white text-danger border-end-0"><i class="bi bi-gift-fill"></i></span>
@@ -264,10 +228,6 @@
                 <div id="discount-display-row" class="d-flex justify-content-between align-items-center mb-1" style="display:none !important;">
                     <span class="text-success small fw-bold"><i class="bi bi-tag-fill me-1"></i>優惠碼折抵</span>
                     <span class="text-success fw-bold m-0" id="modal-discount-amount">-$0</span>
-                </div>
-                <div id="coupon-display-row" class="d-flex justify-content-between align-items-center mb-1" style="display:none !important;">
-                    <span class="text-warning-emphasis small fw-bold"><i class="bi bi-ticket-perforated-fill me-1"></i>專屬券折抵</span>
-                    <span class="text-warning-emphasis fw-bold m-0" id="modal-coupon-amount">-$0</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-secondary fw-bold">實付金額</span>
@@ -295,10 +255,27 @@
     let currentCategory = 'top10'; 
     let tempNormalQty = 0, tempClearanceQty = 0, tempProduct = null;
     let isLoggedIn = false; let appliedPromo = null; let favorites = []; 
-    let myCoupons = []; let selectedCoupon = null;
-    let cartModal, myOrdersModal, announceModal, variantModal, memberModal, orderSuccessModal, myRestockModal, myCouponModal, shareModal;
+    let cartModal, myOrdersModal, announceModal, variantModal, memberModal, orderSuccessModal, myRestockModal;
 
     const escHTML = (s) => String(s || '').replace(/"/g, "&quot;").replace(/'/g, "\\'");
+
+    // 分類列左右捲動（電腦版）
+    function scrollCatNav(dx) {
+        var nav = document.getElementById('cat-nav');
+        if (nav) nav.scrollBy({ left: dx, behavior: 'smooth' });
+    }
+
+    // 讓滑鼠滾輪可以橫向捲動分類列
+    function enableCatNavWheel() {
+        var nav = document.getElementById('cat-nav');
+        if (!nav) return;
+        nav.addEventListener('wheel', function(e) {
+            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                e.preventDefault();
+                nav.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+    }
 
     window.onload = function() { 
         cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
@@ -307,10 +284,8 @@
         variantModal = new bootstrap.Modal(document.getElementById('variantModal'));
         memberModal = new bootstrap.Modal(document.getElementById('memberModal'));
         myRestockModal = new bootstrap.Modal(document.getElementById('myRestockModal'));
-        myCouponModal = new bootstrap.Modal(document.getElementById('myCouponModal'));
-        shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
         orderSuccessModal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
-        loadCartFromLocal(); fetchMenu(); initLiff(); 
+        loadCartFromLocal(); fetchMenu(); initLiff(); enableCatNavWheel();
     };
 
     function isYongqi(name, cat) { return (cat && cat.includes('永圻')) || (name && name.includes('永圻')); }
@@ -356,7 +331,6 @@
             if (liff.isLoggedIn() && !forceGuest) { 
                 userProfile = await liff.getProfile(); isLoggedIn = true; updateUserUI(true);
                 favorites = JSON.parse(localStorage.getItem('pos_fav_' + userProfile.userId)) || [];
-                loadMyCoupons();
             } else { isLoggedIn = false; updateUserUI(false); } 
             
             if (!sessionStorage.getItem('visit_logged')) {
@@ -407,62 +381,6 @@
         }).then(() => { setTimeout(viewMyRestocks, 800); }).catch(e => { viewMyRestocks(); });
     }
 
-    // ========== 專屬優惠券 ==========
-    function loadMyCoupons() {
-        if (!isLoggedIn || userProfile.userId === 'guest') { myCoupons = []; updateCouponBadge(); return; }
-        fetch(GAS_URL + "?page=myCoupons&uid=" + userProfile.userId + "&t=" + Date.now())
-            .then(r => r.json())
-            .then(res => { myCoupons = Array.isArray(res) ? res : []; updateCouponBadge(); })
-            .catch(() => { myCoupons = []; updateCouponBadge(); });
-    }
-
-    function updateCouponBadge() {
-        const badge = document.getElementById('member-coupon-count');
-        if (!badge) return;
-        if (myCoupons.length > 0) { badge.innerText = myCoupons.length; badge.style.display = 'inline-block'; }
-        else { badge.style.display = 'none'; }
-    }
-
-    function viewMyCoupons() {
-        memberModal.hide(); myCouponModal.show();
-        const box = document.getElementById('my-coupon-modal-list');
-        if (myCoupons.length === 0) { box.innerHTML = '<div class="text-muted text-center py-5"><i class="bi bi-ticket-perforated fs-1 d-block mb-2 text-secondary"></i>目前沒有可用的優惠券</div>'; return; }
-        box.innerHTML = myCoupons.map(c => `
-            <div class="border border-warning rounded p-3 mb-2 d-flex justify-content-between align-items-center bg-warning bg-opacity-10">
-                <div>
-                    <div class="h4 fw-bold text-danger m-0">折抵 $${c.amount}</div>
-                    <small class="text-muted">${c.expiry ? '使用期限：' + c.expiry : '不限使用期限'}</small>
-                </div>
-                <i class="bi bi-ticket-perforated-fill text-warning" style="font-size:2rem;"></i>
-            </div>`).join('');
-    }
-
-    function renderCouponPicker() {
-        const sec = document.getElementById('my-coupon-section');
-        const list = document.getElementById('my-coupon-list');
-        if (!sec || !list) return;
-        if (!isLoggedIn || myCoupons.length === 0) { sec.style.display = 'none'; return; }
-        sec.style.display = 'block';
-        let html = myCoupons.map(c => {
-            let isSel = selectedCoupon && selectedCoupon.couponId === c.couponId;
-            return `<div class="d-flex justify-content-between align-items-center py-1">
-                        <div class="small"><span class="fw-bold text-danger">折抵 $${c.amount}</span> <span class="text-muted">${c.expiry ? '(至 ' + c.expiry + ')' : ''}</span></div>
-                        <button class="btn btn-sm ${isSel ? 'btn-warning' : 'btn-outline-warning'} py-0 px-2" onclick="${isSel ? 'clearCoupon()' : `selectCoupon('${escHTML(c.couponId)}')`}">${isSel ? '✓ 已選用' : '使用'}</button>
-                    </div>`;
-        }).join('');
-        list.innerHTML = html;
-    }
-
-    function selectCoupon(couponId) {
-        let c = myCoupons.find(x => x.couponId === couponId);
-        if (!c) return;
-        selectedCoupon = c;
-        if (appliedPromo) { appliedPromo = null; document.getElementById('promo-code-input').value = ''; document.getElementById('promo-msg').innerText = ''; }
-        renderCouponPicker(); updateCartUI();
-    }
-
-    function clearCoupon() { selectedCoupon = null; renderCouponPicker(); updateCartUI(); }
-
     function toggleFavByUid(e, uid) {
         e.stopPropagation();
         if(!isLoggedIn) { alert('請先點擊下方 LINE 登入，才能使用我的最愛功能喔！'); return; }
@@ -490,7 +408,6 @@
             if (data.stickyMsg && data.stickyMsg.trim() !== "") { document.getElementById('sticky-msg-bar').innerText = data.stickyMsg; document.getElementById('sticky-msg-bar').style.display = 'block'; } else { document.getElementById('sticky-msg-bar').style.display = 'none'; }
             
             renderMenu(); checkAnnouncement(data); document.getElementById('loader').style.display = 'none';
-            handleSharedProduct();
         }).catch(err => { document.getElementById('loader').innerHTML = '<div class="text-danger p-4 text-center">載入失敗</div>'; });
     }
 
@@ -562,16 +479,16 @@
 
     function createProductCard(p) {
         const inCart = cart.find(c => c.name === p.name && c.cat === p.cat); const count = inCart ? inCart.count : 0; 
+        const isTQ = isTongxin(p.name, p.cat);
         const isYQ = isYongqi(p.name, p.cat);
         
-        const isOOS = (p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || Number(p.clearStock) <= 0)));
+        const isOOS = !isTQ && (p.status === 'oos' || (p.stock <= 0 && (!p.clearStock || Number(p.clearStock) <= 0)));
         const isFav = favorites.includes(p.name);
         
         const heartHtml = `<div class="fav-btn" onclick="toggleFavByUid(event, ${p._uid})"><i class="bi ${isFav ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary'} fs-5"></i></div>`;
-        const shareHtml = `<div class="share-btn" onclick="openShareByUid(event, ${p._uid})"><i class="bi bi-share-fill text-primary" style="font-size:0.95rem;"></i></div>`;
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         
-        let stockHtml = `<span class="stock-info">剩: ${p.stock}</span>`;
+        let stockHtml = isTQ ? `<div class="mt-2"><span class="badge bg-warning text-dark border border-warning shadow-sm px-2 py-1" style="font-size:0.8rem;"><i class="bi bi-clock-history me-1"></i>較長備貨</span></div>` : `<span class="stock-info">剩: ${p.stock}</span>`;
         
         let btnHtml = '';
         if (isOOS) { btnHtml = `<div class="btn-add-only bg-danger text-white w-auto px-3 shadow-sm" style="border-radius:20px; font-size:0.85rem;" onclick="handleRestockByUid(${p._uid})"><i class="bi bi-bell-fill me-1"></i>貨到通知</div>`; }
@@ -581,117 +498,7 @@
         const badgeHtml = Number(p.clearStock) > 0 ? `<div class="badge-corner">即期出清</div>` : ''; 
         let yqBadge = isYQ ? `<span class="badge bg-danger mb-2 d-inline-block shadow-sm px-2 py-1" style="font-size:0.75rem;"><i class="bi bi-tags-fill me-1"></i>任兩件 95折</span><br>` : '';
 
-        return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}" data-pname="${escHTML(p.name)}"><div class="position-relative overflow-hidden" style="border-radius: 15px 15px 0 0;">${heartHtml}${shareHtml}${badgeHtml}${imgHtml}</div><div class="product-body"><div class="product-name">${yqBadge}${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
-    }
-
-    // ========== 商品分享功能 ==========
-    let shareTarget = null;
-    const SHARE_BASE = "https://promptkimo.github.io/lawsonselect_new/"; // 公開網頁網址：任何人免登入可直接瀏覽，分享擴散門檻最低
-
-    // 取得店名（後台設定的 appTitle），空的話用後備文字
-    function getShopName() {
-        return (allData && allData.appTitle && allData.appTitle.trim()) ? allData.appTitle.trim() : '本店';
-    }
-
-    // 組出商品專屬分享連結（用商品名稱當識別，重整也不變）
-    function buildShareUrl(productName) {
-        return SHARE_BASE + "?pid=" + encodeURIComponent(productName);
-    }
-
-    // 組出分享文字（含店名）
-    function buildShareText(p) {
-        return `【${getShopName()}】推薦你這個商品：${p.name}（$${p.price}）`;
-    }
-
-    function openShareByUid(event, uid) {
-        event.stopPropagation();
-        const p = allData.products.find(x => x._uid === uid);
-        if (!p) return;
-        shareTarget = p;
-        const preview = document.getElementById('share-product-preview');
-        const imgPart = p.img ? `<img src="${p.img}" referrerpolicy="no-referrer" style="width:56px;height:56px;object-fit:cover;border-radius:10px;">` : `<div style="width:56px;height:56px;border-radius:10px;" class="bg-secondary-subtle d-flex align-items-center justify-content-center"><i class="bi bi-camera text-muted"></i></div>`;
-        preview.innerHTML = `${imgPart}<div><div class="fw-bold text-dark">${p.name}</div><div class="text-danger fw-bold">$${p.price}</div></div>`;
-        document.getElementById('share-copy-msg').style.display = 'none';
-        document.getElementById('btn-native-share').style.display = navigator.share ? 'flex' : 'none';
-        shareModal.show();
-    }
-
-    function shareToLine() {
-        if (!shareTarget) return;
-        const url = buildShareUrl(shareTarget.name);
-        const text = `${buildShareText(shareTarget)}\n${url}`;
-        const lineUrl = "https://line.me/R/msg/text/?" + encodeURIComponent(text);
-        window.open(lineUrl, '_blank');
-    }
-
-    function copyShareLink() {
-        if (!shareTarget) return;
-        const url = buildShareUrl(shareTarget.name);
-        const msg = document.getElementById('share-copy-msg');
-        const done = () => { msg.style.display = 'block'; setTimeout(() => { msg.style.display = 'none'; }, 2500); };
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).then(done).catch(() => fallbackCopy(url, done));
-        } else { fallbackCopy(url, done); }
-    }
-
-    function fallbackCopy(text, cb) {
-        const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-        document.body.appendChild(ta); ta.focus(); ta.select();
-        try { document.execCommand('copy'); cb(); } catch (e) { prompt('請手動複製此連結：', text); }
-        document.body.removeChild(ta);
-    }
-
-    function nativeShare() {
-        if (!shareTarget || !navigator.share) return;
-        const url = buildShareUrl(shareTarget.name);
-        navigator.share({
-            title: `${getShopName()}｜${shareTarget.name}`,
-            text: buildShareText(shareTarget),
-            url: url
-        }).catch(() => {});
-    }
-
-    // 開頁時若帶 ?pid=商品名，捲動到該商品並高亮閃爍
-    function handleSharedProduct() {
-        let pid = getPidFromUrl();
-        if (!pid) return;
-        const targetName = decodeURIComponent(pid);
-        setTimeout(() => {
-            let card = document.querySelector(`.product-card[data-pname="${cssEscape(targetName)}"]`);
-            if (!card) {
-                currentCategory = 'all'; renderMenu();
-                setTimeout(() => {
-                    let c2 = document.querySelector(`.product-card[data-pname="${cssEscape(targetName)}"]`);
-                    if (c2) highlightCard(c2);
-                }, 300);
-            } else { highlightCard(card); }
-        }, 600);
-    }
-
-    // 取得 pid 參數：相容一般網址 query 與 LIFF 的 liff.state 包裝
-    function getPidFromUrl() {
-        try {
-            let params = new URLSearchParams(window.location.search);
-            if (params.get('pid')) return params.get('pid');
-            // LIFF 有時把原始 query 包進 liff.state（例如 ?liff.state=%3Fpid%3D...）
-            let state = params.get('liff.state');
-            if (state) {
-                let inner = new URLSearchParams(state.charAt(0) === '?' ? state.slice(1) : state);
-                if (inner.get('pid')) return inner.get('pid');
-            }
-            // 後備：直接從完整網址用正則抓
-            let m = window.location.href.match(/[?&]pid=([^&]+)/);
-            if (m) return m[1];
-        } catch (e) {}
-        return null;
-    }
-
-    function cssEscape(s) { return String(s).replace(/["\\]/g, '\\$&'); }
-
-    function highlightCard(card) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        card.classList.add('flash-highlight');
-        setTimeout(() => card.classList.remove('flash-highlight'), 2600);
+        return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}"><div class="position-relative overflow-hidden" style="border-radius: 15px 15px 0 0;">${heartHtml}${badgeHtml}${imgHtml}</div><div class="product-body"><div class="product-name">${yqBadge}${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
     }
 
     function handleRestockByUid(uid) {
@@ -714,13 +521,14 @@
     function renderVariantModal() {
         const list = document.getElementById('variant-list'); list.innerHTML = '';
         let dateStr = ''; if (tempProduct.arrivalDate) { const d = new Date(tempProduct.arrivalDate); if (!isNaN(d.getTime())) dateStr = `效期: ${(d.getMonth()+1)}/${d.getDate()}`; }
-        if (tempProduct.stock > 0) list.innerHTML += `<div class="variant-row"><div class="flex-grow-1"><div class="fw-bold">正常品 <small class="text-muted fw-normal">剩${tempProduct.stock}</small></div><div class="text-danger fw-bold">$${tempProduct.price}</div></div><div class="qty-stepper"><button class="step-btn" onclick="updateTempQty('normal', -1)">-</button><div class="step-val">${tempNormalQty}</div><button class="step-btn" onclick="updateTempQty('normal', 1)">+</button></div></div>`;
+        if (tempProduct.stock > 0 || isTongxin(tempProduct.name, tempProduct.cat)) list.innerHTML += `<div class="variant-row"><div class="flex-grow-1"><div class="fw-bold">正常品 ${isTongxin(tempProduct.name, tempProduct.cat) ? '<small class="text-warning">較長備貨</small>' : `<small class="text-muted fw-normal">剩${tempProduct.stock}</small>`}</div><div class="text-danger fw-bold">$${tempProduct.price}</div></div><div class="qty-stepper"><button class="step-btn" onclick="updateTempQty('normal', -1)">-</button><div class="step-val">${tempNormalQty}</div><button class="step-btn" onclick="updateTempQty('normal', 1)">+</button></div></div>`;
         if (Number(tempProduct.clearStock) > 0) list.innerHTML += `<div class="variant-row"><div class="flex-grow-1"><div class="fw-bold text-danger">即期品 <span class="variant-tag">${dateStr}</span></div><div class="text-danger fw-bold">$${tempProduct.clearPrice} <small class="text-muted fw-normal">剩${tempProduct.clearStock}</small></div></div><div class="qty-stepper"><button class="step-btn" onclick="updateTempQty('clearance', -1)">-</button><div class="step-val">${tempClearanceQty}</div><button class="step-btn" onclick="updateTempQty('clearance', 1)">+</button></div></div>`;
     }
     function updateTempQty(type, delta) { 
         if (type === 'normal') { 
             const n = tempNormalQty + delta; 
-            if (n >= 0 && n <= tempProduct.stock) tempNormalQty = n;
+            const isTQ = isTongxin(tempProduct.name, tempProduct.cat);
+            if (n >= 0 && (isTQ || n <= tempProduct.stock)) tempNormalQty = n; 
         } else { 
             const n = tempClearanceQty + delta; 
             if (n >= 0 && n <= tempProduct.clearStock) tempClearanceQty = n; 
@@ -737,7 +545,7 @@
         const idx = cart.findIndex(c => c.name === product.name && c.cat === product.cat); 
         if (delta > 0) { 
             const currentQty = idx > -1 ? cart[idx].count : 0; 
-            if (currentQty >= product.stock) { alert(`庫存不足！目前剩餘 ${product.stock} 個`); return; } 
+            if (!isTongxin(product.name, product.cat) && currentQty >= product.stock) { alert(`庫存不足！目前剩餘 ${product.stock} 個`); return; } 
         }
         if (idx > -1) { cart[idx].count += delta; if (cart[idx].count <= 0) cart.splice(idx, 1); } 
         else if (delta > 0) { cart.push({ name: product.name, price: product.price, cat: product.cat, count: 1 }); } 
@@ -749,7 +557,6 @@
         if(!input) return;
         if (allData.promoCodes && allData.promoCodes[input]) {
             appliedPromo = { code: input, discount: Number(allData.promoCodes[input]) };
-            if (selectedCoupon) { selectedCoupon = null; renderCouponPicker(); }
             msgBox.innerHTML = `✅ 套用成功！已為您折抵 <span class="fw-bold">$${appliedPromo.discount}</span>`; msgBox.className = "text-success d-block mt-1"; updateCartUI();
         } else {
             appliedPromo = null; msgBox.innerText = `❌ 無效的優惠碼`; msgBox.className = "text-danger d-block mt-1"; updateCartUI();
@@ -792,13 +599,6 @@
             finalTotal -= appliedPromo.discount; if(finalTotal < 0) finalTotal = 0;
             document.getElementById('modal-discount-amount').innerText = `-$${appliedPromo.discount}`; discountRow.style.setProperty("display", "flex", "important");
         } else { discountRow.style.setProperty("display", "none", "important"); }
-
-        const couponRow = document.getElementById('coupon-display-row');
-        if (selectedCoupon && count > 0) {
-            let cAmt = Number(selectedCoupon.amount) || 0;
-            finalTotal -= cAmt; if(finalTotal < 0) finalTotal = 0;
-            document.getElementById('modal-coupon-amount').innerText = `-$${cAmt}`; couponRow.style.setProperty("display", "flex", "important");
-        } else { couponRow.style.setProperty("display", "none", "important"); }
         
         let pointsContainer = document.getElementById('points-alert-container');
         if (finalTotal > 0) {
@@ -837,12 +637,12 @@
         }
     }
 
-    function openCartModal() { appliedPromo = null; selectedCoupon = null; document.getElementById('promo-code-input').value = ''; document.getElementById('promo-msg').innerText = ''; renderCartModal(); cartModal.show(); }
+    function openCartModal() { appliedPromo = null; document.getElementById('promo-code-input').value = ''; document.getElementById('promo-msg').innerText = ''; renderCartModal(); cartModal.show(); }
     
     function renderCartModal() { 
         const body = document.getElementById('cart-modal-body'); const loginPrompt = document.getElementById('guest-login-prompt'); const submitBtn = document.getElementById('btn-submit-order'); const promoSec = document.getElementById('promo-code-section');
-        if (isLoggedIn) { loginPrompt.style.display = 'none'; promoSec.style.display = 'block'; submitBtn.innerText = "送出訂單"; submitBtn.classList.remove('btn-secondary'); submitBtn.classList.add('btn-confirm'); renderCouponPicker(); } 
-        else { loginPrompt.style.display = 'block'; promoSec.style.display = 'none'; appliedPromo = null; selectedCoupon = null; document.getElementById('my-coupon-section').style.display = 'none'; submitBtn.innerText = "以訪客身分送單"; submitBtn.classList.remove('btn-confirm'); submitBtn.classList.add('btn-secondary'); }
+        if (isLoggedIn) { loginPrompt.style.display = 'none'; promoSec.style.display = 'block'; submitBtn.innerText = "送出訂單"; submitBtn.classList.remove('btn-secondary'); submitBtn.classList.add('btn-confirm'); } 
+        else { loginPrompt.style.display = 'block'; promoSec.style.display = 'none'; appliedPromo = null; submitBtn.innerText = "以訪客身分送單"; submitBtn.classList.remove('btn-confirm'); submitBtn.classList.add('btn-secondary'); }
         updateCartUI();
         if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } 
         let html = ''; 
@@ -853,7 +653,8 @@
             const isClearance = i.name.includes('(即期品)'); const rowClass = isClearance ? 'cart-item-row clearance-item' : 'cart-item-row border-bottom'; const badgeHtml = isClearance ? `<span class="clearance-badge">⚠️ 即期良品</span>` : ``; let dateInfo = '';
             if (isClearance) { const rawName = i.name.replace(" (即期品)", ""); const p = allData.products.find(x => x.name === rawName && x.cat === i.cat); if (p && p.arrivalDate) { const d = new Date(p.arrivalDate); if (!isNaN(d.getTime())) dateInfo = `<div class="small text-danger fw-bold"><i class="bi bi-calendar-event"></i> 效期：${d.getMonth()+1}/${d.getDate()}</div>`; } }
             
-            let tqBadge = '';
+            let isTQ = isTongxin(i.name, i.cat);
+            let tqBadge = isTQ ? `<div class="mt-1 mb-1"><span class="badge bg-warning text-dark"><i class="bi bi-clock-history"></i> 較長備貨 (請耐心等候)</span></div>` : '';
 
             // 🟢 在排序後的陣列中，我們需要找回原本在購物車的索引來取折扣
             let originalIndex = cart.indexOf(i);
@@ -901,22 +702,18 @@
         
         if (delta > 0 && product) { 
             const maxStock = isClearance ? product.clearStock : product.stock; 
-            if (cartItem.count >= maxStock) { alert(`庫存不足！目前剩餘 ${maxStock} 個`); return; } 
+            if (!isTongxin(product.name, product.cat) && cartItem.count >= maxStock) { alert(`庫存不足！目前剩餘 ${maxStock} 個`); return; } 
         }
         cartItem.count += delta; 
         if (cartItem.count <= 0) cart.splice(cartIndex, 1); 
         updateCartUI(); saveCartToLocal(); renderCartModal(); renderMenu();
     }
     
-    let isSubmitting = false;
     function submitOrder() {
-        if (isSubmitting) return;
         const cName = document.getElementById('order-contact-name').value.trim(); const cPhone = document.getElementById('order-contact-phone').value.trim();
         if (!cName) { alert("請輸入取餐聯絡人姓名"); return; } if (!cPhone) { alert("請輸入聯絡電話"); return; }
         if(!isLoggedIn && !confirm("⚠️ 您目前是訪客身分，將無法收到訂單狀態通知與優惠折扣。\n\n確定要送出嗎？")) return;
 
-        isSubmitting = true;
-        const submitBtn = document.getElementById('btn-submit-order'); if (submitBtn) submitBtn.disabled = true;
         document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "狗狗跑腿送單中..."; cartModal.hide();
         
         let sortedCart = [...cart].sort((a, b) => a.cat.localeCompare(b.cat, 'zh-TW'));
@@ -934,25 +731,12 @@
         if (window.currentYqDiscount > 0) itemsText += `, [永圻滿件95折] 折抵 $${window.currentYqDiscount}`;
         if (appliedPromo) { finalTotal -= appliedPromo.discount; if(finalTotal < 0) finalTotal = 0; itemsText += `, [優惠碼 ${appliedPromo.code}] 折抵 $${appliedPromo.discount}`; }
 
-        let couponClaimed = 0; let couponId = '';
-        if (selectedCoupon && isLoggedIn) {
-            couponClaimed = Number(selectedCoupon.amount) || 0;
-            finalTotal -= couponClaimed; if(finalTotal < 0) finalTotal = 0;
-            couponId = selectedCoupon.couponId;
-        }
-
-        const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: itemsText, total: finalTotal, cartItems: cart, contactName: cName, contactPhone: cPhone, couponId: couponId, couponClaimed: couponClaimed } };
+        const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: itemsText, total: finalTotal, cartItems: cart, contactName: cName, contactPhone: cPhone } };
         
         fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' }).then(() => { 
             document.getElementById('loader').style.display = 'none';
             cart = []; appliedPromo = null; saveCartToLocal(); updateCartUI(); renderMenu(); orderSuccessModal.show();
-            isSubmitting = false; if (submitBtn) submitBtn.disabled = false;
-            if (selectedCoupon) { selectedCoupon = null; loadMyCoupons(); }
-        }).catch(e => {
-            document.getElementById('loader').style.display = 'none';
-            isSubmitting = false; if (submitBtn) submitBtn.disabled = false;
-            alert("送單時發生問題，請確認網路後再試一次：" + e);
-        });
+        }).catch(e => alert("錯誤: " + e));
     }
     
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
