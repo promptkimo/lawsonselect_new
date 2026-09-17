@@ -462,7 +462,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="orderSuccessModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><div class="modal-header border-0 bg-success text-white"><h5 class="modal-title fw-bold"><i class="bi bi-check-circle-fill me-2"></i>訂單已傳送至後台！</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center py-4"><div class="fs-1 mb-2">🎉</div><h5 class="fw-bold text-dark">感謝您的購買</h5><p class="text-muted small mb-4">我們已經收到您的訂單資料。</p><div class="d-grid gap-2"><button class="btn btn-light rounded-pill text-secondary mt-2 border" onclick="window.location.reload();">關閉視窗</button></div></div></div></div></div>
+<div class="modal fade" id="orderSuccessModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><div class="modal-header border-0 bg-success text-white"><h5 class="modal-title fw-bold"><i class="bi bi-check-circle-fill me-2"></i>訂單已傳送至後台！</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center py-4"><div class="fs-1 mb-2">🎉</div><h5 class="fw-bold text-dark">感謝您的購買</h5><p class="text-muted small mb-1">我們已經收到您的訂單資料。</p><p class="small fw-bold mb-4" id="success-order-id" style="color:#2f5d50;"></p><div class="d-grid gap-2"><button class="btn btn-light rounded-pill text-secondary mt-2 border" onclick="window.location.reload();">關閉視窗</button></div></div></div></div></div>
 <div class="modal fade" id="variantModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold" id="variant-title"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="variant-list"></div><div class="modal-footer border-0 pt-0"><button class="btn btn-dark w-100 rounded-pill shadow-sm py-2" onclick="confirmVariantSelection()">確認加入</button></div></div></div></div>
 <div class="modal fade" id="announceModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-danger">📢 優惠活動 / 公告</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="announce-img-container" style="display:none;"></div><div id="announce-content" class="mt-2 text-center fw-bold text-dark"></div></div><div class="modal-footer border-0"><button type="button" class="btn btn-warning w-100 rounded-pill fw-bold text-dark shadow-sm py-2" data-bs-dismiss="modal">我知道了</button></div></div></div></div>
 <div class="modal fade" id="myOrdersModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable modal-lg"><div class="modal-content border-0"><div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold">🐶 歷史訂單查詢</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light" id="my-orders-list"></div></div></div></div>
@@ -1193,12 +1193,20 @@
         updateCartUI(); saveCartToLocal(); renderCartModal(); renderMenu();
     }
     
+    let isSubmitting = false;
     function submitOrder() {
+        if (isSubmitting) return;
         const cName = document.getElementById('order-contact-name').value.trim(); const cPhone = document.getElementById('order-contact-phone').value.trim();
         if (!cName) { alert("請輸入取餐聯絡人姓名"); return; } if (!cPhone) { alert("請輸入聯絡電話"); return; }
         if(!isLoggedIn && !confirm("⚠️ 您目前是訪客身分，將無法收到訂單狀態通知與優惠折扣。\n\n確定要送出嗎？")) return;
 
-        document.getElementById('loader').style.display = 'flex'; document.querySelector('#loader .fw-bold').innerText = "狗狗跑腿送單中..."; cartModal.hide();
+        isSubmitting = true;
+        const submitBtn = document.getElementById('btn-submit-order');
+        if (submitBtn) submitBtn.disabled = true;
+        document.getElementById('loader').style.display = 'flex';
+        document.getElementById('loader').style.opacity = '1';
+        setLoadProgress(40, '訂單傳送中...');
+        cartModal.hide();
         
         let sortedCart = [...cart].sort((a, b) => a.cat.localeCompare(b.cat, 'zh-TW'));
         let itemsTextArr = [];
@@ -1216,11 +1224,52 @@
         if (appliedPromo) { finalTotal -= appliedPromo.discount; if(finalTotal < 0) finalTotal = 0; itemsText += `, [優惠碼 ${appliedPromo.code}] 折抵 $${appliedPromo.discount}`; }
 
         const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: itemsText, total: finalTotal, cartItems: cart, contactName: cName, contactPhone: cPhone } };
-        
-        fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' }).then(() => { 
-            document.getElementById('loader').style.display = 'none';
-            cart = []; appliedPromo = null; saveCartToLocal(); updateCartUI(); renderMenu(); orderSuccessModal.show();
-        }).catch(e => alert("錯誤: " + e));
+
+        const sentAt = Date.now();
+        const loaderEl = document.getElementById('loader');
+        const loadText = document.getElementById('load-text');
+        if (loadText) loadText.innerText = '訂單傳送中...';
+
+        fetch(GAS_URL, { method: 'POST', body: JSON.stringify(orderData), mode: 'no-cors' })
+            .then(() => {
+                // no-cors 收不到回應，因此主動回頭查驗訂單是否真的寫入
+                if (loadText) loadText.innerText = '確認訂單中...';
+                return verifyOrder(sentAt, finalTotal, 0);
+            })
+            .then(res => {
+                loaderEl.style.display = 'none';
+                isSubmitting = false; if (submitBtn) submitBtn.disabled = false;
+                if (res && res.found) {
+                    // 確認訂單存在才清空購物車
+                    cart = []; appliedPromo = null; saveCartToLocal(); updateCartUI(); renderMenu();
+                    const idEl = document.getElementById('success-order-id');
+                    if (idEl && res.orderId) idEl.innerText = '訂單編號：' + String(res.orderId).slice(-6);
+                    orderSuccessModal.show();
+                } else {
+                    // 查不到訂單：購物車保留，讓客人可以重試
+                    alert('⚠️ 無法確認訂單是否送出成功。\n\n您的購物車已保留。請先到「查詢訂單」確認，若沒有這筆訂單再重新送出，以免重複下單。');
+                }
+            })
+            .catch(e => {
+                loaderEl.style.display = 'none';
+                isSubmitting = false; if (submitBtn) submitBtn.disabled = false;
+                alert('送單時發生問題：' + (e.message || e) + '\n\n您的購物車已保留，請確認網路後再試。');
+            });
+    }
+
+    // 送單後回頭確認訂單是否真的寫入（最多重試 4 次，每次間隔遞增）
+    function verifyOrder(sentAt, total, attempt) {
+        const delays = [1200, 1800, 2500, 3500];
+        if (attempt >= delays.length) return Promise.resolve({ found: false });
+        return new Promise(resolve => setTimeout(resolve, delays[attempt]))
+            .then(() => fetch(GAS_URL + '?page=checkOrder&uid=' + encodeURIComponent(userProfile.userId)
+                        + '&since=' + sentAt + '&total=' + total + '&t=' + Date.now()))
+            .then(r => r.json())
+            .then(d => {
+                if (d && d.found) return d;
+                return verifyOrder(sentAt, total, attempt + 1);
+            })
+            .catch(() => verifyOrder(sentAt, total, attempt + 1));
     }
     
     function zoomImg(e, url) { e.stopPropagation(); const lb = document.getElementById('lightbox'); document.getElementById('lightbox-img').src = url; lb.style.display = 'flex'; setTimeout(() => lb.classList.add('show'), 10); }
