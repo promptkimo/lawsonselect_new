@@ -3,13 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>樂森良選 Lifestyle Select</title>
+
+    <!-- ===== SEO 基本設定 ===== -->
+    <title>樂森良選 Lifestyle Select｜台南嚴選寶寶副食品・健康食品線上訂購</title>
+    <meta name="description" content="樂森良選由台南樂森藥局藥師嚴選，提供寶寶副食品、無調味手指食物、健康麵包與即期優惠品。線上選購、LINE 快速下單、到店取貨免運費。">
+    <meta name="keywords" content="樂森良選,樂森藥局,台南寶寶副食品,寶寶手指食物,無調味副食品,森森星球,原味太太,康福先生,吾兒,兒童健康食品,台南線上訂購">
+    <meta name="author" content="樂森良選">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://promptkimo.github.io/lawsonselect_new/">
+
+    <!-- ===== 社群分享預覽（LINE / Facebook）===== -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="樂森良選 Lifestyle Select">
+    <meta property="og:title" content="樂森良選｜台南藥師嚴選寶寶副食品・健康食品">
+    <meta property="og:description" content="藥師嚴選寶寶副食品、無調味手指食物、健康麵包。線上選購、LINE 快速下單、到店取貨。">
+    <meta property="og:url" content="https://promptkimo.github.io/lawsonselect_new/">
+    <meta property="og:locale" content="zh_TW">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="樂森良選｜台南藥師嚴選寶寶副食品">
+    <meta name="twitter:description" content="藥師嚴選寶寶副食品、無調味手指食物、健康麵包。線上選購、到店取貨。">
+
+    <!-- ===== 結構化資料：讓 Google 認識這是一家在地商店 ===== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": "樂森良選 Lifestyle Select",
+      "description": "台南樂森藥局藥師嚴選，提供寶寶副食品、無調味手指食物、健康麵包與健康食品線上訂購。",
+      "url": "https://promptkimo.github.io/lawsonselect_new/",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "台南市",
+        "addressRegion": "台南",
+        "addressCountry": "TW"
+      },
+      "areaServed": "台南市",
+      "priceRange": "$$"
+    }
+    </script>
+
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     
     <style>
-        :root { --primary: #d32f2f; --accent: #ffb300; --app-bg: #fffdf5; --text-dark: #3e2723; }
+        :root {
+            /* 北歐風配色：低彩度、沉穩、留白 */
+            --primary: #2f5d50;        /* 主色：沉穩森林綠（取代高彩度紅） */
+            --primary-soft: #5b8577;   /* 主色淺版 */
+            --accent: #c87a5c;         /* 點綴：陶土橘 */
+            --app-bg: #faf9f7;         /* 背景：暖白 */
+            --surface: #ffffff;        /* 卡片底 */
+            --text-dark: #2c2c2c;      /* 主要文字 */
+            --text-mid: #6b6b6b;       /* 次要文字 */
+            --text-light: #9a9a9a;     /* 輔助文字 */
+            --line: #ebe8e4;           /* 分隔線 */
+            --danger: #b4483c;         /* 警示（低彩度紅） */
+        }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--app-bg); color: var(--text-dark); margin: 0; overflow-x: hidden; padding-bottom: 100px; }
         .app-layout { width: 100%; min-height: 100vh; position: relative; }
         .marquee-container { background: #ffc107; color: #000; padding: 10px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1030; font-size: 1rem; font-weight: 900; border-bottom: 2px solid #000; }
@@ -48,28 +98,98 @@
         .cat-scroll-right { right: 2px; }
         /* 觸控裝置以手指滑動為主，隱藏箭頭 */
         @media (hover: none) { .cat-scroll-btn { display: none; } }
-        .cat-pill { padding: 8px 20px; background: #fff; color: var(--text-dark); border: 1px solid #e0e0e0; border-radius: 25px; font-size: 0.95rem; font-weight: 700; transition: all 0.2s; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
-        .cat-pill:hover { background: #f8f9fa; }
-        .cat-pill.active { background: var(--text-dark); color: var(--accent); border-color: var(--text-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.2); transform: translateY(-2px); }
+        .cat-pill { padding: 7px 18px; background: var(--surface); color: var(--text-mid); border: 1px solid var(--line); border-radius: 20px; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; cursor: pointer; box-shadow: none; }
+        .cat-pill:hover { background: #f2f0ed; color: var(--text-dark); }
+        .cat-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: none; transform: none; font-weight: 500; }
         .content-wrapper { padding: 20px 15px; max-width: 1200px; margin: 0 auto; }
-        .section-title { font-weight: 800; margin: 10px 0 20px 0; padding-left: 15px; border-left: 6px solid var(--accent); font-size: 1.3rem; color: var(--text-dark); }
+        .section-title { font-weight: 600; margin: 18px 0 16px 0; padding-left: 12px; border-left: 3px solid var(--primary); font-size: 1.08rem; color: var(--text-dark); letter-spacing: 0.01em; }
         
-        .product-card { background: #fff; border-radius: 20px; overflow: hidden; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.04); margin-bottom: 15px; position: relative; transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .product-card:hover { transform: translateY(-6px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        /* ===== 北歐風商品卡 ===== */
+        .product-card {
+            background: var(--surface);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--line);      /* 細邊框取代厚重陰影 */
+            box-shadow: none;
+            margin-bottom: 16px;
+            position: relative;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+            height: calc(100% - 16px);           /* 同列卡片等高 */
+            display: flex;
+            flex-direction: column;
+        }
+        .product-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-soft);
+            box-shadow: 0 6px 20px rgba(47,93,80,0.08);
+        }
+        .product-card:hover .product-img { transform: scale(1.03); }
         .product-img { width: 100%; height: 160px; object-fit: cover; background: #f9f9f9; transition: transform 0.5s ease; }
         @media (min-width: 768px) { .product-img { height: 220px; } }
         .product-card:hover .product-img { transform: scale(1.05); }
-        .product-body { padding: 15px; position: relative; }
-        .product-name { font-size: 1rem; font-weight: bold; margin-bottom: 8px; color: #4e342e; padding-right: 25px; line-height: 1.3; word-wrap: break-word; }
-        .product-price { color: var(--primary); font-size: 1.2rem; font-weight: 900; }
-        .stock-info { font-size: 0.8rem; color: #888; background: #f5f5f5; padding: 3px 10px; border-radius: 6px; display: inline-block; margin-top: 6px; font-weight: 500;}
-        .badge-corner { position: absolute; top: 0; left: 0; background: #d32f2f; color: white; font-size: 0.8rem; font-weight: bold; padding: 6px 12px; border-bottom-right-radius: 12px; z-index: 10; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); }
+        .product-body {
+            padding: 14px 14px 52px 14px;   /* 底部留空間給按鈕，避免壓到文字 */
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-name {
+            font-size: 0.92rem;
+            font-weight: 500;                /* 不用粗體，北歐風偏克制 */
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            line-height: 1.45;
+            /* 固定兩行，超出以省略號顯示，讓卡片高度一致 */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.6em;
+            word-break: break-word;
+        }
+        .product-price {
+            color: var(--text-dark);
+            font-size: 1.28rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-top: auto;                /* 價格永遠貼齊底部，視覺對齊 */
+            line-height: 1.2;
+        }
+        .product-price .cur { font-size: 0.85rem; font-weight: 500; color: var(--text-mid); margin-right: 1px; }
+        .stock-info {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            background: transparent;          /* 去掉灰底色塊，更輕 */
+            padding: 0;
+            border-radius: 0;
+            display: inline-block;
+            margin-top: 4px;
+            font-weight: 400;
+        }
+        .stock-info.low { color: var(--accent); font-weight: 500; }
+        .yq-tag { display: inline-block; font-size: 0.68rem; font-weight: 500; color: var(--primary); background: rgba(47,93,80,0.08); padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; letter-spacing: 0.02em; }
+        .btn-add-only.oos-btn { background: transparent; color: var(--text-mid); border: 1px solid var(--line); font-size: 0.78rem; }
+        .btn-add-only.oos-btn:hover { background: #f2f0ed; color: var(--text-dark); }
+        .badge-corner { position: absolute; top: 10px; left: 10px; background: rgba(200,122,92,0.94); color: #fff; font-size: 0.72rem; font-weight: 500; padding: 4px 10px; border-radius: 6px; z-index: 10; box-shadow: none; letter-spacing: 0.02em; }
         .fav-btn { position: absolute; top: 10px; right: 10px; z-index: 15; background: rgba(255,255,255,0.9); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s;}
         .fav-btn:active { transform: scale(0.8); }
-        .product-card.oos-mode .product-img { opacity: 0.5; filter: grayscale(100%); }
-        .btn-add-only { position: absolute; bottom: 15px; right: 15px; height: 36px; background: var(--accent); color: var(--text-dark); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.15); cursor: pointer; transition: 0.2s; padding: 0 12px;}
-        .btn-add-only.circle { width: 36px; padding: 0; border-radius: 50%; }
-        .btn-add-only:hover { transform: scale(1.1); background: #ffc107;}
+        .product-card.oos-mode { opacity: 0.85; }
+        .product-card.oos-mode .product-img { opacity: 0.45; filter: grayscale(85%); }
+        .btn-add-only {
+            position: absolute; bottom: 12px; right: 12px; height: 34px;
+            background: var(--primary); color: #fff;
+            border-radius: 17px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: none;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.15s ease;
+            padding: 0 14px;
+            font-size: 0.85rem; font-weight: 500;
+        }
+        .btn-add-only.circle { width: 34px; padding: 0; border-radius: 50%; }
+        .btn-add-only:hover { transform: none; background: var(--primary-soft); }
+        .btn-add-only:active { transform: scale(0.94); }
         .qty-group { position: absolute; bottom: 15px; right: 15px; display: flex; align-items: center; background: #fff; border-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 1px solid var(--accent); overflow: hidden;}
         .qty-btn { width: 32px; height: 32px; border: none; background: var(--accent); color: var(--text-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;}
         .qty-btn:hover { background: #ffc107; }
@@ -107,6 +227,24 @@
     </style>
 </head>
 <body>
+
+<!-- SEO：搜尋引擎爬蟲可讀的店家介紹（商品由 JS 動態載入，爬蟲抓不到，故提供靜態說明） -->
+<div style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap;">
+    <h1>樂森良選 Lifestyle Select｜台南藥師嚴選寶寶副食品與健康食品</h1>
+    <p>樂森良選由台南樂森藥局的藥師團隊嚴選，專營寶寶副食品、無調味手指食物、兒童健康零食、健康麵包與即期優惠良品。線上選購後可到店取貨，並支援 LINE 快速下單與訂單進度通知。</p>
+    <h2>主要商品分類</h2>
+    <ul>
+        <li>原味太太 － 寶寶手指食物、無調味副食品、寶寶漢堡排與鬆餅</li>
+        <li>森森星球 － 寶寶烏龍麵、燉飯料理盒、寶寶餛飩餃、貝果</li>
+        <li>康福先生 － 3D 貝果、彩蔬康福餃</li>
+        <li>吾兒 － 小河馬麵包、大河馬吐司、積木吐司</li>
+        <li>童心好食館 － 兒童營養食品</li>
+        <li>永圻 － 健康食品（滿 2 件 95 折）</li>
+        <li>無毒農、愛子伴桌 － 天然無毒食材</li>
+    </ul>
+    <h2>服務說明</h2>
+    <p>提供線上訂購、到店取貨、缺貨到貨通知、會員專屬優惠券。營業區域為台南市。</p>
+</div>
 
 <div id="loader"><div class="dog-wrapper"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-3" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img ghost-2" referrerpolicy="no-referrer"><img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w1000" class="loader-img main-dog" alt="Loading" referrerpolicy="no-referrer"></div><div class="spinner-border text-warning" role="status"></div><div class="mt-2 text-secondary fw-bold small">樂森良選 為您服務...</div></div>
 
@@ -497,17 +635,18 @@
         const heartHtml = `<div class="fav-btn" onclick="toggleFavByUid(event, ${p._uid})"><i class="bi ${isFav ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary'} fs-5"></i></div>`;
         const imgHtml = p.img ? `<img src="${p.img}" class="product-img" onclick="zoomImg(event, '${p.img}')" referrerpolicy="no-referrer">` : `<div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera fs-1"></i></div>`;
         
-        let stockHtml = `<span class="stock-info">剩: ${p.stock}</span>`;
+        let lowStock = (Number(p.stock) > 0 && Number(p.stock) <= 5);
+        let stockHtml = `<span class="stock-info${lowStock ? ' low' : ''}">${lowStock ? '僅剩 ' + p.stock + ' 件' : '庫存 ' + p.stock}</span>`;
         
         let btnHtml = '';
-        if (isOOS) { btnHtml = `<div class="btn-add-only bg-danger text-white w-auto px-3 shadow-sm" style="border-radius:20px; font-size:0.85rem;" onclick="handleRestockByUid(${p._uid})"><i class="bi bi-bell-fill me-1"></i>貨到通知</div>`; }
+        if (isOOS) { btnHtml = `<div class="btn-add-only oos-btn" onclick="handleRestockByUid(${p._uid})"><i class="bi bi-bell me-1"></i>到貨通知</div>`; }
         else if (Number(p.clearStock) > 0) btnHtml = `<div class="btn-add-only" style="width:auto; padding:0 12px; border-radius:20px; font-size:0.9rem;" onclick="openVariantByUid(${p._uid})">選購</div>`;
         else btnHtml = (count > 0 ? `<div class="qty-group"><button class="qty-btn" onclick="updateQtyByUid(${p._uid}, -1)">-</button><span class="qty-val">${count}</span><button class="qty-btn" onclick="updateQtyByUid(${p._uid}, 1)">+</button></div>` : `<div class="btn-add-only circle" onclick="updateQtyByUid(${p._uid}, 1)"><i class="bi bi-plus-lg"></i></div>`);
         
         const badgeHtml = Number(p.clearStock) > 0 ? `<div class="badge-corner">即期出清</div>` : ''; 
-        let yqBadge = isYQ ? `<span class="badge bg-danger mb-2 d-inline-block shadow-sm px-2 py-1" style="font-size:0.75rem;"><i class="bi bi-tags-fill me-1"></i>任兩件 95折</span><br>` : '';
+        let yqBadge = isYQ ? `<span class="yq-tag">任兩件 95折</span>` : '';
 
-        return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}"><div class="position-relative overflow-hidden" style="border-radius: 15px 15px 0 0;">${heartHtml}${badgeHtml}${imgHtml}</div><div class="product-body"><div class="product-name">${yqBadge}${p.name}</div><div class="product-price">$${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
+        return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}"><div class="position-relative overflow-hidden" style="border-radius: 13px 13px 0 0;">${heartHtml}${badgeHtml}${imgHtml}</div><div class="product-body"><div class="product-name">${yqBadge}${p.name}</div><div class="product-price"><span class="cur">NT$</span>${p.price}</div>${stockHtml}${btnHtml}</div></div></div>`;
     }
 
     function handleRestockByUid(uid) {
