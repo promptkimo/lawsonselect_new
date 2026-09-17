@@ -103,6 +103,22 @@
         .cat-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: none; transform: none; font-weight: 500; }
         .content-wrapper { padding: 20px 15px; max-width: 1200px; margin: 0 auto; }
         .section-title { font-weight: 600; margin: 18px 0 16px 0; padding-left: 12px; border-left: 3px solid var(--primary); font-size: 1.08rem; color: var(--text-dark); letter-spacing: 0.01em; }
+        /* ===== 三層分類視覺層級 ===== */
+        /* 第一層：品牌（大分類） */
+        .brand-header { display: flex; align-items: baseline; gap: 10px; margin: 28px 0 4px 0; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+        .brand-header:first-child { margin-top: 8px; }
+        .brand-name { font-size: 1.15rem; font-weight: 600; color: var(--text-dark); letter-spacing: 0.01em; }
+        .brand-count { font-size: 0.75rem; color: var(--text-light); font-weight: 400; }
+        /* 第二層：產品類型（中分類） */
+        .subcat-header { display: flex; align-items: center; gap: 8px; margin: 22px 0 12px 0; }
+        .subcat-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--primary-soft); flex-shrink: 0; }
+        .subcat-name { font-size: 0.92rem; font-weight: 500; color: var(--primary); letter-spacing: 0.02em; }
+        .subcat-count { font-size: 0.72rem; color: var(--text-light); font-weight: 400; }
+        .subcat-line { flex: 1; height: 1px; background: var(--line); margin-left: 4px; }
+        /* 子分類快速跳轉列 */
+        .subcat-jump { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 4px 0; }
+        .subcat-chip { font-size: 0.78rem; padding: 4px 12px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); color: var(--text-mid); cursor: pointer; transition: 0.18s; }
+        .subcat-chip:hover { background: rgba(47,93,80,0.06); border-color: var(--primary-soft); color: var(--primary); }
         
         /* ===== 北歐風商品卡 ===== */
         .product-card {
@@ -615,22 +631,74 @@
             return;
         }
         else {
+            let out = '';
             allData.categories.forEach(cat => {
                 if (currentCategory !== 'all' && currentCategory !== cat) return;
-                const catItems = allData.products.filter(p => p.cat === cat); if(catItems.length === 0) return;
-                let grouped = {}; catItems.forEach(p => { const sub = p.subCat || '其他'; if(!grouped[sub]) grouped[sub] = []; grouped[sub].push(p); });
-                let html = `<div id="cat-${cat}" class="section-title w-100">${cat}</div>`;
-                for (const [subName, subItems] of Object.entries(grouped)) {
-                    if(subName !== '其他') html += `<div class="w-100 text-secondary small fw-bold mb-2 ms-2"><i class="bi bi-tag-fill me-1"></i>${subName}</div>`; 
-                    html += `<div class="row g-3 g-md-4 mb-4">`; subItems.forEach(p => html += createProductCard(p)); html += `</div>`; 
-                } 
-                container.innerHTML += html;
+                const catItems = allData.products.filter(p => p.cat === cat);
+                if (catItems.length === 0) return;
+
+                // 依商品在試算表中的原始順序分組，確保每次載入排列一致
+                let groupOrder = [];
+                let grouped = {};
+                catItems.forEach(p => {
+                    const sub = (p.subCat && String(p.subCat).trim()) ? String(p.subCat).trim() : '其他';
+                    if (!grouped[sub]) { grouped[sub] = []; groupOrder.push(sub); }
+                    grouped[sub].push(p);
+                });
+                // 「其他」永遠排最後
+                groupOrder = groupOrder.filter(s => s !== '其他');
+                if (grouped['其他']) groupOrder.push('其他');
+
+                // 第一層：品牌標題
+                out += `<div id="cat-${escHTML(cat)}" class="brand-header w-100">`
+                     + `<span class="brand-name">${cat}</span>`
+                     + `<span class="brand-count">${catItems.length} 項商品</span></div>`;
+
+                // 子分類快速跳轉（2 個以上才顯示，單一子分類不需要）
+                if (groupOrder.length > 1) {
+                    out += `<div class="subcat-jump w-100">`;
+                    groupOrder.forEach(sub => {
+                        out += `<span class="subcat-chip" onclick="jumpToSub('${escHTML(cat)}','${escHTML(sub)}')">${sub} <span style="opacity:.6">${grouped[sub].length}</span></span>`;
+                    });
+                    out += `</div>`;
+                }
+
+                // 第二層：產品類型 + 第三層：商品
+                groupOrder.forEach(sub => {
+                    const subItems = grouped[sub];
+                    if (groupOrder.length > 1 || sub !== '其他') {
+                        out += `<div id="sub-${escHTML(cat)}-${escHTML(sub)}" class="subcat-header w-100">`
+                             + `<span class="subcat-dot"></span>`
+                             + `<span class="subcat-name">${sub}</span>`
+                             + `<span class="subcat-count">${subItems.length}</span>`
+                             + `<span class="subcat-line"></span></div>`;
+                    }
+                    out += `<div class="row g-3 g-md-4 mb-2">`;
+                    subItems.forEach(p => out += createProductCard(p));
+                    out += `</div>`;
+                });
             });
+            container.innerHTML = out || '<div class="text-center mt-5 text-muted">目前沒有相關商品</div>';
             return;
         }
         if (items.length === 0) { container.innerHTML = '<div class="text-center mt-5 text-muted">目前沒有相關商品</div>'; return; }
         let html = `<div class="section-title">${currentCategory === 'top10' ? '🔥 熱銷推薦' : '⚠️ 即期良品專區'}</div><div class="row g-3 g-md-4 mb-4">`;
         items.forEach(p => html += createProductCard(p)); html += `</div>`; container.innerHTML = html;
+    }
+
+    // 點子分類標籤，捲動到該區塊並短暫highlight
+    function jumpToSub(cat, sub) {
+        const el = document.getElementById('sub-' + cat + '-' + sub);
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const name = el.querySelector('.subcat-name');
+        if (name) {
+            name.style.transition = 'background 0.3s';
+            name.style.background = 'rgba(47,93,80,0.14)';
+            name.style.padding = '2px 8px';
+            name.style.borderRadius = '4px';
+            setTimeout(function(){ name.style.background = 'transparent'; name.style.padding = '0'; }, 1400);
+        }
     }
 
     function createProductCard(p) {
