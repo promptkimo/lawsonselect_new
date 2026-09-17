@@ -82,6 +82,11 @@
         @media (min-width: 768px) { .menu-btn-img { width: 70px; height: 70px; } .menu-label { font-size: 0.95rem; } }
         
         .sticky-header-group { position: sticky; top: 0; z-index: 1010; }
+        /* 往下滑時收起搜尋框，只留分類列貼在最上方 */
+        .sticky-header-group .search-bar-container { transition: max-height 0.26s ease, opacity 0.2s ease, padding 0.26s ease; overflow: hidden; max-height: 90px; opacity: 1; }
+        .sticky-header-group.compact .search-bar-container { max-height: 0; opacity: 0; padding-top: 0 !important; padding-bottom: 0 !important; }
+        .sticky-header-group.compact .cat-nav { padding-top: 8px; padding-bottom: 8px; }
+        .sticky-header-group.compact .cat-nav-wrapper { box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
         .sticky-msg-bar { background-color: #ffe0b2; color: #e65100; font-size: 0.95rem; font-weight: bold; text-align: center; padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); display: none; }
         
         .search-bar-container { background: rgba(255, 253, 245, 0.96); padding: 10px 15px; border-bottom: 1px solid rgba(0,0,0,0.03); width: 100%; margin: 0 auto; display: flex; justify-content: center; }
@@ -441,6 +446,30 @@
 
     const escHTML = (s) => String(s || '').replace(/"/g, "&quot;").replace(/'/g, "\\'");
 
+    // 往下滑收起搜尋框，只留分類列貼頂；上滑回到頂部再展開
+    // 用遲滯（不同的收合/展開門檻）避免在臨界點來回抖動
+    function enableCompactHeader() {
+        const grp = document.querySelector('.sticky-header-group');
+        if (!grp) return;
+        let lastY = window.scrollY;
+        let locked = false;
+        window.addEventListener('scroll', function() {
+            if (locked) return;
+            const y = window.scrollY;
+            const goingDown = y > lastY;
+            lastY = y;
+            const isCompact = grp.classList.contains('compact');
+            // 下滑超過 140px 才收合；回到 60px 以內才展開（門檻拉開避免震盪）
+            if (!isCompact && goingDown && y > 140) {
+                grp.classList.add('compact'); locked = true;
+                setTimeout(function(){ locked = false; }, 280);
+            } else if (isCompact && y < 60) {
+                grp.classList.remove('compact'); locked = true;
+                setTimeout(function(){ locked = false; }, 280);
+            }
+        }, { passive: true });
+    }
+
     // 分類列左右捲動（電腦版）
     function scrollCatNav(dx) {
         var nav = document.getElementById('cat-nav');
@@ -467,7 +496,7 @@
         memberModal = new bootstrap.Modal(document.getElementById('memberModal'));
         myRestockModal = new bootstrap.Modal(document.getElementById('myRestockModal'));
         orderSuccessModal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
-        loadCartFromLocal(); fetchMenu(); initLiff(); enableCatNavWheel();
+        loadCartFromLocal(); fetchMenu(); initLiff(); enableCatNavWheel(); enableCompactHeader();
     };
 
     function isYongqi(name, cat) { return (cat && cat.includes('永圻')) || (name && name.includes('永圻')); }
@@ -616,6 +645,14 @@
         document.getElementById('clear-search-icon').style.display = 'none';
         currentCategory = cat; 
         renderMenu(); 
+        // 切換分類後把商品區捲到頂欄下方，視線不會停在原位
+        const grp = document.querySelector('.sticky-header-group');
+        const box = document.getElementById('product-container');
+        if (grp && box) {
+            const offset = grp.getBoundingClientRect().height + 8;
+            const top = box.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
+        }
     }
 
     function handleSearch() {
@@ -722,7 +759,11 @@
     function jumpToSub(cat, sub) {
         const el = document.getElementById('sub-' + cat + '-' + sub);
         if (!el) return;
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // 扣掉固定頂欄高度，避免標題被遮住
+        const grp = document.querySelector('.sticky-header-group');
+        const offset = (grp ? grp.getBoundingClientRect().height : 0) + 12;
+        const top = el.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
         const name = el.querySelector('.subcat-name');
         if (name) {
             name.style.transition = 'background 0.3s';
