@@ -1038,6 +1038,12 @@
     }
 
     function applyPromoCode() {
+        // 後台已關閉優惠碼功能時直接擋下
+        if (allData && allData.promoEnabled === false) {
+            const msgBox = document.getElementById('promo-msg');
+            if (msgBox) { msgBox.innerText = '目前暫停使用優惠碼'; msgBox.className = 'text-muted d-block mt-1'; }
+            return;
+        }
         const input = document.getElementById('promo-code-input').value.trim().toUpperCase(); const msgBox = document.getElementById('promo-msg');
         if(!input) return;
         if (allData.promoCodes && allData.promoCodes[input]) {
@@ -1126,7 +1132,9 @@
     
     function renderCartModal() { 
         const body = document.getElementById('cart-modal-body'); const loginPrompt = document.getElementById('guest-login-prompt'); const submitBtn = document.getElementById('btn-submit-order'); const promoSec = document.getElementById('promo-code-section');
-        if (isLoggedIn) { loginPrompt.style.display = 'none'; promoSec.style.display = 'block'; submitBtn.innerText = "送出訂單"; submitBtn.classList.remove('btn-secondary'); submitBtn.classList.add('btn-confirm'); } 
+        // 後台可關閉優惠碼功能（promoEnabled === false 時完全不顯示）
+        const promoOn = !(allData && allData.promoEnabled === false);
+        if (isLoggedIn) { loginPrompt.style.display = 'none'; promoSec.style.display = promoOn ? 'block' : 'none'; if (!promoOn) appliedPromo = null; submitBtn.innerText = "送出訂單"; submitBtn.classList.remove('btn-secondary'); submitBtn.classList.add('btn-confirm'); } 
         else { loginPrompt.style.display = 'block'; promoSec.style.display = 'none'; appliedPromo = null; submitBtn.innerText = "以訪客身分送單"; submitBtn.classList.remove('btn-confirm'); submitBtn.classList.add('btn-secondary'); }
         updateCartUI();
         if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } 
