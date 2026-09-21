@@ -326,7 +326,9 @@
         .mf-banner-moon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); width: 74px; height: 74px; filter: drop-shadow(0 0 14px rgba(241, 207, 134, 0.55)); }
         .mf-banner-title { font-size: 1.12rem; font-weight: 600; letter-spacing: 0.06em; line-height: 1.35; }
         .mf-banner-sub { font-size: 0.82rem; opacity: 0.82; margin-top: 4px; letter-spacing: 0.03em; line-height: 1.5; }
-        .mf-banner-date { display: inline-block; margin-top: 8px; font-size: 0.72rem; padding: 2px 10px; border-radius: 10px; background: rgba(241, 207, 134, 0.18); color: #f1cf86; letter-spacing: 0.04em; align-self: flex-start; }
+        .mf-banner-notes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+        .mf-banner-date { display: inline-block; font-size: 0.72rem; padding: 3px 10px; border-radius: 10px; background: rgba(241, 207, 134, 0.16); color: #f1cf86; letter-spacing: 0.04em; white-space: nowrap; }
+        .mf-banner-date.strong { background: rgba(241, 207, 134, 0.3); color: #fff4d6; font-weight: 500; }
         .mf-banner-close { position: absolute; top: 8px; right: 10px; width: 26px; height: 26px; border: none; border-radius: 50%; background: rgba(255,255,255,0.1); color: #fbf3df; font-size: 0.9rem; line-height: 26px; padding: 0; cursor: pointer; transition: background 0.2s; }
         .mf-banner-close:hover { background: rgba(255,255,255,0.22); }
         /* 橫幅背景的星點 */
@@ -349,14 +351,36 @@
         /* 分類列底部一道淡金線，呼應節慶 */
         html.mf-on .cat-nav-wrapper { border-bottom: 1px solid rgba(241, 207, 134, 0.5); }
 
+        /* --- 進場動畫：載入畫面淡出時，月亮從地平線升起、文字依序浮現 --- */
+        .mf-banner { transition: opacity 0.6s ease, transform 0.6s ease; }
+        .mf-banner.mf-enter { opacity: 0; transform: translateY(10px); }
+        .mf-banner .mf-banner-moon { transition: transform 1.2s cubic-bezier(.2,.7,.2,1) 0.15s, opacity 0.9s ease 0.15s; }
+        .mf-banner.mf-enter .mf-banner-moon { transform: translateY(calc(-50% + 28px)); opacity: 0; }
+        .mf-banner .mf-banner-title, .mf-banner .mf-banner-sub, .mf-banner .mf-banner-notes { transition: opacity 0.6s ease, transform 0.6s ease; }
+        .mf-banner .mf-banner-title { transition-delay: 0.4s; }
+        .mf-banner .mf-banner-sub   { transition-delay: 0.55s; }
+        .mf-banner .mf-banner-notes { transition-delay: 0.7s; }
+        .mf-banner.mf-enter .mf-banner-title,
+        .mf-banner.mf-enter .mf-banner-sub,
+        .mf-banner.mf-enter .mf-banner-notes { opacity: 0; transform: translateY(6px); }
+        /* 月光：升起後持續緩慢呼吸 */
+        .mf-moon-glow { position: absolute; left: -5px; top: 50%; width: 120px; height: 120px; margin-top: -60px; border-radius: 50%; pointer-events: none;
+            background: radial-gradient(circle, rgba(241,207,134,0.4) 0%, rgba(241,207,134,0) 68%);
+            opacity: 1; transition: opacity 1.2s ease 0.3s; animation: mfGlow 4.5s ease-in-out infinite; }
+        .mf-banner.mf-enter .mf-moon-glow { opacity: 0; }
+        @keyframes mfGlow { 0%,100% { transform: scale(0.9); } 50% { transform: scale(1.1); } }
+
         /* 尊重使用者的「減少動態效果」設定 */
         @media (prefers-reduced-motion: reduce) {
+            .mf-banner, .mf-banner * { transition: none !important; }
+            .mf-moon-glow { animation: none; }
             .mf-petal-layer { display: none; }
             .mf-star { animation: none; }
         }
         @media (max-width: 576px) {
             .mf-banner { padding: 14px 16px 14px 92px; min-height: 92px; margin: 4px 10px 10px 10px; }
             .mf-banner-moon { width: 62px; height: 62px; left: 14px; }
+            .mf-moon-glow { left: -5px; width: 100px; height: 100px; margin-top: -50px; }
             .mf-banner-title { font-size: 1rem; }
             .mf-banner-sub { font-size: 0.76rem; }
         }
@@ -643,24 +667,27 @@
     // 文字可自行修改（例如加上連假取貨時間）
     var MF_TITLE = '中秋佳節 · 月圓人團圓';
     var MF_SUB   = '樂森良選祝您闔家團圓、平安喜樂';
-    var MF_NOTE  = '9/25（五）中秋節 · 9/25–9/28 連假';
+    // 營業標示：每一項是一個標籤；strong: true 會加強顯示（用於店休）
+    var MF_NOTES = [
+        { text: '9/25（五）– 9/27（日）店休', strong: true },
+        { text: '9/28（一）照常營業' }
+    ];
 
     function initFestival() {
         try {
             if (!document.documentElement.classList.contains('mf-on')) return;
 
-            // --- 橫幅（本次瀏覽關閉後不再出現）---
-            var closed = false;
-            try { closed = sessionStorage.getItem('mf_closed') === '1'; } catch (e) {}
+            // --- 橫幅（每次進入都顯示；✕ 只收起當下這次）---
             var slot = document.getElementById('mf-banner-slot');
-            if (slot && !closed) {
+            if (slot) {
                 var stars = '';
                 var pos = [[62,18],[70,34],[78,14],[84,42],[90,22],[74,62],[66,48],[94,58],[58,70],[86,76]];
                 pos.forEach(function (p, i) {
                     stars += '<span class="mf-star" style="left:' + p[0] + '%;top:' + p[1] + '%;animation-delay:' + (i * 0.37).toFixed(2) + 's"></span>';
                 });
                 slot.innerHTML =
-                    '<div class="mf-banner" role="note" aria-label="中秋節祝福">' +
+                    '<div class="mf-banner mf-enter" role="note" aria-label="中秋節祝福">' +
+                        '<span class="mf-moon-glow" aria-hidden="true"></span>' +
                         stars +
                         '<svg class="mf-cloud" viewBox="0 0 150 70" aria-hidden="true"><path fill="#fbf3df" d="M20 55 a18 18 0 0 1 18-18 a22 22 0 0 1 40-8 a20 20 0 0 1 34 10 a16 16 0 0 1 16 16 z"/></svg>' +
                         '<svg class="mf-banner-moon" viewBox="0 0 80 80" aria-hidden="true">' +
@@ -681,9 +708,17 @@
                         '</svg>' +
                         '<div class="mf-banner-title">' + MF_TITLE + '</div>' +
                         '<div class="mf-banner-sub">' + MF_SUB + '</div>' +
-                        (MF_NOTE ? '<span class="mf-banner-date">' + MF_NOTE + '</span>' : '') +
+                        (MF_NOTES && MF_NOTES.length
+                            ? '<div class="mf-banner-notes">' + MF_NOTES.map(function (n) {
+                                  return '<span class="mf-banner-date' + (n.strong ? ' strong' : '') + '">' + n.text + '</span>';
+                              }).join('') + '</div>'
+                            : '') +
                         '<button class="mf-banner-close" aria-label="關閉中秋橫幅" onclick="closeFestivalBanner()">✕</button>' +
                     '</div>';
+                // 載入畫面若已先淡出，直接進場；否則等 fetchMenu 淡出時觸發
+                if (window.__mfRevealWanted) festivalReveal();
+                // 保險：萬一載入流程異常沒觸發，9 秒後仍會進場
+                setTimeout(festivalReveal, 9000);
             }
 
             // --- 飄落的桂花（稀疏、緩慢、不攔截點擊）---
@@ -714,9 +749,20 @@
     }
 
     function closeFestivalBanner() {
+        // 只收起這一次，下次進入仍會顯示
         var slot = document.getElementById('mf-banner-slot');
         if (slot) slot.innerHTML = '';
-        try { sessionStorage.setItem('mf_closed', '1'); } catch (e) {}
+    }
+
+    // 觸發橫幅進場動畫（在載入畫面淡出的同時呼叫）
+    function festivalReveal() {
+        window.__mfRevealWanted = true;
+        var b = document.querySelector('.mf-banner.mf-enter');
+        if (!b) return;
+        // 連續兩個 frame：確保「進場前」狀態已繪製，過場動畫才會播放
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () { b.classList.remove('mf-enter'); });
+        });
     }
 
     // 分類列左右捲動（電腦版）
@@ -920,6 +966,8 @@
             setTimeout(function(){
                 const ld = document.getElementById('loader');
                 if (ld) { ld.style.transition = 'opacity 0.3s'; ld.style.opacity = '0'; setTimeout(function(){ ld.style.display = 'none'; }, 300); }
+                // 載入畫面淡出的同時，中秋橫幅開始進場（月亮升起）
+                if (typeof festivalReveal === 'function') festivalReveal();
             }, 220);
         }).catch(err => {
             if (finished) return;
