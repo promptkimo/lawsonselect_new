@@ -298,6 +298,10 @@
         .tracking-text { font-size: 0.75rem; color: #888; font-weight: bold; line-height: 1.4; }
         .tracking-step.active .tracking-text { color: #28a745; }
         .tracking-time { font-size: 0.65rem; color: #aaa; font-weight: normal; display: block; min-height: 14px; margin-top: 2px; }
+        /* 連線較慢、顯示舊資料時的提示 */
+        .stale-notice { max-width: 1200px; margin: 8px auto 4px auto; padding: 8px 14px; border-radius: 10px; background: #fdf6e9; border: 1px solid #f1dcb0; color: #8a6420; font-size: 0.8rem; line-height: 1.5; }
+        .stale-notice a { color: #2f5d50; font-weight: 500; text-decoration: underline; }
+
         /* ======================================================
            🌕 中秋節慶主題（僅在 html.mf-on 時生效，其餘時間零影響）
            ====================================================== */
@@ -927,54 +931,140 @@
         c.innerHTML = html + '</div>';
     }
 
+    // ================= 商品資料載入（具備快取與自動重試）=================
+    // 1) 回訪客人：先用上次成功的資料立即顯示，背景再抓最新資料
+    // 2) 請求 10 秒沒回應或失敗 → 自動再送一次，哪個先回來用哪個
+    // 3) 30 秒都沒回應 → 有舊資料就繼續顯示並提示；沒有才顯示錯誤頁（之後回應到了仍會自動恢復）
+    const MENU_CACHE_KEY = 'lawson_menu_cache_v1';
+    const MENU_CACHE_MAX_AGE = 24 * 60 * 60 * 1000;   // 本機快取最多沿用 24 小時
+    let announceShown = false;
+
+    function readMenuCache() {
+        try {
+            const raw = localStorage.getItem(MENU_CACHE_KEY);
+            if (!raw) return null;
+            const o = JSON.parse(raw);
+            if (!o || !o.data || !o.ts || !o.data.products) return null;
+            if (Date.now() - o.ts > MENU_CACHE_MAX_AGE) return null;
+            return o;
+        } catch (e) { return null; }
+    }
+    function writeMenuCache(data) {
+        try { localStorage.setItem(MENU_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch (e) {}
+    }
+
+    // 把商品資料套用到畫面
+    function applyMenuData(data) {
+        allData = data;
+        if (allData.products) allData.products.forEach((p, i) => p._uid = i);
+        if (data.marqueeText && data.marqueeText.trim() !== "") { document.getElementById('marquee-text').innerText = data.marqueeText; document.getElementById('marquee-bar').style.display = 'block'; }
+        if (data.lastUpdateTime) { document.getElementById('stock-time').innerText = data.lastUpdateTime; document.getElementById('update-time-banner').style.display = 'block'; }
+        if (data.stickyMsg && data.stickyMsg.trim() !== "") { document.getElementById('sticky-msg-bar').innerText = data.stickyMsg; document.getElementById('sticky-msg-bar').style.display = 'block'; } else { document.getElementById('sticky-msg-bar').style.display = 'none'; }
+        try { renderMenu(); } catch (e) { console.error('renderMenu 失敗:', e); }
+        // 公告只跳一次（快取與最新資料各套用一次時不重複跳）
+        if (!announceShown) { announceShown = true; try { checkAnnouncement(data); } catch (e) { console.error('checkAnnouncement 失敗:', e); } }
+    }
+
+    // 關閉載入畫面（同時觸發中秋橫幅進場）
+    function hideLoader() {
+        const ld = document.getElementById('loader');
+        if (!ld || ld.style.display === 'none') return;
+        setLoadProgress(100, '準備完成');
+        setTimeout(function () {
+            ld.style.transition = 'opacity 0.3s'; ld.style.opacity = '0';
+            setTimeout(function () { ld.style.display = 'none'; }, 300);
+            if (typeof festivalReveal === 'function') festivalReveal();
+        }, 220);
+    }
+
+    // 連不上後端、但有舊資料時的提示（不擋操作）
+    function showStaleNotice(ts) {
+        if (document.getElementById('stale-notice')) return;
+        const box = document.getElementById('product-container');
+        if (!box || !box.parentNode) return;
+        const mins = Math.max(1, Math.round((Date.now() - ts) / 60000));
+        const ago = mins < 60 ? (mins + ' 分鐘前') : (Math.round(mins / 60) + ' 小時前');
+        const n = document.createElement('div');
+        n.id = 'stale-notice';
+        n.className = 'stale-notice';
+        n.innerHTML = '<i class="bi bi-wifi-off me-1"></i>目前連線較慢，顯示的是 ' + ago + '的商品資料，實際庫存以送出訂單後確認為準。 <a href="javascript:location.reload()">重新整理</a>';
+        box.parentNode.insertBefore(n, box);
+    }
+    function removeStaleNotice() { const n = document.getElementById('stale-notice'); if (n) n.remove(); }
+
     function fetchMenu() {
-        showSkeleton(8);
-        setLoadProgress(15, '連線中...');
-        let finished = false;
-        // 等待期間緩慢推進，讓使用者知道還在運作（不會超過 80%）
-        let creep = 15;
-        const creepTimer = setInterval(function(){
-            creep = Math.min(creep + 3, 80);
-            setLoadProgress(creep, creep < 45 ? '連線中...' : '讀取商品資料...');
-        }, 260);
+        const cached = readMenuCache();
+        const fromCache = !!cached;
+        let cachedStr = null;
 
-        // 逾時保護：20 秒還沒回應就顯示錯誤，不讓畫面無限轉圈
-        const timeoutTimer = setTimeout(function(){
-            if (finished) return;
-            finished = true;
-            clearInterval(creepTimer);
-            showLoadError('連線逾時', '伺服器沒有回應，請稍後再試');
-        }, 20000);
+        if (fromCache) {
+            // 回訪：立即顯示上次的資料，不用等後端
+            try { cachedStr = JSON.stringify(cached.data); } catch (e) {}
+            try { applyMenuData(cached.data); } catch (e) { console.error(e); }
+            hideLoader();
+        } else {
+            showSkeleton(8);
+            setLoadProgress(15, '連線中...');
+        }
 
-        fetch(GAS_URL + "?page=json&t=" + Date.now()).then(res => res.json()).then(data => {
-            if (finished) return;
-            finished = true;
-            clearInterval(creepTimer); clearTimeout(timeoutTimer);
-            if (data.error) { showLoadError('載入失敗', data.message || ''); return; }
-            setLoadProgress(88, '整理商品中...');
-            allData = data; 
-            if (allData.products) allData.products.forEach((p, i) => p._uid = i);
+        let succeeded = false, gaveUp = false, hedged = false;
+        let started = 0, failed = 0, creep = 15;
+        let creepTimer = null, hedgeTimer = null, giveUpTimer = null;
 
-            if(data.marqueeText && data.marqueeText.trim() !== "") { document.getElementById('marquee-text').innerText = data.marqueeText; document.getElementById('marquee-bar').style.display = 'block'; }
-            if(data.lastUpdateTime) { document.getElementById('stock-time').innerText = data.lastUpdateTime; document.getElementById('update-time-banner').style.display = 'block'; }
-            if (data.stickyMsg && data.stickyMsg.trim() !== "") { document.getElementById('sticky-msg-bar').innerText = data.stickyMsg; document.getElementById('sticky-msg-bar').style.display = 'block'; } else { document.getElementById('sticky-msg-bar').style.display = 'none'; }
-            
-            try { renderMenu(); } catch(e) { console.error('renderMenu 失敗:', e); }
-            try { checkAnnouncement(data); } catch(e) { console.error('checkAnnouncement 失敗:', e); }
-            setLoadProgress(100, '準備完成');
-            // 讓進度條走完再淡出，避免瞬間消失
-            setTimeout(function(){
-                const ld = document.getElementById('loader');
-                if (ld) { ld.style.transition = 'opacity 0.3s'; ld.style.opacity = '0'; setTimeout(function(){ ld.style.display = 'none'; }, 300); }
-                // 載入畫面淡出的同時，中秋橫幅開始進場（月亮升起）
-                if (typeof festivalReveal === 'function') festivalReveal();
-            }, 220);
-        }).catch(err => {
-            if (finished) return;
-            finished = true;
-            clearInterval(creepTimer); clearTimeout(timeoutTimer);
-            showLoadError('載入失敗', '請確認網路連線後重新整理');
-        });
+        if (!fromCache) {
+            creepTimer = setInterval(function () {
+                creep = Math.min(creep + 3, 80);
+                setLoadProgress(creep, hedged ? '伺服器回應較慢，重新連線中...' : (creep < 45 ? '連線中...' : '讀取商品資料...'));
+            }, 260);
+        }
+        function stopTimers() { if (creepTimer) clearInterval(creepTimer); if (hedgeTimer) clearTimeout(hedgeTimer); if (giveUpTimer) clearTimeout(giveUpTimer); }
+
+        function onFresh(data) {
+            if (!data || data.error) { onFail(data && data.message); return; }
+            if (succeeded) return;                 // 只採用第一個成功的回應
+            succeeded = true; stopTimers();
+            writeMenuCache(data);
+            removeStaleNotice();
+            if (!fromCache) {
+                // 首次載入（或從錯誤畫面恢復）
+                applyMenuData(data);
+                hideLoader();
+            } else {
+                // 已用快取顯示：資料有變才重畫，避免畫面無故跳動
+                let freshStr = null; try { freshStr = JSON.stringify(data); } catch (e) {}
+                if (freshStr !== cachedStr) applyMenuData(data);
+            }
+        }
+        function onFail(msg) {
+            if (succeeded || gaveUp) return;
+            failed++;
+            if (!hedged) { startHedge(); return; }  // 第一次失敗就立刻重試，不必等 10 秒
+            if (failed >= started) giveUp(msg);      // 兩次都失敗才放棄
+        }
+        function giveUp(msg) {
+            if (succeeded || gaveUp) return;
+            gaveUp = true; stopTimers();
+            if (fromCache) showStaleNotice(cached.ts);
+            else showLoadError(msg ? '載入失敗' : '連線逾時', msg || '伺服器沒有回應，請稍後再試');
+            // 注意：放棄後若回應才姍姍來遲，onFresh 仍會接手並自動恢復畫面
+        }
+        function request() {
+            started++;
+            fetch(GAS_URL + "?page=json&t=" + Date.now())
+                .then(res => res.json())
+                .then(onFresh)
+                .catch(function () { onFail(); });
+        }
+        function startHedge() {
+            if (hedged || succeeded || gaveUp) return;
+            hedged = true;
+            if (!fromCache) setLoadProgress(Math.max(creep, 60), '伺服器回應較慢，重新連線中...');
+            request();
+        }
+
+        request();
+        hedgeTimer = setTimeout(startHedge, 10000);
+        giveUpTimer = setTimeout(function () { giveUp(); }, 30000);
     }
 
     function showLoadError(title, msg) {
