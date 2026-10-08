@@ -527,7 +527,8 @@
             <div class="input-group w-100">
                 <span class="input-group-text bg-white border-0 text-muted ps-3"><i class="bi bi-search"></i></span>
                 <input type="text" id="search-input" class="form-control border-0" placeholder="想找什麼商品呢？" oninput="handleSearch()" onfocus="openSearchPanel()">
-                <span class="input-group-text bg-white border-0 text-secondary pe-3" style="cursor:pointer;" onclick="clearSearch()"><i class="bi bi-x-circle-fill" id="clear-search-icon" style="display:none; font-size: 1.1rem;"></i></span>
+                <span class="input-group-text bg-white border-0 text-secondary" style="cursor:pointer;" onclick="clearSearch()"><i class="bi bi-x-circle-fill" id="clear-search-icon" style="display:none; font-size: 1.1rem;"></i></span>
+                <span class="input-group-text bg-white border-0 pe-3" id="search-filter-btn" style="cursor:pointer; display:none;" onclick="openFilterModal()" title="依月齡 / 品項篩選"><i class="bi bi-sliders"></i><span id="search-filter-count"></span></span>
             </div>
         </div>
         <div id="search-panel" class="search-panel" style="display:none;"></div>
@@ -1262,6 +1263,21 @@
             hist.forEach(function (k) { html += '<span class="sp-chip" onclick="doSearch(\'' + escHTML(k).replace(/'/g, "\\'") + '\')"><i class="bi bi-clock-history"></i>' + k + '</span>'; });
             html += '</div>';
         }
+        // 品項：直接點就能找（例如 粥品、麵包）
+        const types = [];
+        (allData.products || []).forEach(function (p) { const t = String(p.itemType || '').trim(); if (t && types.indexOf(t) === -1) types.push(t); });
+        if (types.length > 0) {
+            html += '<div class="sp-label"><span>依品項找</span></div><div class="sp-chips">';
+            types.forEach(function (t) { html += '<span class="sp-chip" onclick="pickType(\'' + String(t).replace(/'/g, "\\'") + '\')">' + t + '</span>'; });
+            html += '</div>';
+        }
+        // 月齡：直接點就能找
+        const anyAge = (allData.products || []).some(function (p) { const m = p.minMonth; return m !== '' && m !== null && m !== undefined && !isNaN(Number(m)); });
+        if (anyAge) {
+            html += '<div class="sp-label"><span>依寶寶月齡找</span></div><div class="sp-chips">';
+            MONTH_OPTIONS.forEach(function (m) { html += '<span class="sp-chip" onclick="pickMonth(' + m + ')">' + m + ' 個月</span>'; });
+            html += '</div>';
+        }
         const cats = (allData.categories || []).slice(0, 8);
         if (cats.length > 0) {
             html += '<div class="sp-label"><span>快速逛逛</span></div><div class="sp-chips">';
@@ -1278,6 +1294,26 @@
         document.getElementById('clear-search-icon').style.display = 'block';
         renderSearchResults(kw.toLowerCase());
     }
+    // 從搜尋面板直接選品項／月齡
+    function pickType(t) {
+        const input = document.getElementById('search-input');
+        if (input) input.value = '';
+        document.getElementById('clear-search-icon').style.display = 'none';
+        closeSearchPanel();
+        filterState.type = t;
+        if (currentCategory !== 'all') currentCategory = 'all';
+        renderFilterBar(); renderMenu();
+    }
+    function pickMonth(m) {
+        const input = document.getElementById('search-input');
+        if (input) input.value = '';
+        document.getElementById('clear-search-icon').style.display = 'none';
+        closeSearchPanel();
+        filterState.month = m; filterState.includeUnlabeled = false;
+        if (currentCategory !== 'all') currentCategory = 'all';
+        renderFilterBar(); renderMenu();
+    }
+
     function pickCategory(cat) {
         const input = document.getElementById('search-input');
         if (input) input.value = '';
@@ -1306,21 +1342,65 @@
         return out;
     }
 
+    // 從搜尋字判斷是不是在找月齡，例如「8個月」「10m」「1歲」
+    function parseAgeQuery(kw) {
+        const s = String(kw);
+        let m = s.match(/(\d+)\s*(?:個月|月大|月齡)/);
+        if (m) return Number(m[1]);
+        m = s.match(/(\d+)\s*[Mm](?![a-zA-Z])/);          // 8m（但不會誤判 150ml）
+        if (m) return Number(m[1]);
+        m = s.match(/(\d+)\s*歲/);
+        if (m) return Number(m[1]) * 12;
+        return null;
+    }
+
     function renderSearchResults(keyword) {
         const container = document.getElementById('product-container');
         document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active'));
-        const items = applyFilter(allData.products.filter(p => p.name.toLowerCase().includes(keyword) || (p.cat && p.cat.toLowerCase().includes(keyword))));
+
+        // 打「8個月」直接找出適合的商品
+        const ageQ = parseAgeQuery(keyword);
+        let base;
+        if (ageQ != null) {
+            base = allData.products.filter(function (p) {
+                const mm = p.minMonth;
+                if (mm === '' || mm === null || mm === undefined || isNaN(Number(mm))) return false;
+                return Number(mm) <= ageQ;
+            });
+        } else {
+            // 品名、品牌、子分類、品項都可以搜（打「粥品」「麵包」就能找）
+            base = allData.products.filter(p =>
+                p.name.toLowerCase().includes(keyword)
+                || (p.cat && p.cat.toLowerCase().includes(keyword))
+                || (p.subCat && String(p.subCat).toLowerCase().includes(keyword))
+                || (p.itemType && String(p.itemType).toLowerCase().includes(keyword)));
+        }
+        const items = applyFilter(base);
         if (items.length === 0) {
             const sug = suggestKeywords(keyword);
             const chips = sug.length
                 ? '<div class="empty-sub" style="margin-top:14px;">你可能想找：</div><div class="empty-actions">'
                   + sug.map(s => '<button class="empty-btn ghost" onclick="doSearch(\'' + String(s).replace(/'/g, "\\'") + '\')">' + s + '</button>').join('') + '</div>'
                 : '<div class="empty-actions"><button class="empty-btn" onclick="clearSearch()">看全部商品</button></div>';
-            container.innerHTML = emptyState('找不到「' + keyword + '」相關的商品', '換個關鍵字試試，或直接瀏覽分類') + chips;
+            container.innerHTML = (ageQ != null
+                ? emptyState('目前沒有標示適合 ' + ageQ + ' 個月的商品', '可能是商品還沒標註適用月齡，試試用品名或品項搜尋',
+                    '<div class="empty-actions"><button class="empty-btn" onclick="clearSearch()">看全部商品</button></div>')
+                : emptyState('找不到「' + keyword + '」相關的商品', '換個關鍵字試試，或直接瀏覽分類') + chips);
             return;
         }
-        let html = `<div class="section-title text-primary"><i class="bi bi-search me-2"></i>搜尋結果 (${items.length})</div><div class="row g-3 g-md-4 mb-4">`;
-        items.forEach(p => html += createProductCard(p)); html += `</div>`; container.innerHTML = html;
+        const title = (ageQ != null)
+            ? `<div class="section-title text-primary"><i class="bi bi-person-arms-up me-2"></i>適合 ${ageQ} 個月寶寶 (${items.length})</div>`
+            : `<div class="section-title text-primary"><i class="bi bi-search me-2"></i>搜尋結果 (${items.length})</div>`;
+        let html = title + `<div class="row g-3 g-md-4 mb-4">`;
+        items.forEach(p => html += createProductCard(p)); html += `</div>`;
+        // 用月齡搜尋時，告知有多少商品還沒標月齡
+        if (ageQ != null) {
+            const noLabel = allData.products.filter(function (p) {
+                const mm = p.minMonth; return (mm === '' || mm === null || mm === undefined || isNaN(Number(mm)));
+            }).length;
+            if (noLabel > 0) html += '<div class="filter-note"><i class="bi bi-info-circle me-1"></i>另有 <b>' + noLabel + '</b> 件商品尚未標示適用月齡，沒有出現在這個結果裡。</div>';
+        }
+        container.innerHTML = html;
     }
     
     function renderMenu() {
@@ -1494,7 +1574,21 @@
     function renderFilterBar() {
         const bar = document.getElementById('filter-bar');
         if (!bar) return;
-        if (!hasFilterData()) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+        if (!hasFilterData()) {
+            bar.style.display = 'none'; bar.innerHTML = '';
+            const sb = document.getElementById('search-filter-btn'); if (sb) sb.style.display = 'none';
+            return;
+        }
+        // 搜尋框的篩選鈕（有可篩選的資料才顯示）
+        const sbtn = document.getElementById('search-filter-btn');
+        const scnt = document.getElementById('search-filter-count');
+        if (sbtn) {
+            sbtn.style.display = 'flex';
+            sbtn.style.color = filterActive() ? 'var(--primary)' : '';
+            if (scnt) scnt.innerText = filterActive() ? ((filterState.month != null ? 1 : 0) + (filterState.type ? 1 : 0)) : '';
+            if (scnt) scnt.className = filterActive() ? 'badge rounded-pill ms-1' : '';
+            if (scnt && filterActive()) { scnt.style.background = 'var(--primary)'; scnt.style.color = '#fff'; scnt.style.fontSize = '0.62rem'; }
+        }
         let html = '<button class="filter-open-btn' + (filterActive() ? ' on' : '') + '" onclick="openFilterModal()"><i class="bi bi-sliders"></i>篩選</button>';
         if (filterState.month != null) html += '<span class="filter-chip">' + filterState.month + ' 個月寶寶 <span class="x" onclick="setFilterMonth(null)">✕</span></span>';
         if (filterState.type) html += '<span class="filter-chip">' + filterState.type + ' <span class="x" onclick="setFilterType(null)">✕</span></span>';
