@@ -156,8 +156,38 @@
         .subcat-count { font-size: 0.72rem; color: var(--text-light); font-weight: 400; }
         .subcat-line { flex: 1; height: 1px; background: var(--line); margin-left: 4px; }
         /* 子分類快速跳轉列 */
+        /* ===== 篩選列 ===== */
+        .filter-bar { max-width: 1200px; margin: 0 auto; padding: 0 14px 9px 14px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+        .filter-open-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; padding: 5px 13px; border-radius: 15px; border: 1px solid var(--line); background: var(--surface); color: var(--text-mid); cursor: pointer; }
+        .filter-open-btn:hover { border-color: var(--primary-soft); color: var(--primary); }
+        .filter-open-btn.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .filter-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 0.78rem; padding: 4px 10px; border-radius: 14px; background: rgba(47,93,80,.1); color: var(--primary); }
+        .filter-chip .x { cursor: pointer; opacity: .7; font-weight: 600; }
+        .filter-chip .x:hover { opacity: 1; }
+        .filter-note { max-width: 1200px; margin: 10px auto; padding: 9px 14px; border-radius: 10px; background: #fdf9f0; border: 1px solid #efe3cd; color: #7b6240; font-size: 0.8rem; }
+        .filter-note button { margin-left: 6px; font-size: 0.78rem; padding: 3px 11px; border-radius: 13px; border: 1px solid var(--primary); background: transparent; color: var(--primary); cursor: pointer; }
+        /* 篩選視窗 */
+        .fm-group { margin-bottom: 18px; }
+        .fm-label { font-size: 0.85rem; font-weight: 600; color: var(--text-dark); margin-bottom: 9px; }
+        .fm-hint { font-size: 0.74rem; color: var(--text-light); font-weight: 400; margin-left: 5px; }
+        .fm-opts { display: flex; flex-wrap: wrap; gap: 7px; }
+        .fm-opt { font-size: 0.82rem; padding: 7px 15px; border-radius: 17px; border: 1px solid var(--line); background: var(--surface); color: var(--text-dark); cursor: pointer; }
+        .fm-opt:hover { border-color: var(--primary-soft); }
+        .fm-opt.sel { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+        /* 月齡標籤（只在商品有明確標示時出現） */
+        .age-tag { display: inline-block; font-size: 0.68rem; font-weight: 500; color: #7b6240; background: rgba(200,160,90,0.14); padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; letter-spacing: 0.02em; }
+
         /* 固定在頂欄的子分類列 */
-        .subcat-bar-outer { max-width: 1200px; margin: 0 auto; padding: 0 14px 9px 14px; }
+        .subcat-bar-outer { max-width: 1200px; margin: 0 auto; padding: 0 14px 9px 14px; position: relative; }
+        /* 子分類列的左右捲動鈕（電腦版用；捲軸已隱藏，沒有箭頭就滑不動） */
+        .sub-scroll-btn { position: absolute; top: 1px; width: 24px; height: 26px; z-index: 25; border: none; padding: 0; cursor: pointer;
+            display: none; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--text-mid); }
+        .sub-scroll-btn.show { display: flex; }
+        .sub-scroll-left  { left: 0;  background: linear-gradient(to right, var(--surface) 55%, rgba(255,255,255,0)); padding-right: 6px; justify-content: flex-start; }
+        .sub-scroll-right { right: 0; background: linear-gradient(to left,  var(--surface) 55%, rgba(255,255,255,0)); padding-left: 6px;  justify-content: flex-end; }
+        .sub-scroll-btn:hover { color: var(--primary); }
+        @media (hover: none) { .sub-scroll-btn { display: none !important; } }
         .subcat-bar { display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; scroll-behavior: smooth; padding-top: 2px; }
         .subcat-bar::-webkit-scrollbar { display: none; }
         .subcat-bar .subcat-chip { flex-shrink: 0; }
@@ -507,8 +537,11 @@
                 <div class="cat-nav" id="cat-nav"></div>
                 <button class="cat-scroll-btn cat-scroll-right" onclick="scrollCatNav(300)" aria-label="向右"><i class="bi bi-chevron-right"></i></button>
             </div>
+            <div class="filter-bar" id="filter-bar" style="display:none;"></div>
             <div class="subcat-bar-outer" id="subcat-bar-outer" style="display:none;">
+                <button class="sub-scroll-btn sub-scroll-left" id="sub-arrow-left" onclick="scrollSubBar(-240)" aria-label="子分類向左"><i class="bi bi-chevron-left"></i></button>
                 <div class="subcat-bar" id="subcat-bar"></div>
+                <button class="sub-scroll-btn sub-scroll-right" id="sub-arrow-right" onclick="scrollSubBar(240)" aria-label="子分類向右"><i class="bi bi-chevron-right"></i></button>
             </div>
         </div>
     </div>
@@ -620,6 +653,18 @@
 <div class="modal fade" id="variantModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold" id="variant-title"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="variant-list"></div><div class="modal-footer border-0 pt-0"><button class="btn btn-dark w-100 rounded-pill shadow-sm py-2" onclick="confirmVariantSelection()">確認加入</button></div></div></div></div>
 <div class="modal fade" id="announceModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-danger">📢 優惠活動 / 公告</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="announce-img-container" style="display:none;"></div><div id="announce-content" class="mt-2 text-center fw-bold text-dark"></div></div><div class="modal-footer border-0"><button type="button" class="btn btn-warning w-100 rounded-pill fw-bold text-dark shadow-sm py-2" data-bs-dismiss="modal">我知道了</button></div></div></div></div>
 <div class="modal fade" id="myOrdersModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable modal-lg"><div class="modal-content border-0"><div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold">🐶 歷史訂單查詢</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light" id="my-orders-list"></div></div></div></div>
+<div class="modal fade" id="filterModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0" style="border-radius:16px;">
+    <div class="modal-header border-0 pb-2">
+        <h5 class="modal-title fw-bold" style="font-size:1.05rem;"><i class="bi bi-funnel me-2"></i>篩選商品</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body pt-1" id="filter-modal-body"></div>
+    <div class="modal-footer border-0 pt-0">
+        <button class="btn btn-light flex-fill" onclick="clearFilters()">清除篩選</button>
+        <button class="btn flex-fill" style="background:var(--primary); color:#fff;" data-bs-dismiss="modal">看結果</button>
+    </div>
+</div></div></div>
+
 <div id="lightbox" onclick="closeLightbox()"><img id="lightbox-img" src="" alt="放大圖片"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -632,7 +677,7 @@
     let currentCategory = 'top10'; 
     let tempNormalQty = 0, tempClearanceQty = 0, tempProduct = null;
     let isLoggedIn = false; let appliedPromo = null; let favorites = []; 
-    let cartModal, myOrdersModal, announceModal, variantModal, memberModal, orderSuccessModal, myRestockModal;
+    let cartModal, myOrdersModal, announceModal, variantModal, memberModal, orderSuccessModal, myRestockModal, filterModal;
 
     const escHTML = (s) => String(s || '').replace(/"/g, "&quot;").replace(/'/g, "\\'");
 
@@ -645,10 +690,28 @@
             bar.innerHTML = html;
             outer.style.display = 'block';
             bar.scrollLeft = 0;
+            setTimeout(updateSubArrows, 50);   // 等排版完成才量得到寬度
         } else {
             bar.innerHTML = '';
             outer.style.display = 'none';
         }
+    }
+
+    // 子分類列左右捲動（電腦版沒有捲軸，需要箭頭或滾輪）
+    function scrollSubBar(dx) {
+        const bar = document.getElementById('subcat-bar');
+        if (bar) bar.scrollBy({ left: dx, behavior: 'smooth' });
+    }
+    // 只有「真的有被切掉的內容」時才顯示箭頭
+    function updateSubArrows() {
+        const bar = document.getElementById('subcat-bar');
+        const L = document.getElementById('sub-arrow-left');
+        const R = document.getElementById('sub-arrow-right');
+        if (!bar || !L || !R) return;
+        const overflow = bar.scrollWidth - bar.clientWidth;
+        if (overflow <= 4) { L.classList.remove('show'); R.classList.remove('show'); return; }
+        L.classList.toggle('show', bar.scrollLeft > 4);
+        R.classList.toggle('show', bar.scrollLeft < overflow - 4);
     }
 
     // 捲動時高亮目前所在的子分類，並讓它自動捲進視野
@@ -818,18 +881,26 @@
 
     // 讓滑鼠滾輪可以橫向捲動分類列
     function enableCatNavWheel() {
-        var nav = document.getElementById('cat-nav');
-        if (!nav) return;
-        nav.addEventListener('wheel', function(e) {
-            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-                e.preventDefault();
-                nav.scrollLeft += e.deltaY;
-            }
-        }, { passive: false });
+        // 主分類列與子分類列都要能用滾輪左右捲（兩列的捲軸都隱藏了）
+        ['cat-nav', 'subcat-bar'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('wheel', function (e) {
+                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                    e.preventDefault();
+                    el.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+        });
+        // 捲動或改變視窗大小時，重新判斷箭頭要不要出現
+        var sub = document.getElementById('subcat-bar');
+        if (sub) sub.addEventListener('scroll', function () { updateSubArrows(); }, { passive: true });
+        window.addEventListener('resize', function () { updateSubArrows(); });
     }
 
     window.onload = function() { 
         cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
+        filterModal = new bootstrap.Modal(document.getElementById('filterModal'));
         myOrdersModal = new bootstrap.Modal(document.getElementById('myOrdersModal'));
         announceModal = new bootstrap.Modal(document.getElementById('announceModal'));
         variantModal = new bootstrap.Modal(document.getElementById('variantModal'));
@@ -1238,7 +1309,7 @@
     function renderSearchResults(keyword) {
         const container = document.getElementById('product-container');
         document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active'));
-        const items = allData.products.filter(p => p.name.toLowerCase().includes(keyword) || (p.cat && p.cat.toLowerCase().includes(keyword)));
+        const items = applyFilter(allData.products.filter(p => p.name.toLowerCase().includes(keyword) || (p.cat && p.cat.toLowerCase().includes(keyword))));
         if (items.length === 0) {
             const sug = suggestKeywords(keyword);
             const chips = sug.length
@@ -1260,11 +1331,12 @@
         navHtml += `<span class="cat-pill ${currentCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">全部商品</span>`;
         if (allData.categories) { allData.categories.forEach(cat => { navHtml += `<span class="cat-pill ${currentCategory === cat ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</span>`; }); }
         nav.innerHTML = navHtml; container.innerHTML = ''; setSubcatBar('');
+        renderFilterBar();
 
         let items = [];
         if (currentCategory === 'top10') {
             var t10 = (allData && Array.isArray(allData.top10)) ? allData.top10 : [];
-            items = allData.products.filter(p => t10.indexOf(p.name) > -1);
+            items = applyFilter(allData.products.filter(p => t10.indexOf(p.name) > -1));
             const sections = buildHomeSections();          // 最近看過 + 即期優惠
             if (items.length === 0) {
                 container.innerHTML = sections + emptyState('熱銷排行統計中', '累積一些訂單後，這裡就會出現大家最常買的商品',
@@ -1272,13 +1344,13 @@
                 return;
             }
             let html = sections + `<div class="section-title"><i class="bi bi-fire me-2"></i>熱銷推薦</div><div class="row g-3 g-md-4 mb-4">`;
-            items.forEach(p => html += createProductCard(p)); html += `</div>`;
+            items.forEach(p => html += createProductCard(p)); html += `</div>` + unlabeledNoticeHtml();
             container.innerHTML = html;
             return;
         }
-        else if (currentCategory === 'expiry') items = allData.products.filter(p => Number(p.clearStock) > 0); 
+        else if (currentCategory === 'expiry') items = applyFilter(allData.products.filter(p => Number(p.clearStock) > 0)); 
         else if (currentCategory === 'favorites') {
-            items = allData.products.filter(p => favorites.includes(p.name));
+            items = applyFilter(allData.products.filter(p => favorites.includes(p.name)));
             if (items.length === 0) {
                 container.innerHTML = emptyState('還沒有收藏任何商品', '逛商品時點右上角的愛心，就能收進這裡，下次直接找到它',
                     '<div class="empty-actions"><button class="empty-btn" onclick="setCategory(\'all\')">去逛逛</button></div>');
@@ -1294,7 +1366,7 @@
             let barCount = 0;       // 只在單一品牌時顯示固定子分類列
             allData.categories.forEach(cat => {
                 if (currentCategory !== 'all' && currentCategory !== cat) return;
-                const catItems = allData.products.filter(p => p.cat === cat);
+                const catItems = applyFilter(allData.products.filter(p => p.cat === cat));
                 if (catItems.length === 0) return;
 
                 // 依商品在試算表中的原始順序分組，確保每次載入排列一致
@@ -1337,7 +1409,7 @@
                     out += `</div>`;
                 });
             });
-            container.innerHTML = out || emptyState('這個分類目前沒有商品', '可以看看其他品牌，或用上方搜尋找找看',
+            container.innerHTML = (out ? out + unlabeledNoticeHtml() : '') || emptyState('這個分類目前沒有商品', '可以看看其他品牌，或用上方搜尋找找看',
                 '<div class="empty-actions"><button class="empty-btn" onclick="setCategory(\'all\')">看全部商品</button></div>');
             // 只有選定單一品牌、且該品牌有多個子分類時，才在頂欄顯示子分類列
             setSubcatBar((currentCategory !== 'all' && barCount === 1) ? barHtml : '');
@@ -1387,6 +1459,130 @@
             }
         } catch (e) {}
         return s;
+    }
+
+    // ================= 篩選（寶寶月齡 / 品項）=================
+    const MONTH_OPTIONS = [4, 6, 8, 10, 12, 18, 24];
+    let filterState = { month: null, type: null, includeUnlabeled: false };
+
+    function hasFilterData() {
+        if (!allData || !allData.products) return false;
+        return allData.products.some(p => (p.itemType && String(p.itemType).trim() !== '') || (p.minMonth !== '' && p.minMonth !== undefined && p.minMonth !== null));
+    }
+    // 單一商品是否通過篩選
+    function passFilter(p) {
+        if (filterState.type && String(p.itemType || '') !== filterState.type) return false;
+        if (filterState.month != null) {
+            const mm = p.minMonth;
+            if (mm === '' || mm === null || mm === undefined || isNaN(Number(mm))) return filterState.includeUnlabeled;
+            return Number(mm) <= filterState.month;
+        }
+        return true;
+    }
+    function applyFilter(list) { return (list || []).filter(passFilter); }
+    function filterActive() { return filterState.month != null || !!filterState.type; }
+    // 只因為「沒標月齡」而被藏起來的商品數
+    function unlabeledHiddenCount() {
+        if (filterState.month == null || filterState.includeUnlabeled || !allData.products) return 0;
+        return allData.products.filter(function (p) {
+            if (filterState.type && String(p.itemType || '') !== filterState.type) return false;
+            const mm = p.minMonth;
+            return (mm === '' || mm === null || mm === undefined || isNaN(Number(mm)));
+        }).length;
+    }
+
+    function renderFilterBar() {
+        const bar = document.getElementById('filter-bar');
+        if (!bar) return;
+        if (!hasFilterData()) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+        let html = '<button class="filter-open-btn' + (filterActive() ? ' on' : '') + '" onclick="openFilterModal()"><i class="bi bi-sliders"></i>篩選</button>';
+        if (filterState.month != null) html += '<span class="filter-chip">' + filterState.month + ' 個月寶寶 <span class="x" onclick="setFilterMonth(null)">✕</span></span>';
+        if (filterState.type) html += '<span class="filter-chip">' + filterState.type + ' <span class="x" onclick="setFilterType(null)">✕</span></span>';
+        bar.innerHTML = html;
+        bar.style.display = 'flex';
+    }
+
+    function openFilterModal() {
+        const body = document.getElementById('filter-modal-body');
+        if (!body) return;
+        const types = [];
+        (allData.products || []).forEach(function (p) {
+            const t = String(p.itemType || '').trim();
+            if (t && types.indexOf(t) === -1) types.push(t);
+        });
+        let html = '<div class="fm-group"><div class="fm-label">寶寶月齡<span class="fm-hint">顯示適合這個月齡的商品</span></div><div class="fm-opts">';
+        html += '<span class="fm-opt' + (filterState.month == null ? ' sel' : '') + '" onclick="setFilterMonth(null)">不限</span>';
+        MONTH_OPTIONS.forEach(function (m) {
+            html += '<span class="fm-opt' + (filterState.month === m ? ' sel' : '') + '" onclick="setFilterMonth(' + m + ')">' + m + ' 個月</span>';
+        });
+        html += '</div></div>';
+        if (types.length > 0) {
+            html += '<div class="fm-group"><div class="fm-label">品項</div><div class="fm-opts">';
+            html += '<span class="fm-opt' + (!filterState.type ? ' sel' : '') + '" onclick="setFilterType(null)">不限</span>';
+            types.forEach(function (t) {
+                html += '<span class="fm-opt' + (filterState.type === t ? ' sel' : '') + '" onclick="setFilterType(\'' + String(t).replace(/'/g, "\\'") + '\')">' + t + '</span>';
+            });
+            html += '</div></div>';
+        }
+        body.innerHTML = html;
+        filterModal.show();
+    }
+    function setFilterMonth(m) { filterState.month = m; filterState.includeUnlabeled = false; afterFilterChange(); }
+    function setFilterType(t) { filterState.type = t; afterFilterChange(); }
+    function clearFilters() { filterState = { month: null, type: null, includeUnlabeled: false }; afterFilterChange(); }
+    function showUnlabeled() { filterState.includeUnlabeled = true; renderMenu(); }
+    function afterFilterChange() {
+        renderFilterBar();
+        if (document.getElementById('filter-modal-body').innerHTML !== '') openFilterModalRefresh();
+        const kw = (document.getElementById('search-input').value || '').trim().toLowerCase();
+        if (kw) renderSearchResults(kw); else renderMenu();
+    }
+    function openFilterModalRefresh() {
+        // 重新畫選項讓勾選狀態即時更新（視窗維持開啟）
+        const body = document.getElementById('filter-modal-body');
+        if (!body || !body.innerHTML) return;
+        const types = [];
+        (allData.products || []).forEach(function (p) { const t = String(p.itemType || '').trim(); if (t && types.indexOf(t) === -1) types.push(t); });
+        let html = '<div class="fm-group"><div class="fm-label">寶寶月齡<span class="fm-hint">顯示適合這個月齡的商品</span></div><div class="fm-opts">';
+        html += '<span class="fm-opt' + (filterState.month == null ? ' sel' : '') + '" onclick="setFilterMonth(null)">不限</span>';
+        MONTH_OPTIONS.forEach(function (m) { html += '<span class="fm-opt' + (filterState.month === m ? ' sel' : '') + '" onclick="setFilterMonth(' + m + ')">' + m + ' 個月</span>'; });
+        html += '</div></div>';
+        if (types.length > 0) {
+            html += '<div class="fm-group"><div class="fm-label">品項</div><div class="fm-opts">';
+            html += '<span class="fm-opt' + (!filterState.type ? ' sel' : '') + '" onclick="setFilterType(null)">不限</span>';
+            types.forEach(function (t) { html += '<span class="fm-opt' + (filterState.type === t ? ' sel' : '') + '" onclick="setFilterType(\'' + String(t).replace(/'/g, "\\'") + '\')">' + t + '</span>'; });
+            html += '</div></div>';
+        }
+        body.innerHTML = html;
+    }
+    // 因為沒標月齡而被藏起來時，給一行說明與一鍵顯示
+    function unlabeledNoticeHtml() {
+        const n = unlabeledHiddenCount();
+        if (n <= 0) return '';
+        return '<div class="filter-note"><i class="bi bi-info-circle me-1"></i>另有 <b>' + n + '</b> 件商品尚未標示適用月齡，已先隱藏。'
+             + '<button onclick="showUnlabeled()">也顯示這些商品</button></div>';
+    }
+
+    // ===== 適用月齡標籤 =====
+    // 原則：只有商品名稱或子分類「明確寫出來」才顯示，照原文呈現、不自行推算下限
+    function ageLabel(p) {
+        if (!p) return '';
+        // 後台若已設定「適用月齡」，以它為準（與篩選結果一致）
+        const mm = p.minMonth;
+        if (mm !== '' && mm !== null && mm !== undefined && !isNaN(Number(mm)) && Number(mm) > 0) {
+            const n = Number(mm);
+            if (n % 12 === 0) return (n / 12) + '歲以上';
+            return n + '個月以上';
+        }
+        const t = String(p.subCat || '') + ' ' + String(p.name || '');
+        let m;
+        if ((m = t.match(/(\d+)\s*-\s*(\d+)\s*個月/)))            return m[1] + '-' + m[2] + '個月';
+        if ((m = t.match(/(\d+)\s*[Mm]\s*[~～-]\s*(\d+)\s*[Mm]/))) return m[1] + '-' + m[2] + '個月';
+        if ((m = t.match(/(\d+)\s*[Mm]\s*\+/)))                    return m[1] + '個月以上';
+        if ((m = t.match(/(\d+)\s*[Yy]\s*\+/)))                    return m[1] + '歲以上';
+        if (/一歲以上|1歲以上|一歲以後|1歲以後/.test(t))            return '1歲以上';
+        if (/一歲以下|1歲以前|一歲以前/.test(t))                    return '1歲以前';
+        return '';
     }
 
     // ===== 最近看過 =====
@@ -1531,6 +1727,8 @@
         
         const badgeHtml = Number(p.clearStock) > 0 ? `<div class="badge-corner">即期出清</div>` : ''; 
         let yqBadge = isYQ ? `<span class="yq-tag">任兩件 95折</span>` : '';
+        const age = ageLabel(p);
+        if (age) yqBadge += `<span class="age-tag">${age}</span>`;
 
         return `<div class="col-6 col-md-4 col-lg-3"><div class="product-card ${isOOS ? 'oos-mode' : ''}"><div class="position-relative overflow-hidden" style="border-radius: 13px 13px 0 0;">${heartHtml}${badgeHtml}${imgHtml}${oosOverlay}</div><div class="product-body"><div class="product-name">${yqBadge}${p.name}</div><div class="product-price">${priceHtml}</div>${specHint}${stockHtml}${btnHtml}</div></div></div>`;
     }
