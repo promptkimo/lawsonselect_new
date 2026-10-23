@@ -156,11 +156,22 @@
         .subcat-count { font-size: 0.72rem; color: var(--text-light); font-weight: 400; }
         .subcat-line { flex: 1; height: 1px; background: var(--line); margin-left: 4px; }
         /* 子分類快速跳轉列 */
+        /* 搜尋框右側的篩選圖示 */
+        .sf-icon { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; background: rgba(47,93,80,0.1); color: var(--primary); font-size: 0.95rem; }
+        #search-filter-btn:hover .sf-icon { background: rgba(47,93,80,0.2); }
+
         /* ===== 篩選列 ===== */
         .filter-bar { max-width: 1200px; margin: 0 auto; padding: 0 14px 9px 14px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-        .filter-open-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; padding: 5px 13px; border-radius: 15px; border: 1px solid var(--line); background: var(--surface); color: var(--text-mid); cursor: pointer; }
-        .filter-open-btn:hover { border-color: var(--primary-soft); color: var(--primary); }
+        .filter-open-btn { position: relative; display: inline-flex; align-items: center; gap: 6px; font-size: 0.86rem; font-weight: 500;
+            padding: 8px 18px; border-radius: 19px; border: 1.5px solid var(--primary); background: rgba(47,93,80,0.07); color: var(--primary); cursor: pointer;
+            transition: background .18s, box-shadow .18s; }
+        .filter-open-btn .bi { font-size: 0.95rem; }
+        .filter-open-btn:hover { background: rgba(47,93,80,0.14); box-shadow: 0 2px 10px rgba(47,93,80,.14); }
         .filter-open-btn.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+        /* 第一次使用時的提示紅點，點開篩選後就不再出現 */
+        .filter-open-btn .newdot { position: absolute; top: -3px; right: -3px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--app-bg); animation: fdot 1.6s ease-in-out infinite; }
+        @keyframes fdot { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: .65; } }
+        @media (prefers-reduced-motion: reduce) { .filter-open-btn .newdot { animation: none; } }
         .filter-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 0.78rem; padding: 4px 10px; border-radius: 14px; background: rgba(47,93,80,.1); color: var(--primary); }
         .filter-chip .x { cursor: pointer; opacity: .7; font-weight: 600; }
         .filter-chip .x:hover { opacity: 1; }
@@ -458,22 +469,238 @@
             .mf-banner-title { font-size: 1rem; }
             .mf-banner-sub { font-size: 0.76rem; }
         }
+        /* ======================================================
+           🎃 萬聖節主題（僅在 html.fx-halloween 時生效，其餘時間零影響）
+           做法：整頁換成「夜空」配色；商品卡、彈窗等「白底區塊」改用奶油色，照片才看得清楚
+           ====================================================== */
+        .fx-loader-deco, .fx-loader-pumpkin { display: none; }
+        html.fx-halloween {
+            /* 頁面層（深色夜空上的文字與元件） */
+            --app-bg: #1b1430;
+            --surface: #2a2046;
+            --text-dark: #f5effd;
+            --text-mid: #cdc2e4;
+            --text-light: #9f93bd;
+            --line: rgba(255,255,255,0.13);
+            --primary: #ff9a3c;        /* 南瓜橘 */
+            --primary-soft: #ffb877;
+            --accent: #c9a7ff;         /* 薰衣草紫 */
+            --hw-night: #1b1430;
+            --hw-purple: #3b2a5a;
+            --hw-orange: #f08a24;
+            --hw-candy: #ffd36b;
+        }
+        /* 白底區塊：維持淺色，文字回到深色（照片、價格才清楚） */
+        html.fx-halloween .product-card, html.fx-halloween .h-card, html.fx-halloween .sk-card,
+        html.fx-halloween .quick-menu, html.fx-halloween .modal-content, html.fx-halloween .search-panel,
+        html.fx-halloween .stale-notice, html.fx-halloween .filter-note, html.fx-halloween .fx-egg-card {
+            --app-bg: #fffaf3;
+            --surface: #fffaf3;
+            --text-dark: #2b2238;
+            --text-mid: #6a5f78;
+            --text-light: #9a90a6;
+            --line: #efe3d2;
+            --primary: #c75a14;        /* 卡片內用深一點的橘，白字看得清楚 */
+            --primary-soft: #e08a4a;
+            --accent: #7c4dcc;
+        }
+        html.fx-halloween body { background-color: var(--hw-night); color: var(--text-dark); }
+
+        /* 夜空：漸層 + 星星 + 月亮（固定在最底層，不擋任何點擊） */
+        .fx-sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
+            background: radial-gradient(ellipse at 80% -10%, #4a3474 0%, rgba(74,52,116,0) 55%),
+                        radial-gradient(ellipse at 10% 110%, #3a2350 0%, rgba(58,35,80,0) 50%),
+                        linear-gradient(180deg, #1d1535 0%, #1b1430 55%, #221838 100%); }
+        .fx-sky-stars { position: absolute; inset: 0; opacity: 0.75;
+            background-image:
+                radial-gradient(1.2px 1.2px at 12% 18%, #fff 50%, transparent 51%),
+                radial-gradient(1px 1px at 28% 42%, #fff 50%, transparent 51%),
+                radial-gradient(1.4px 1.4px at 47% 12%, #fff 50%, transparent 51%),
+                radial-gradient(1px 1px at 63% 33%, #fff 50%, transparent 51%),
+                radial-gradient(1.2px 1.2px at 74% 62%, #fff 50%, transparent 51%),
+                radial-gradient(1px 1px at 88% 24%, #fff 50%, transparent 51%),
+                radial-gradient(1.3px 1.3px at 35% 78%, #fff 50%, transparent 51%),
+                radial-gradient(1px 1px at 8% 66%, #fff 50%, transparent 51%),
+                radial-gradient(1.1px 1.1px at 55% 88%, #fff 50%, transparent 51%),
+                radial-gradient(1px 1px at 93% 82%, #fff 50%, transparent 51%);
+            background-size: 420px 420px; animation: fxTwinkle 5s ease-in-out infinite alternate; }
+        @keyframes fxTwinkle { from { opacity: 0.45; } to { opacity: 0.85; } }
+        .fx-moon { position: absolute; z-index: 0; pointer-events: none; top: 96px; right: 6%; width: 96px; height: 96px; border-radius: 50%;
+            background: radial-gradient(circle at 38% 36%, #fffbe9 0%, #fbe7b2 55%, #f0cf83 100%);
+            box-shadow: 0 0 40px 12px rgba(251, 231, 178, 0.18), 0 0 120px 40px rgba(251, 231, 178, 0.08); opacity: 0.92; }
+        .fx-moon::before, .fx-moon::after { content: ''; position: absolute; border-radius: 50%; background: rgba(214, 178, 110, 0.35); }
+        .fx-moon::before { width: 16px; height: 16px; left: 56px; top: 24px; }
+        .fx-moon::after  { width: 10px; height: 10px; left: 26px; top: 58px; }
+        @media (max-width: 576px) { .fx-moon { width: 64px; height: 64px; top: 52px; right: 5%; } .fx-moon::before { width: 11px; height: 11px; left: 37px; top: 16px; } .fx-moon::after { width: 7px; height: 7px; left: 17px; top: 38px; } }
+
+        /* 載入畫面：夜空 + 月亮在 Cooper 身後 + 兩顆南瓜 */
+        html.fx-halloween #loader { background: radial-gradient(ellipse at 50% 35%, #3b2a5a 0%, #1b1430 70%); }
+        html.fx-halloween .fx-loader-deco { display: block; position: absolute; left: 50%; top: 50%; width: 150px; height: 150px; margin: -82px 0 0 -75px; border-radius: 50%;
+            background: radial-gradient(circle at 40% 38%, #fffbe9 0%, #fbe7b2 60%, #f0cf83 100%); box-shadow: 0 0 60px 18px rgba(251,231,178,0.22); }
+        html.fx-halloween .loader-img { position: relative; z-index: 1; }
+        html.fx-halloween .dog-shadow { z-index: 1; background: rgba(0,0,0,0.25); }
+        html.fx-halloween .fx-loader-pumpkin { display: block; position: absolute; bottom: 4px; width: 38px; z-index: 2; }
+        html.fx-halloween .fx-loader-pumpkin.l { left: calc(50% - 112px); }
+        html.fx-halloween .fx-loader-pumpkin.r { left: calc(50% + 76px); width: 30px; }
+        html.fx-halloween .load-bar { background: rgba(255,255,255,0.14); }
+        html.fx-halloween .load-bar-fill { background: linear-gradient(90deg, #f08a24, #ffd36b); }
+        html.fx-halloween .load-text { color: #f5effd; }
+        html.fx-halloween .load-pct { color: #b9add6; }
+
+        /* 跑馬燈、庫存時間 */
+        html.fx-halloween .marquee-container { background: linear-gradient(90deg, #f08a24, #ffb347); color: #2b1a40; border-bottom: 2px solid #2b1a40; }
+        html.fx-halloween .marquee-content::before { content: '🎃 '; }
+        html.fx-halloween .marquee-content::after { content: ' 👻'; }
+        html.fx-halloween #update-time-banner { background: transparent !important; color: #b9add6 !important; }
+
+        /* 上方功能鍵（白卡）加一點南瓜邊 */
+        html.fx-halloween .quick-menu { background: #fffaf3; box-shadow: 0 10px 30px rgba(0,0,0,0.35); border: 1px solid rgba(240,138,36,0.35); }
+
+        /* 搜尋列與分類列：半透明深紫 */
+        html.fx-halloween .search-bar-container,
+        html.fx-halloween .cat-nav-wrapper { background: rgba(27, 20, 48, 0.9); border-bottom-color: rgba(255,255,255,0.08); }
+        html.fx-halloween .sticky-header-group.compact .cat-nav-wrapper { box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+        html.fx-halloween .cat-pill { background: rgba(255,255,255,0.07); color: #e6dcf7; border-color: rgba(255,255,255,0.14); }
+        html.fx-halloween .cat-pill:hover { background: rgba(255,255,255,0.14); color: #fff; }
+        html.fx-halloween .cat-pill.active { background: #f08a24; border-color: #f08a24; color: #2b1a40; font-weight: 600; box-shadow: 0 0 14px rgba(240,138,36,0.45); }
+        html.fx-halloween .subcat-chip { background: rgba(255,255,255,0.06); }
+        html.fx-halloween .subcat-chip:hover,
+        html.fx-halloween .subcat-chip.current { background: rgba(255,154,60,0.16); border-color: rgba(255,154,60,0.6); color: #ffb877; }
+        html.fx-halloween .sub-scroll-left  { background: linear-gradient(to right, #1b1430 55%, rgba(27,20,48,0)); }
+        html.fx-halloween .sub-scroll-right { background: linear-gradient(to left,  #1b1430 55%, rgba(27,20,48,0)); }
+        html.fx-halloween .filter-open-btn { background: rgba(255,154,60,0.1); }
+        html.fx-halloween .filter-open-btn:hover { background: rgba(255,154,60,0.2); box-shadow: 0 2px 12px rgba(255,154,60,0.25); }
+        html.fx-halloween .filter-open-btn.on { color: #2b1a40; }
+        html.fx-halloween .filter-chip { background: rgba(255,154,60,0.15); }
+        html.fx-halloween .sf-icon { background: rgba(199,90,20,0.12); color: #c75a14; }
+
+        /* 標題 */
+        html.fx-halloween .section-title { border-left-color: #f08a24; }
+        html.fx-halloween .section-title::after { content: ' 🎃'; }
+        html.fx-halloween .brand-header { border-bottom-color: rgba(255,255,255,0.12); }
+
+        /* 商品卡：奶油底 + 南瓜色細框，滑過時發出暖光 */
+        html.fx-halloween .product-card { border-color: rgba(240,138,36,0.28); }
+        html.fx-halloween .product-card:hover { border-color: #f08a24; box-shadow: 0 8px 26px rgba(240,138,36,0.28); }
+        html.fx-halloween .h-card { border-color: rgba(240,138,36,0.28); }
+        html.fx-halloween .badge-corner, html.fx-halloween .h-tag { background: rgba(124,77,204,0.95); }
+        /* 熱銷 TOP10 的商品卡貼一顆小南瓜 */
+        html.fx-halloween .top10-grid .product-card::after { content: ''; position: absolute; left: 8px; top: 128px; width: 30px; height: 28px; z-index: 12; pointer-events: none;
+            background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 60'%3E%3Cpath d='M31 13c-1-6 2-10 7-11 1 3-2 6-3 11z' fill='%235b8a3a'/%3E%3Cellipse cx='20' cy='36' rx='15' ry='20' fill='%23e06a12'/%3E%3Cellipse cx='44' cy='36' rx='15' ry='20' fill='%23e06a12'/%3E%3Cellipse cx='32' cy='36' rx='16' ry='22' fill='%23f7902e'/%3E%3Cpath d='M20 30l6-6 3 7zM44 30l-6-6-3 7z' fill='%233a1f08'/%3E%3Cpath d='M21 41q11 10 22 0l-3 3-3-2-3 3-3-3-3 2z' fill='%233a1f08'/%3E%3C/svg%3E");
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25)); }
+        @media (min-width: 768px) { html.fx-halloween .top10-grid .product-card::after { top: 186px; width: 36px; height: 34px; } }
+
+        /* 底部購物車：深紫 + 南瓜 */
+        html.fx-halloween .cart-bar { background: rgba(43, 26, 74, 0.97); border: 1.5px solid rgba(240,138,36,0.7); box-shadow: 0 8px 26px rgba(0,0,0,0.45), 0 0 18px rgba(240,138,36,0.25); }
+        html.fx-halloween .cart-bar-total { color: #ffb347; }
+        html.fx-halloween .cart-bar > div::before { content: ''; display: inline-block; width: 28px; height: 26px; margin-right: 8px; flex-shrink: 0;
+            background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 60'%3E%3Cpath d='M31 13c-1-6 2-10 7-11 1 3-2 6-3 11z' fill='%235b8a3a'/%3E%3Cellipse cx='20' cy='36' rx='15' ry='20' fill='%23e06a12'/%3E%3Cellipse cx='44' cy='36' rx='15' ry='20' fill='%23e06a12'/%3E%3Cellipse cx='32' cy='36' rx='16' ry='22' fill='%23f7902e'/%3E%3Cpath d='M20 30l6-6 3 7zM44 30l-6-6-3 7z' fill='%23ffd36b'/%3E%3Cpath d='M21 41q11 10 22 0l-3 3-3-2-3 3-3-3-3 2z' fill='%23ffd36b'/%3E%3C/svg%3E"); }
+        html.fx-halloween .cart-bar > div:has(.cart-pop)::before { animation: fxHop 0.5s ease; }   /* 加入購物車時南瓜跳一下 */
+        @keyframes fxHop { 0%,100% { transform: translateY(0) rotate(0); } 35% { transform: translateY(-9px) rotate(-8deg); } 70% { transform: translateY(0) rotate(5deg); } }
+
+        /* 空畫面、說明文字 */
+        html.fx-halloween .empty-btn.ghost { color: #ffb877; border-color: #ffb877; }
+
+        /* 頁尾：南瓜與糖果剪影 */
+        .fx-footer { text-align: center; padding: 28px 16px 10px 16px; color: #cdc2e4; position: relative; }
+        .fx-footer-row { display: flex; justify-content: center; align-items: flex-end; gap: 14px; margin-bottom: 10px; }
+        .fx-footer-row svg { display: block; }
+        .fx-footer-title { font-size: 1rem; font-weight: 600; letter-spacing: 0.06em; color: #ffb877; }
+        .fx-footer-sub { font-size: 0.78rem; color: #9f93bd; margin-top: 4px; }
+        .fx-footer-ghost { cursor: pointer; animation: fxBob 3.2s ease-in-out infinite; }
+        .fx-footer-ghost:active { transform: scale(0.9); }
+
+        /* 飄浮層：幽靈、蝙蝠（只有「幸運幽靈」可以點） */
+        .fx-float-layer { position: fixed; inset: 0; pointer-events: none; z-index: 900; overflow: hidden; }
+        .fx-ghost { position: absolute; will-change: transform; animation: fxDrift var(--dur, 34s) ease-in-out infinite alternate; }
+        .fx-ghost > div { animation: fxBob var(--bob, 3.6s) ease-in-out infinite; }
+        .fx-ghost svg { display: block; filter: drop-shadow(0 4px 10px rgba(201,167,255,0.35)); }
+        @keyframes fxDrift { from { transform: translateX(0); } to { transform: translateX(var(--dx, 30vw)); } }
+        @keyframes fxBob { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-14px) rotate(4deg); } }
+        .fx-bat { position: absolute; left: -60px; animation: fxFly var(--dur, 22s) linear infinite; animation-delay: var(--delay, 0s); opacity: 0.85; }
+        .fx-bat svg { display: block; animation: fxFlap 0.32s ease-in-out infinite alternate; transform-origin: center; }
+        @keyframes fxFly { 0% { transform: translate(0, 0); } 28% { transform: translate(calc(100vw + 120px), -40px); } 100% { transform: translate(calc(100vw + 120px), -40px); } }
+        @keyframes fxFlap { from { transform: scaleY(1); } to { transform: scaleY(0.55); } }
+
+        /* 幸運幽靈：可以點，抓到有獎 */
+        .fx-lucky { position: absolute; pointer-events: auto; cursor: pointer; padding: 8px; -webkit-tap-highlight-color: transparent;
+            opacity: 0; transform: scale(0.6); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(.2,.8,.3,1.3); }
+        .fx-lucky.show { opacity: 1; transform: scale(1); }
+        .fx-lucky > div { animation: fxBob 2.6s ease-in-out infinite; }
+        .fx-lucky svg { display: block; filter: drop-shadow(0 0 12px rgba(255,211,107,0.75)); }
+        .fx-lucky-tip { position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%); white-space: nowrap; font-size: 0.72rem; font-weight: 600;
+            background: #ffd36b; color: #2b1a40; padding: 3px 9px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .fx-lucky-tip::after { content: ''; position: absolute; left: 50%; top: 100%; margin-left: -5px; border: 5px solid transparent; border-top-color: #ffd36b; }
+        .fx-lucky.poof { pointer-events: none; animation: fxPoof 0.5s ease forwards; }
+        @keyframes fxPoof { 0% { transform: scale(1); opacity: 1; } 60% { transform: scale(1.35); opacity: 0.6; } 100% { transform: scale(0.2); opacity: 0; } }
+
+        /* 抓到幽靈的彈窗 */
+        .fx-egg-overlay { position: fixed; inset: 0; z-index: 3500; background: rgba(15, 10, 30, 0.62); display: flex; align-items: center; justify-content: center; padding: 16px;
+            opacity: 0; transition: opacity 0.25s ease; }
+        .fx-egg-overlay.show { opacity: 1; }
+        .fx-egg-card { position: relative; width: 100%; max-width: 340px; background: #fffaf3; border-radius: 20px; padding: 26px 22px 20px 22px; text-align: center;
+            border: 2px solid #f08a24; box-shadow: 0 18px 50px rgba(0,0,0,0.5); color: #2b2238; transform: translateY(14px) scale(0.96); transition: transform 0.3s cubic-bezier(.2,.8,.3,1.2); }
+        .fx-egg-overlay.show .fx-egg-card { transform: none; }
+        .fx-egg-art { margin: -66px auto 6px auto; width: 96px; }
+        .fx-egg-title { font-size: 1.2rem; font-weight: 700; color: #3b2a5a; }
+        .fx-egg-sub { font-size: 0.86rem; color: #6a5f78; margin-top: 6px; line-height: 1.6; }
+        .fx-egg-code { margin: 14px auto 6px auto; display: inline-block; font-size: 1.45rem; font-weight: 800; letter-spacing: 0.12em; color: #c75a14;
+            padding: 8px 20px; border: 2px dashed #f08a24; border-radius: 12px; background: #fff3e4; user-select: all; }
+        .fx-egg-amt { font-size: 0.86rem; color: #3b2a5a; font-weight: 600; }
+        .fx-egg-note { font-size: 0.74rem; color: #9a90a6; margin-top: 8px; line-height: 1.5; }
+        .fx-egg-btns { display: flex; gap: 8px; margin-top: 16px; }
+        .fx-egg-btns button { flex: 1; border-radius: 20px; padding: 9px 10px; font-size: 0.88rem; font-weight: 600; border: 1.5px solid #3b2a5a; cursor: pointer; }
+        .fx-egg-btns .primary { background: #3b2a5a; color: #fff; }
+        .fx-egg-btns .ghost { background: transparent; color: #3b2a5a; }
+        .fx-egg-close { position: absolute; top: 8px; right: 10px; width: 28px; height: 28px; border: none; border-radius: 50%; background: rgba(59,42,90,0.08); color: #3b2a5a; cursor: pointer; }
+        .fx-toast { position: fixed; left: 50%; bottom: 104px; transform: translateX(-50%) translateY(10px); z-index: 3600; background: #3b2a5a; color: #fff; border: 1.5px solid #f08a24;
+            padding: 8px 16px; border-radius: 18px; font-size: 0.85rem; opacity: 0; transition: opacity 0.25s, transform 0.25s; pointer-events: none; white-space: nowrap; }
+        .fx-toast.show { opacity: 1; transform: translateX(-50%); }
+
+        /* 尊重「減少動態效果」：拿掉所有飄浮與閃爍，彩蛋改由頁尾的小幽靈觸發 */
+        @media (prefers-reduced-motion: reduce) {
+            .fx-float-layer { display: none; }
+            .fx-sky-stars, .fx-footer-ghost { animation: none; }
+            html.fx-halloween .cart-bar > div::before { animation: none !important; }
+        }
     </style>
     <script>
-    // ================= 🌕 中秋節慶開關 =================
-    // 依日期自動開啟／關閉，節日過後自動消失，不需手動移除
-    var MF_START = new Date(2026, 8, 15);   // 9/15 起顯示（月份 0 起算，8 = 9月）
-    var MF_END   = new Date(2026, 8, 29);   // 9/29 起消失（涵蓋 9/25 中秋 ~ 9/28 教師節連假）
-    var MF_FORCE = null;                     // null=依日期　true=強制開啟　false=強制關閉
-    // 網址加 ?mf=1 可預覽、?mf=0 可關閉（方便測試）
+    // ================= 🎉 節慶主題開關（通用）=================
+    // 每個節慶一筆設定：依日期自動開啟／結束，過了自動消失，不需手動移除。
+    // 之後要加聖誕節、過年，只要在這裡加一筆，再寫對應的裝飾即可。
+    //   start：開始日（含）　end：結束日（不含，這天 00:00 起消失）
+    //   banner：進站橫幅（null = 不顯示）{ title, sub, notes:[{ text, strong }] }
+    //   egg：互動彩蛋（只有萬聖節使用）{ code: 後台建立的優惠碼名稱 }
+    var FESTIVALS = [
+        { id: 'halloween', name: '萬聖節', start: '2026-10-23', end: '2026-11-02',
+          banner: null,
+          egg: { code: 'HALLOWEEN' } },
+        { id: 'midautumn', name: '中秋節', start: '2026-09-15', end: '2026-09-29',
+          banner: { title: '中秋佳節 · 月圓人團圓', sub: '樂森良選祝您闔家團圓、平安喜樂',
+                    notes: [ { text: '9/25（五）– 9/27（日）店休', strong: true }, { text: '9/28（一）照常營業' } ] } }
+    ];
+    var FESTIVAL_FORCE = null;   // null＝依日期　'halloween'＝強制開啟某個主題（預覽用）　false＝全部關閉
+    // 網址加 ?fx=halloween 可預覽某主題、?fx=0 可關閉（方便測試，不影響客人）
+    var ACTIVE_FESTIVAL = null;
     (function () {
-        var on;
+        function d(s) { var a = String(s).split('-'); return new Date(+a[0], +a[1] - 1, +a[2]).getTime(); }
+        var want;
         try {
-            var q = new URLSearchParams(location.search).get('mf');
-            if (q === '1') on = true; else if (q === '0') on = false;
+            var q = new URLSearchParams(location.search);
+            var fx = q.get('fx'); if (q.get('mf') === '1') fx = 'midautumn'; if (q.get('mf') === '0') fx = '0';
+            if (fx === '0') want = false; else if (fx) want = fx;
         } catch (e) {}
-        if (on === undefined) on = (MF_FORCE !== null) ? MF_FORCE : (Date.now() >= MF_START.getTime() && Date.now() < MF_END.getTime());
-        if (on) document.documentElement.classList.add('mf-on');
+        if (want === undefined) want = FESTIVAL_FORCE;
+        if (want === false) return;
+        var now = Date.now();
+        for (var i = 0; i < FESTIVALS.length; i++) {
+            var f = FESTIVALS[i];
+            if (want ? f.id === want : (now >= d(f.start) && now < d(f.end))) { ACTIVE_FESTIVAL = f; break; }
+        }
+        if (!ACTIVE_FESTIVAL) return;
+        var root = document.documentElement;
+        root.classList.add('fx-on', 'fx-' + ACTIVE_FESTIVAL.id);
+        if (ACTIVE_FESTIVAL.id === 'midautumn') root.classList.add('mf-on');   // 沿用中秋原本的樣式
     })();
     </script>
 </head>
@@ -500,6 +727,9 @@
 <div id="loader">
     <div class="dog-wrapper">
         <div class="mf-loader-moon"></div>
+        <div class="fx-loader-deco"></div>
+        <svg class="fx-loader-pumpkin l" viewBox="0 0 64 60" aria-hidden="true"><path d="M31 13c-1-6 2-10 7-11 1 3-2 6-3 11z" fill="#5b8a3a"/><ellipse cx="20" cy="36" rx="15" ry="20" fill="#e06a12"/><ellipse cx="44" cy="36" rx="15" ry="20" fill="#e06a12"/><ellipse cx="32" cy="36" rx="16" ry="22" fill="#f7902e"/><path d="M20 30l6-6 3 7zM44 30l-6-6-3 7z" fill="#ffd36b"/><path d="M21 41q11 10 22 0l-3 3-3-2-3 3-3-3-3 2z" fill="#ffd36b"/></svg>
+        <svg class="fx-loader-pumpkin r" viewBox="0 0 64 60" aria-hidden="true"><path d="M31 13c-1-6 2-10 7-11 1 3-2 6-3 11z" fill="#5b8a3a"/><ellipse cx="20" cy="36" rx="15" ry="20" fill="#e06a12"/><ellipse cx="44" cy="36" rx="15" ry="20" fill="#e06a12"/><ellipse cx="32" cy="36" rx="16" ry="22" fill="#f7902e"/><path d="M20 30l6-6 3 7zM44 30l-6-6-3 7z" fill="#ffd36b"/><path d="M21 41q11 10 22 0l-3 3-3-2-3 3-3-3-3 2z" fill="#ffd36b"/></svg>
         <div class="dog-shadow"></div>
         <img src="https://drive.google.com/thumbnail?id=1-bdeExYe6cZArJ6G_f3oO3qmu4TfXGK_&sz=w240" class="loader-img" alt="載入中" referrerpolicy="no-referrer" fetchpriority="high">
     </div>
@@ -528,7 +758,7 @@
                 <span class="input-group-text bg-white border-0 text-muted ps-3"><i class="bi bi-search"></i></span>
                 <input type="text" id="search-input" class="form-control border-0" placeholder="想找什麼商品呢？" oninput="handleSearch()" onfocus="openSearchPanel()">
                 <span class="input-group-text bg-white border-0 text-secondary" style="cursor:pointer;" onclick="clearSearch()"><i class="bi bi-x-circle-fill" id="clear-search-icon" style="display:none; font-size: 1.1rem;"></i></span>
-                <span class="input-group-text bg-white border-0 pe-3" id="search-filter-btn" style="cursor:pointer; display:none;" onclick="openFilterModal()" title="依月齡 / 品項篩選"><i class="bi bi-sliders"></i><span id="search-filter-count"></span></span>
+                <span class="input-group-text bg-white border-0 pe-3" id="search-filter-btn" style="cursor:pointer; display:none;" onclick="openFilterModal()" title="依月齡 / 品項篩選"><span class="sf-icon"><i class="bi bi-sliders"></i></span><span id="search-filter-count"></span></span>
             </div>
         </div>
         <div id="search-panel" class="search-panel" style="display:none;"></div>
@@ -772,23 +1002,26 @@
         }, { passive: true });
     }
 
-    // ================= 🌕 中秋節慶：橫幅 + 飄落桂花 =================
-    // 文字可自行修改（例如加上連假取貨時間）
-    var MF_TITLE = '中秋佳節 · 月圓人團圓';
-    var MF_SUB   = '樂森良選祝您闔家團圓、平安喜樂';
-    // 營業標示：每一項是一個標籤；strong: true 會加強顯示（用於店休）
-    var MF_NOTES = [
-        { text: '9/25（五）– 9/27（日）店休', strong: true },
-        { text: '9/28（一）照常營業' }
-    ];
-
+    // ================= 🎉 節慶主題：共用入口 =================
+    // 依 ACTIVE_FESTIVAL（<head> 裡判斷）呼叫對應的裝飾；任何錯誤都不影響購物
     function initFestival() {
         try {
-            if (!document.documentElement.classList.contains('mf-on')) return;
+            if (!ACTIVE_FESTIVAL) return;
+            if (ACTIVE_FESTIVAL.id === 'midautumn') initMidAutumn_(ACTIVE_FESTIVAL);
+            else if (ACTIVE_FESTIVAL.id === 'halloween') initHalloween_(ACTIVE_FESTIVAL);
+        } catch (e) { console.warn('節慶裝飾載入失敗（不影響購物）:', e); }
+    }
+
+    // ---------- 🌕 中秋：橫幅 + 飄落桂花 ----------
+    function initMidAutumn_(f) {
+        try {
+            var MF_TITLE = (f.banner && f.banner.title) || '';
+            var MF_SUB = (f.banner && f.banner.sub) || '';
+            var MF_NOTES = (f.banner && f.banner.notes) || [];
 
             // --- 橫幅（每次進入都顯示；✕ 只收起當下這次）---
             var slot = document.getElementById('mf-banner-slot');
-            if (slot) {
+            if (slot && f.banner) {
                 var stars = '';
                 var pos = [[62,18],[70,34],[78,14],[84,42],[90,22],[74,62],[66,48],[94,58],[58,70],[86,76]];
                 pos.forEach(function (p, i) {
@@ -873,6 +1106,219 @@
             requestAnimationFrame(function () { b.classList.remove('mf-enter'); });
         });
     }
+
+    // ---------- 🎃 萬聖節：夜空、幽靈、蝙蝠、頁尾、幸運幽靈彩蛋 ----------
+    var HW_SVG = {
+        pumpkin: function (w, eye) {
+            eye = eye || '#3a1f08';
+            return '<svg width="' + w + '" viewBox="0 0 64 60" aria-hidden="true"><path d="M31 13c-1-6 2-10 7-11 1 3-2 6-3 11z" fill="#5b8a3a"/>' +
+                   '<ellipse cx="20" cy="36" rx="15" ry="20" fill="#e06a12"/><ellipse cx="44" cy="36" rx="15" ry="20" fill="#e06a12"/>' +
+                   '<ellipse cx="32" cy="36" rx="16" ry="22" fill="#f7902e"/>' +
+                   '<path d="M20 30l6-6 3 7zM44 30l-6-6-3 7z" fill="' + eye + '"/><path d="M21 41q11 10 22 0l-3 3-3-2-3 3-3-3-3 2z" fill="' + eye + '"/></svg>';
+        },
+        ghost: function (w, opts) {
+            opts = opts || {};
+            return '<svg width="' + w + '" viewBox="0 0 60 70" aria-hidden="true">' +
+                   '<path d="M30 4C16 4 8 15 8 30v30q2.75 5 5.5 0t5.5 0t5.5 0t5.5 0t5.5 0t5.5 0t5.5 0t5.5 0V30C52 15 44 4 30 4z" fill="' + (opts.fill || '#fdfbff') + '"/>' +
+                   '<ellipse cx="22" cy="30" rx="3.2" ry="4.3" fill="#2b2238"/><ellipse cx="38" cy="30" rx="3.2" ry="4.3" fill="#2b2238"/>' +
+                   '<circle cx="23" cy="28.6" r="1" fill="#fff"/><circle cx="39" cy="28.6" r="1" fill="#fff"/>' +
+                   '<ellipse cx="16.5" cy="37.5" rx="4" ry="2.4" fill="#ffb3c7" opacity=".75"/><ellipse cx="43.5" cy="37.5" rx="4" ry="2.4" fill="#ffb3c7" opacity=".75"/>' +
+                   '<path d="M26 38.5q4 4 8 0" stroke="#2b2238" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+                   (opts.candy ? '<g transform="translate(40 44) rotate(-20)"><path d="M-9 -4l5 4-5 4zM9 -4l-5 4 5 4z" fill="#ffd36b"/><circle r="5" fill="#ff7a59"/><path d="M-3 -4l3 8M1 -4.5l3 8" stroke="#fff" stroke-width="1.3" opacity=".8"/></g>' : '') +
+                   '</svg>';
+        },
+        bat: function (w) {
+            return '<svg width="' + w + '" viewBox="0 0 64 30" aria-hidden="true"><path fill="#120c22" d="M32 9c-2-5-5-6-5-6 1 3 0 5 0 5-7-6-19-6-27 1 6 0 10 3 11 8 3-3 8-3 10 1 2-3 6-3 8 0l3 4 3-4c2-3 6-3 8 0 2-4 7-4 10-1 1-5 5-8 11-8-8-7-20-7-27-1 0 0-1-2 0-5 0 0-3 1-5 6z"/>' +
+                   '<circle cx="29.5" cy="10" r="0.9" fill="#ffd36b"/><circle cx="34.5" cy="10" r="0.9" fill="#ffd36b"/></svg>';
+        },
+        candy: function (w) {
+            return '<svg width="' + w + '" viewBox="0 0 40 20" aria-hidden="true"><path d="M2 3l9 7-9 7zM38 3l-9 7 9 7z" fill="#c9a7ff"/><circle cx="20" cy="10" r="8" fill="#ff7a59"/><path d="M15 3l5 14M20 2.5l5 14" stroke="#fff" stroke-width="2" opacity=".75"/></svg>';
+        }
+    };
+
+    function initHalloween_(f) {
+        var reduce = false;
+        try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+        // 1. 夜空背景（最底層）
+        if (!document.getElementById('fx-sky')) {
+            var sky = document.createElement('div');
+            sky.id = 'fx-sky'; sky.className = 'fx-sky'; sky.setAttribute('aria-hidden', 'true');
+            sky.innerHTML = '<div class="fx-sky-stars"></div>';
+            document.body.insertBefore(sky, document.body.firstChild);
+            // 月亮放在頁面頂端、跟著捲走（固定的話會卡在分類列底下，看起來像被切掉）
+            var moon = document.createElement('div');
+            moon.className = 'fx-moon'; moon.setAttribute('aria-hidden', 'true');
+            document.body.insertBefore(moon, sky.nextSibling);
+        }
+
+        // 2. 頁尾：南瓜與糖果剪影（小幽靈可以點，給「減少動態效果」的客人也能玩彩蛋）
+        var layout = document.querySelector('.app-layout');
+        if (layout && !document.getElementById('fx-footer')) {
+            var ft = document.createElement('div');
+            ft.id = 'fx-footer'; ft.className = 'fx-footer';
+            ft.innerHTML = '<div class="fx-footer-row">' + HW_SVG.pumpkin(44) + HW_SVG.candy(30) + HW_SVG.pumpkin(64, '#ffd36b') +
+                           '<span class="fx-footer-ghost" role="button" aria-label="抓幽靈" onclick="hwCatch_(this)">' + HW_SVG.ghost(40) + '</span>' +
+                           HW_SVG.candy(26) + HW_SVG.pumpkin(38) + '</div>' +
+                           '<div class="fx-footer-title">萬聖節快樂 Happy Halloween</div>' +
+                           '<div class="fx-footer-sub">看到發光的小幽靈，點一下有驚喜 👻</div>';
+            layout.appendChild(ft);
+        }
+
+        // 3. 飄浮層：2 隻背景小幽靈（不能點）、2 隻蝙蝠、1 隻會出現的幸運幽靈
+        if (!reduce && !document.getElementById('fx-float-layer')) {
+            var layer = document.createElement('div');
+            layer.id = 'fx-float-layer'; layer.className = 'fx-float-layer';
+            var mobile = window.innerWidth < 576;
+            var html = '';
+            var ghosts = mobile ? [[6, 34, 30, 0.38], [62, 72, 26, 0.32]] : [[4, 30, 40, 0.42], [70, 66, 34, 0.36], [36, 84, 28, 0.3]];
+            ghosts.forEach(function (g, i) {
+                var dx = (i % 2 ? -1 : 1) * (mobile ? 22 : 18);
+                html += '<div class="fx-ghost" aria-hidden="true" style="left:' + g[0] + 'vw;top:' + g[1] + 'vh;opacity:' + g[3] + ';--dx:' + dx + 'vw;--dur:' + (30 + i * 9) + 's;--bob:' + (3.4 + i * 0.7) + 's;">' +
+                        '<div>' + HW_SVG.ghost(g[2]) + '</div></div>';
+            });
+            html += '<div class="fx-bat" aria-hidden="true" style="top:16vh;--dur:24s;--delay:3s;">' + HW_SVG.bat(mobile ? 34 : 44) + '</div>';
+            html += '<div class="fx-bat" aria-hidden="true" style="top:9vh;--dur:31s;--delay:15s;">' + HW_SVG.bat(mobile ? 24 : 30) + '</div>';
+            layer.innerHTML = html;
+            document.body.appendChild(layer);
+            hwScheduleLucky_(4000);
+        }
+
+        // 4. 購物車開啟時，若客人是從彩蛋點「去購物車使用」，自動套用優惠碼
+        if (typeof openCartModal === 'function' && !openCartModal.__hw) {
+            var orig = openCartModal;
+            openCartModal = function () { orig.apply(this, arguments); try { hwAutoApply_(); } catch (e) {} };
+            openCartModal.__hw = true;
+        }
+    }
+
+    // ----- 幸運幽靈：每隔一段時間出現一次，停留約 9 秒 -----
+    var hwLuckyTimer = null;
+    function hwScheduleLucky_(ms) {
+        clearTimeout(hwLuckyTimer);
+        hwLuckyTimer = setTimeout(hwShowLucky_, ms);
+    }
+    function hwShowLucky_() {
+        var layer = document.getElementById('fx-float-layer');
+        if (!layer) return;
+        // 有彈窗或購物車開著時先不打擾
+        if (document.querySelector('.fx-egg-overlay') || document.querySelector('.modal.show')) { hwScheduleLucky_(8000); return; }
+        var old = document.getElementById('fx-lucky'); if (old) old.remove();
+        var mobile = window.innerWidth < 576;
+        var el = document.createElement('div');
+        el.id = 'fx-lucky'; el.className = 'fx-lucky';
+        el.setAttribute('role', 'button'); el.setAttribute('aria-label', '抓住幸運幽靈');
+        el.style.left = (8 + Math.random() * 72).toFixed(1) + 'vw';
+        el.style.top = (30 + Math.random() * 38).toFixed(1) + 'vh';
+        var firstTime = !hwStore_('hw_caught_ever');
+        el.innerHTML = (firstTime ? '<span class="fx-lucky-tip">抓住我！</span>' : '') + '<div>' + HW_SVG.ghost(mobile ? 50 : 60, { candy: true }) + '</div>';
+        el.onclick = function (ev) { ev.stopPropagation(); hwCatch_(el); };
+        layer.appendChild(el);
+        requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('show'); }); });
+        setTimeout(function () {
+            if (!el.parentNode || el.classList.contains('poof')) return;
+            el.classList.remove('show');
+            setTimeout(function () { if (el.parentNode) el.remove(); }, 700);
+        }, 9000);
+        // 今天已經拿過優惠碼的客人，出現頻率降低
+        var gotToday = hwStore_(hwTodayKey_());
+        hwScheduleLucky_((gotToday ? 50000 : 22000) + Math.random() * 12000);
+    }
+
+    // ----- 抓到幽靈 -----
+    function hwCatch_(el) {
+        if (el && el.classList && el.id === 'fx-lucky') {
+            el.classList.add('poof');
+            setTimeout(function () { if (el.parentNode) el.remove(); }, 520);
+        }
+        hwStore_('hw_caught_ever', '1');
+        var f = ACTIVE_FESTIVAL || {};
+        var code = (f.egg && f.egg.code) ? String(f.egg.code).toUpperCase() : '';
+        var promoOn = !(typeof allData !== 'undefined' && allData && allData.promoEnabled === false);
+        var codes = (typeof allData !== 'undefined' && allData && allData.promoCodes) ? allData.promoCodes : {};
+        var valid = code && promoOn && codes[code] !== undefined;
+        var todayKey = hwTodayKey_();
+
+        if (!valid) { hwPopup_(null); return; }                       // 後台還沒建立優惠碼：送一顆糖就好
+        if (hwStore_(todayKey)) { hwToast_('🍬 抓到了！今天的優惠碼是 ' + code); return; }   // 今天已經給過
+        hwStore_(todayKey, '1');
+        hwPopup_({ code: code, amt: Number(codes[code]) || 0 });
+    }
+
+    function hwPopup_(info) {
+        var old = document.querySelector('.fx-egg-overlay'); if (old) old.remove();
+        var ov = document.createElement('div');
+        ov.className = 'fx-egg-overlay';
+        ov.onclick = function (e) { if (e.target === ov) hwClosePopup_(); };
+        var body;
+        if (info) {
+            var loginNote = (typeof isLoggedIn !== 'undefined' && isLoggedIn) ? '結帳時輸入優惠碼即可折抵（一筆訂單限用一組）'
+                                                                            : '使用優惠碼需要先「LINE 登入」，登入後結帳時輸入即可折抵';
+            body = '<div class="fx-egg-title">👻 抓到了！不給糖就搗蛋</div>' +
+                   '<div class="fx-egg-sub">小幽靈留給你一組萬聖節優惠碼</div>' +
+                   '<div class="fx-egg-code" id="fx-egg-code">' + hwEsc_(info.code) + '</div>' +
+                   (info.amt > 0 ? '<div class="fx-egg-amt">結帳現折 $' + info.amt + '</div>' : '') +
+                   '<div class="fx-egg-note">' + loginNote + '</div>' +
+                   '<div class="fx-egg-btns"><button class="ghost" onclick="hwCopy_(\'' + hwEsc_(info.code) + '\')">複製優惠碼</button>' +
+                   '<button class="primary" onclick="hwGoCart_(\'' + hwEsc_(info.code) + '\')">去購物車使用</button></div>';
+        } else {
+            body = '<div class="fx-egg-title">👻 抓到了！</div>' +
+                   '<div class="fx-egg-sub">小幽靈送你一顆糖 🍬<br>祝你萬聖節快樂，不給糖就搗蛋！</div>' +
+                   '<div class="fx-egg-btns"><button class="primary" onclick="hwClosePopup_()">收下糖果</button></div>';
+        }
+        ov.innerHTML = '<div class="fx-egg-card" role="dialog" aria-label="萬聖節彩蛋">' +
+                         '<button class="fx-egg-close" aria-label="關閉" onclick="hwClosePopup_()">✕</button>' +
+                         '<div class="fx-egg-art">' + HW_SVG.ghost(96, { candy: true }) + '</div>' + body +
+                       '</div>';
+        document.body.appendChild(ov);
+        requestAnimationFrame(function () { requestAnimationFrame(function () { ov.classList.add('show'); }); });
+    }
+    function hwClosePopup_() {
+        var ov = document.querySelector('.fx-egg-overlay'); if (!ov) return;
+        ov.classList.remove('show');
+        setTimeout(function () { if (ov.parentNode) ov.remove(); }, 260);
+    }
+    function hwCopy_(code) {
+        var done = function () { hwToast_('已複製優惠碼 ' + code); };
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(code).then(done, function () { hwCopyFallback_(code); done(); }); return; }
+        } catch (e) {}
+        hwCopyFallback_(code); done();
+    }
+    function hwCopyFallback_(code) {
+        try { var t = document.createElement('textarea'); t.value = code; t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); } catch (e) {}
+    }
+    function hwGoCart_(code) {
+        try { sessionStorage.setItem('hw_egg_code', code); } catch (e) {}
+        hwClosePopup_();
+        setTimeout(function () { if (typeof openCartModal === 'function') openCartModal(); }, 280);
+    }
+    // 購物車打開時自動填入並套用（只在客人點過「去購物車使用」之後）
+    function hwAutoApply_() {
+        var code = null;
+        try { code = sessionStorage.getItem('hw_egg_code'); } catch (e) {}
+        if (!code) return;
+        if (typeof isLoggedIn === 'undefined' || !isLoggedIn) return;          // 訪客看得到登入提示
+        if (typeof allData !== 'undefined' && allData && allData.promoEnabled === false) return;
+        var input = document.getElementById('promo-code-input');
+        if (!input || typeof applyPromoCode !== 'function') return;
+        input.value = code;
+        applyPromoCode();
+    }
+    function hwToast_(msg) {
+        var t = document.getElementById('fx-toast');
+        if (!t) { t = document.createElement('div'); t.id = 'fx-toast'; t.className = 'fx-toast'; document.body.appendChild(t); }
+        t.textContent = msg;
+        t.classList.add('show');
+        clearTimeout(t.__timer);
+        t.__timer = setTimeout(function () { t.classList.remove('show'); }, 2600);
+    }
+    function hwTodayKey_() { var d = new Date(); return 'hw_egg_' + d.getFullYear() + (d.getMonth() + 1) + d.getDate(); }
+    function hwStore_(k, v) {
+        try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {}
+        return null;
+    }
+    function hwEsc_(s) { return String(s).replace(/[&<>"'\\]/g, ''); }
 
     // 分類列左右捲動（電腦版）
     function scrollCatNav(dx) {
@@ -1423,7 +1869,7 @@
                     '<div class="empty-actions"><button class="empty-btn" onclick="setCategory(\'all\')">看全部商品</button></div>');
                 return;
             }
-            let html = sections + `<div class="section-title"><i class="bi bi-fire me-2"></i>熱銷推薦</div><div class="row g-3 g-md-4 mb-4">`;
+            let html = sections + `<div class="section-title"><i class="bi bi-fire me-2"></i>熱銷推薦</div><div class="row g-3 g-md-4 mb-4 top10-grid">`;
             items.forEach(p => html += createProductCard(p)); html += `</div>` + unlabeledNoticeHtml();
             container.innerHTML = html;
             return;
@@ -1589,7 +2035,12 @@
             if (scnt) scnt.className = filterActive() ? 'badge rounded-pill ms-1' : '';
             if (scnt && filterActive()) { scnt.style.background = 'var(--primary)'; scnt.style.color = '#fff'; scnt.style.fontSize = '0.62rem'; }
         }
-        let html = '<button class="filter-open-btn' + (filterActive() ? ' on' : '') + '" onclick="openFilterModal()"><i class="bi bi-sliders"></i>篩選</button>';
+        let seen = true;
+        try { seen = localStorage.getItem('lawson_filter_seen_v1') === '1'; } catch (e) {}
+        const btnText = filterActive() ? '篩選條件' : '依月齡 / 品項篩選';
+        let html = '<button class="filter-open-btn' + (filterActive() ? ' on' : '') + '" onclick="openFilterModal()">'
+                 + '<i class="bi bi-sliders"></i>' + btnText
+                 + (seen || filterActive() ? '' : '<span class="newdot"></span>') + '</button>';
         if (filterState.month != null) html += '<span class="filter-chip">' + filterState.month + ' 個月寶寶 <span class="x" onclick="setFilterMonth(null)">✕</span></span>';
         if (filterState.type) html += '<span class="filter-chip">' + filterState.type + ' <span class="x" onclick="setFilterType(null)">✕</span></span>';
         bar.innerHTML = html;
@@ -1619,6 +2070,8 @@
             html += '</div></div>';
         }
         body.innerHTML = html;
+        try { localStorage.setItem('lawson_filter_seen_v1', '1'); } catch (e) {}
+        renderFilterBar();
         filterModal.show();
     }
     function setFilterMonth(m) { filterState.month = m; filterState.includeUnlabeled = false; afterFilterChange(); }
