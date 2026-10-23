@@ -383,6 +383,20 @@
         .stale-notice { max-width: 1200px; margin: 8px auto 4px auto; padding: 8px 14px; border-radius: 10px; background: #fdf6e9; border: 1px solid #f1dcb0; color: #8a6420; font-size: 0.8rem; line-height: 1.5; }
         .stale-notice a { color: #2f5d50; font-weight: 500; text-decoration: underline; }
 
+        /* ===== 🎟️ 券夾（結帳時自動帶出會員的券）===== */
+        .cpn-wrap { margin: 0 0 10px 0; }
+        .cpn-title { font-size: 0.82rem; font-weight: 700; color: var(--text-mid); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .cpn-title .cpn-off { font-weight: 500; font-size: 0.76rem; color: var(--text-light); cursor: pointer; }
+        .cpn-item { display: flex; align-items: center; border: 1.5px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 6px; cursor: pointer; background: #fff; transition: border-color .15s, box-shadow .15s; }
+        .cpn-item.sel { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(199,90,20,0.12); }
+        .cpn-amt { width: 72px; align-self: stretch; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.08rem; color: #fff; background: var(--primary); border-right: 2px dashed #fff; }
+        .cpn-item.hw .cpn-amt { background: #f08a24; color: #2b1a40; }
+        .cpn-info { flex: 1; padding: 8px 10px; min-width: 0; }
+        .cpn-name { font-size: 0.86rem; font-weight: 600; color: var(--text-dark); }
+        .cpn-exp { font-size: 0.72rem; color: var(--text-light); margin-top: 1px; }
+        .cpn-check { padding: 0 12px; font-size: 0.78rem; color: var(--text-light); white-space: nowrap; }
+        .cpn-item.sel .cpn-check { color: var(--primary); font-weight: 700; }
+        .cart-coupon-hint { font-size: 0.72rem; font-weight: 600; background: #ffd36b; color: #2b1a40; padding: 2px 8px; border-radius: 10px; margin-left: 8px; white-space: nowrap; }
         /* ======================================================
            🌕 中秋節慶主題（僅在 html.mf-on 時生效，其餘時間零影響）
            ====================================================== */
@@ -635,12 +649,8 @@
         @keyframes fxPoof { 0% { transform: scale(1); opacity: 1; } 60% { transform: scale(1.35); opacity: 0.6; } 100% { transform: scale(0.2); opacity: 0; } }
 
         /* 抓到幽靈的彈窗 */
-        .fx-egg-overlay { position: fixed; inset: 0; z-index: 3500; background: rgba(15, 10, 30, 0.62); display: flex; align-items: center; justify-content: center; padding: 16px;
-            opacity: 0; transition: opacity 0.25s ease; }
-        .fx-egg-overlay.show { opacity: 1; }
         .fx-egg-card { position: relative; width: 100%; max-width: 340px; background: #fffaf3; border-radius: 20px; padding: 26px 22px 20px 22px; text-align: center;
-            border: 2px solid #f08a24; box-shadow: 0 18px 50px rgba(0,0,0,0.5); color: #2b2238; transform: translateY(14px) scale(0.96); transition: transform 0.3s cubic-bezier(.2,.8,.3,1.2); }
-        .fx-egg-overlay.show .fx-egg-card { transform: none; }
+            border: 2px solid #f08a24; box-shadow: 0 18px 50px rgba(0,0,0,0.5); color: #2b2238; }
         .fx-egg-art { margin: -66px auto 6px auto; width: 96px; }
         .fx-egg-title { font-size: 1.2rem; font-weight: 700; color: #3b2a5a; }
         .fx-egg-sub { font-size: 0.86rem; color: #6a5f78; margin-top: 6px; line-height: 1.6; }
@@ -657,6 +667,55 @@
             padding: 8px 16px; border-radius: 18px; font-size: 0.85rem; opacity: 0; transition: opacity 0.25s, transform 0.25s; pointer-events: none; white-space: nowrap; }
         .fx-toast.show { opacity: 1; transform: translateX(-50%); }
 
+        /* 🕸️ 抓幽靈小遊戲 */
+        .hw-game { position: fixed; inset: 0; z-index: 3500; display: flex; flex-direction: column; opacity: 0; transition: opacity 0.25s ease;
+            background: radial-gradient(ellipse at 50% 30%, rgba(74,52,116,0.985) 0%, rgba(22,14,42,0.99) 70%); color: #f5effd; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .hw-game.show { opacity: 1; }
+        .hw-game.shell { background: rgba(15, 10, 30, 0.6); }
+        .hw-game-close { position: absolute; top: 12px; right: 12px; z-index: 5; width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(255,255,255,0.14); color: #fff; font-size: 1rem; cursor: pointer; }
+        .hw-game-top { text-align: center; padding: 22px 16px 4px 16px; flex-shrink: 0; }
+        .hw-game-title { font-size: 1.2rem; font-weight: 700; color: #ffd36b; letter-spacing: 0.04em; }
+        .hw-game-sub { font-size: 0.8rem; color: #cdc2e4; margin-top: 4px; }
+        .hw-dots { display: flex; justify-content: center; gap: 9px; margin-top: 12px; }
+        .hw-dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid #ffd36b; transition: background 0.2s, transform 0.2s; }
+        .hw-dot.on { background: #ffd36b; transform: scale(1.18); box-shadow: 0 0 10px rgba(255,211,107,0.7); }
+        .hw-game-msg { height: 24px; margin-top: 8px; font-size: 0.92rem; font-weight: 600; color: #fff; }
+        .hw-arena { position: relative; flex: 1; overflow: hidden; cursor: pointer; touch-action: none; }
+        .hw-target { position: absolute; left: 0; top: 0; width: 112px; height: 112px; padding: 8px; z-index: 2; cursor: pointer; touch-action: none;
+            transition: transform 0.55s cubic-bezier(.3,.7,.3,1); }
+        .hw-target-inner { animation: fxBob 2.4s ease-in-out infinite; }
+        .hw-target svg { display: block; filter: drop-shadow(0 0 16px rgba(255,211,107,0.7)); }
+        .hw-target.ouch svg { animation: hwOuch 0.32s ease; }
+        @keyframes hwOuch { 0% { transform: scale(1); } 30% { transform: scale(0.82) rotate(-10deg); } 70% { transform: scale(1.06) rotate(6deg); } 100% { transform: scale(1); } }
+        .hw-target.caught .hw-target-inner { animation: hwShake 0.22s linear infinite; }
+        @keyframes hwShake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-3px) rotate(-3deg); } 75% { transform: translateX(3px) rotate(3deg); } }
+        .hw-net { position: absolute; width: 100px; height: 125px; pointer-events: none; z-index: 3; transform-origin: 50% 85%; animation: hwSwing 0.5s ease-out forwards; }
+        .hw-net svg { width: 100%; height: 100%; display: block; }
+        .hw-net.hit svg { filter: drop-shadow(0 0 10px rgba(255,211,107,0.9)); }
+        @keyframes hwSwing { 0% { transform: rotate(-70deg) scale(0.9); opacity: 0; } 35% { transform: rotate(8deg) scale(1); opacity: 1; } 100% { transform: rotate(22deg) scale(1); opacity: 0; } }
+        .hw-capture { position: absolute; left: -16px; top: -34px; width: 144px; z-index: 4; pointer-events: none; animation: hwDrop 0.45s cubic-bezier(.3,.8,.4,1.2) forwards; }
+        .hw-capture svg { width: 100%; display: block; }
+        @keyframes hwDrop { from { transform: translateY(-220px) rotate(-25deg); opacity: 0; } to { transform: translateY(0) rotate(0); opacity: 1; } }
+        .hw-result { position: absolute; inset: 0; z-index: 6; display: flex; align-items: center; justify-content: center; padding: 70px 16px 16px 16px;
+            background: rgba(15, 10, 30, 0.5); opacity: 0; transition: opacity 0.3s ease; }
+        .hw-result.show { opacity: 1; }
+        .hw-result .fx-egg-card { transform: none; }
+        .fx-egg-btns .line { background: #06c755; border-color: #06c755; color: #fff; }
+        /* 折價券票券 */
+        .hw-ticket { position: relative; display: flex; margin: 14px 0 6px 0; border-radius: 12px; overflow: hidden; text-align: left; color: #fff;
+            background: linear-gradient(135deg, #3b2a5a, #5a3d86); box-shadow: 0 6px 16px rgba(59,42,90,0.3); }
+        .hw-ticket-l { width: 88px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 6px;
+            background: #f08a24; color: #2b1a40; border-right: 2px dashed rgba(255,255,255,0.75); }
+        .hw-ticket-cur { font-size: 0.7rem; font-weight: 600; }
+        .hw-ticket-amt { font-size: 1.55rem; font-weight: 800; line-height: 1.1; }
+        .hw-ticket-r { padding: 10px 12px; min-width: 0; }
+        .hw-ticket-name { font-size: 0.9rem; font-weight: 700; }
+        .hw-ticket-exp { font-size: 0.74rem; color: #e6dcf7; margin-top: 3px; }
+        .hw-ticket-tip { font-size: 0.7rem; color: #ffd36b; margin-top: 3px; }
+        .hw-ticket.used { filter: grayscale(0.75); opacity: 0.85; }
+        .hw-ticket-stamp { position: absolute; right: 10px; top: 50%; transform: translateY(-50%) rotate(-14deg); border: 2px solid #ff8080; color: #ff8080;
+            padding: 2px 9px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; background: rgba(255,255,255,0.08); }
         /* 尊重「減少動態效果」：拿掉所有飄浮與閃爍，彩蛋改由頁尾的小幽靈觸發 */
         @media (prefers-reduced-motion: reduce) {
             .fx-float-layer { display: none; }
@@ -670,11 +729,11 @@
     // 之後要加聖誕節、過年，只要在這裡加一筆，再寫對應的裝飾即可。
     //   start：開始日（含）　end：結束日（不含，這天 00:00 起消失）
     //   banner：進站橫幅（null = 不顯示）{ title, sub, notes:[{ text, strong }] }
-    //   egg：互動彩蛋（只有萬聖節使用）{ code: 後台建立的優惠碼名稱 }
+    //   egg：抓幽靈小遊戲（只有萬聖節使用）
     var FESTIVALS = [
         { id: 'halloween', name: '萬聖節', start: '2026-10-23', end: '2026-11-02',
           banner: null,
-          egg: { code: 'HALLOWEEN' } },
+          egg: true },   // 抓幽靈小遊戲；券的金額在後台「節慶抓幽靈券」設定
         { id: 'midautumn', name: '中秋節', start: '2026-09-15', end: '2026-09-29',
           banner: { title: '中秋佳節 · 月圓人團圓', sub: '樂森良選祝您闔家團圓、平安喜樂',
                     notes: [ { text: '9/25（五）– 9/27（日）店休', strong: true }, { text: '9/28（一）照常營業' } ] } }
@@ -781,7 +840,7 @@
 </div>
 
 <div class="cart-bar" id="cart-bar" onclick="openCartModal()">
-    <div class="d-flex align-items-center"><span class="badge bg-danger rounded-pill me-2 fs-5" id="cart-count">0</span><span class="fw-bold fs-5">去結帳</span></div><span class="cart-bar-total" id="cart-total">$0</span>
+    <div class="d-flex align-items-center"><span class="badge bg-danger rounded-pill me-2 fs-5" id="cart-count">0</span><span class="fw-bold fs-5">去結帳</span><span id="cart-coupon-hint" class="cart-coupon-hint" style="display:none;"></span></div><span class="cart-bar-total" id="cart-total">$0</span>
 </div>
 
 <div class="modal fade" id="memberModal" tabindex="-1">
@@ -845,6 +904,7 @@
                     <span class="text-danger fw-bold m-0" id="modal-yongqi-discount">-$0</span>
                 </div>
 
+                <div id="coupon-section" style="display:none;" class="px-3"></div>
                 <div id="promo-code-section" style="display:none;" class="px-3 mb-2">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-white text-danger border-end-0"><i class="bi bi-gift-fill"></i></span>
@@ -869,6 +929,10 @@
                 <div id="discount-display-row" class="d-flex justify-content-between align-items-center mb-1" style="display:none !important;">
                     <span class="text-success small fw-bold"><i class="bi bi-tag-fill me-1"></i>優惠碼折抵</span>
                     <span class="text-success fw-bold m-0" id="modal-discount-amount">-$0</span>
+                </div>
+                <div id="coupon-display-row" class="d-flex justify-content-between align-items-center mb-1" style="display:none !important;">
+                    <span class="text-success small fw-bold">🎟️ <span id="coupon-display-name">優惠券</span>折抵</span>
+                    <span class="text-success fw-bold m-0" id="modal-coupon-amount">-$0</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-secondary fw-bold">實付金額</span>
@@ -1158,10 +1222,10 @@
             var ft = document.createElement('div');
             ft.id = 'fx-footer'; ft.className = 'fx-footer';
             ft.innerHTML = '<div class="fx-footer-row">' + HW_SVG.pumpkin(44) + HW_SVG.candy(30) + HW_SVG.pumpkin(64, '#ffd36b') +
-                           '<span class="fx-footer-ghost" role="button" aria-label="抓幽靈" onclick="hwCatch_(this)">' + HW_SVG.ghost(40) + '</span>' +
+                           '<span class="fx-footer-ghost" role="button" aria-label="抓幽靈" onclick="hwStartGame_(this)">' + HW_SVG.ghost(40) + '</span>' +
                            HW_SVG.candy(26) + HW_SVG.pumpkin(38) + '</div>' +
                            '<div class="fx-footer-title">萬聖節快樂 Happy Halloween</div>' +
-                           '<div class="fx-footer-sub">看到發光的小幽靈，點一下有驚喜 👻</div>';
+                           '<div class="fx-footer-sub">看到發光的小幽靈，點它就能拿捕蟲網抓幽靈、贏折價券 👻</div>';
             layout.appendChild(ft);
         }
 
@@ -1184,12 +1248,8 @@
             hwScheduleLucky_(4000);
         }
 
-        // 4. 購物車開啟時，若客人是從彩蛋點「去購物車使用」，自動套用優惠碼
-        if (typeof openCartModal === 'function' && !openCartModal.__hw) {
-            var orig = openCartModal;
-            openCartModal = function () { orig.apply(this, arguments); try { hwAutoApply_(); } catch (e) {} };
-            openCartModal.__hw = true;
-        }
+        // 4. 訪客抓到幽靈後去登入 → 回來時自動領券
+        hwCheckPendingClaim_();
     }
 
     // ----- 幸運幽靈：每隔一段時間出現一次，停留約 9 秒 -----
@@ -1201,8 +1261,8 @@
     function hwShowLucky_() {
         var layer = document.getElementById('fx-float-layer');
         if (!layer) return;
-        // 有彈窗或購物車開著時先不打擾
-        if (document.querySelector('.fx-egg-overlay') || document.querySelector('.modal.show')) { hwScheduleLucky_(8000); return; }
+        // 遊戲中或購物車開著時先不打擾
+        if (hwGame || document.querySelector('.modal.show')) { hwScheduleLucky_(8000); return; }
         var old = document.getElementById('fx-lucky'); if (old) old.remove();
         var mobile = window.innerWidth < 576;
         var el = document.createElement('div');
@@ -1212,7 +1272,7 @@
         el.style.top = (30 + Math.random() * 38).toFixed(1) + 'vh';
         var firstTime = !hwStore_('hw_caught_ever');
         el.innerHTML = (firstTime ? '<span class="fx-lucky-tip">抓住我！</span>' : '') + '<div>' + HW_SVG.ghost(mobile ? 50 : 60, { candy: true }) + '</div>';
-        el.onclick = function (ev) { ev.stopPropagation(); hwCatch_(el); };
+        el.onclick = function (ev) { ev.stopPropagation(); hwStartGame_(el); };
         layer.appendChild(el);
         requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('show'); }); });
         setTimeout(function () {
@@ -1220,91 +1280,240 @@
             el.classList.remove('show');
             setTimeout(function () { if (el.parentNode) el.remove(); }, 700);
         }, 9000);
-        // 今天已經拿過優惠碼的客人，出現頻率降低
-        var gotToday = hwStore_(hwTodayKey_());
-        hwScheduleLucky_((gotToday ? 50000 : 22000) + Math.random() * 12000);
+        // 已經領過券的客人，出現頻率降低
+        var claimed = hwStore_('hw_claimed');
+        hwScheduleLucky_((claimed ? 50000 : 22000) + Math.random() * 12000);
     }
 
-    // ----- 抓到幽靈 -----
-    function hwCatch_(el) {
-        if (el && el.classList && el.id === 'fx-lucky') {
-            el.classList.add('poof');
-            setTimeout(function () { if (el.parentNode) el.remove(); }, 520);
-        }
+    // ----- 🕸️ 抓幽靈小遊戲：拿捕蟲網點中小幽靈 5 下就抓到 -----
+    var HW_HITS_NEED = 5;
+    var hwGame = null;
+    var HW_NET_SVG = '<svg viewBox="0 0 120 150" aria-hidden="true">' +
+        '<rect x="56" y="70" width="8" height="78" rx="4" fill="#9a6b3f"/><rect x="56" y="70" width="8" height="78" rx="4" fill="url(#hwWood)" opacity=".35"/>' +
+        '<defs><linearGradient id="hwWood" x1="0" x2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient></defs>' +
+        '<path d="M14 40 Q60 112 106 40" fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.85)" stroke-width="1.5"/>' +
+        '<path d="M30 46 Q60 98 90 46 M46 50 Q60 88 74 50 M24 58 L96 58 M32 72 L88 72 M44 86 L76 86" stroke="rgba(255,255,255,0.6)" stroke-width="1.2" fill="none"/>' +
+        '<ellipse cx="60" cy="40" rx="47" ry="15" fill="none" stroke="#ffd36b" stroke-width="5"/>' +
+        '</svg>';
+
+    // 罩住幽靈的網子（網兜在上、圈圈在下、握把斜斜伸出去）
+    var HW_CAPTURE_SVG = '<svg viewBox="0 0 144 170" aria-hidden="true">' +
+        '<rect x="112" y="118" width="9" height="56" rx="4.5" fill="#9a6b3f" transform="rotate(-38 116 122)"/>' +
+        '<path d="M16 124 Q12 22 72 14 Q132 22 128 124 Z" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.9)" stroke-width="1.6"/>' +
+        '<path d="M44 122 Q38 40 72 16 M100 122 Q106 40 72 16 M72 16 L72 124 M18 98 Q72 84 126 98 M22 70 Q72 54 122 70 M36 42 Q72 28 108 42" stroke="rgba(255,255,255,0.65)" stroke-width="1.3" fill="none"/>' +
+        '<ellipse cx="72" cy="124" rx="58" ry="11" fill="none" stroke="#ffd36b" stroke-width="5"/>' +
+        '</svg>';
+
+    function hwStartGame_(src) {
+        if (hwGame) return;
+        if (src && src.id === 'fx-lucky') { src.classList.add('poof'); setTimeout(function () { if (src.parentNode) src.remove(); }, 520); }
         hwStore_('hw_caught_ever', '1');
-        var f = ACTIVE_FESTIVAL || {};
-        var code = (f.egg && f.egg.code) ? String(f.egg.code).toUpperCase() : '';
-        var promoOn = !(typeof allData !== 'undefined' && allData && allData.promoEnabled === false);
-        var codes = (typeof allData !== 'undefined' && allData && allData.promoCodes) ? allData.promoCodes : {};
-        var valid = code && promoOn && codes[code] !== undefined;
-        var todayKey = hwTodayKey_();
-
-        if (!valid) { hwPopup_(null); return; }                       // 後台還沒建立優惠碼：送一顆糖就好
-        if (hwStore_(todayKey)) { hwToast_('🍬 抓到了！今天的優惠碼是 ' + code); return; }   // 今天已經給過
-        hwStore_(todayKey, '1');
-        hwPopup_({ code: code, amt: Number(codes[code]) || 0 });
-    }
-
-    function hwPopup_(info) {
-        var old = document.querySelector('.fx-egg-overlay'); if (old) old.remove();
         var ov = document.createElement('div');
-        ov.className = 'fx-egg-overlay';
-        ov.onclick = function (e) { if (e.target === ov) hwClosePopup_(); };
-        var body;
-        if (info) {
-            var loginNote = (typeof isLoggedIn !== 'undefined' && isLoggedIn) ? '結帳時輸入優惠碼即可折抵（一筆訂單限用一組）'
-                                                                            : '使用優惠碼需要先「LINE 登入」，登入後結帳時輸入即可折抵';
-            body = '<div class="fx-egg-title">👻 抓到了！不給糖就搗蛋</div>' +
-                   '<div class="fx-egg-sub">小幽靈留給你一組萬聖節優惠碼</div>' +
-                   '<div class="fx-egg-code" id="fx-egg-code">' + hwEsc_(info.code) + '</div>' +
-                   (info.amt > 0 ? '<div class="fx-egg-amt">結帳現折 $' + info.amt + '</div>' : '') +
-                   '<div class="fx-egg-note">' + loginNote + '</div>' +
-                   '<div class="fx-egg-btns"><button class="ghost" onclick="hwCopy_(\'' + hwEsc_(info.code) + '\')">複製優惠碼</button>' +
-                   '<button class="primary" onclick="hwGoCart_(\'' + hwEsc_(info.code) + '\')">去購物車使用</button></div>';
-        } else {
-            body = '<div class="fx-egg-title">👻 抓到了！</div>' +
-                   '<div class="fx-egg-sub">小幽靈送你一顆糖 🍬<br>祝你萬聖節快樂，不給糖就搗蛋！</div>' +
-                   '<div class="fx-egg-btns"><button class="primary" onclick="hwClosePopup_()">收下糖果</button></div>';
-        }
-        ov.innerHTML = '<div class="fx-egg-card" role="dialog" aria-label="萬聖節彩蛋">' +
-                         '<button class="fx-egg-close" aria-label="關閉" onclick="hwClosePopup_()">✕</button>' +
-                         '<div class="fx-egg-art">' + HW_SVG.ghost(96, { candy: true }) + '</div>' + body +
-                       '</div>';
+        ov.className = 'hw-game';
+        var dots = ''; for (var i = 0; i < HW_HITS_NEED; i++) dots += '<span class="hw-dot"></span>';
+        ov.innerHTML =
+            '<button class="hw-game-close" aria-label="離開遊戲">✕</button>' +
+            '<div class="hw-game-top">' +
+                '<div class="hw-game-title">拿起捕蟲網，抓住小幽靈！</div>' +
+                '<div class="hw-game-sub">點中小幽靈 ' + HW_HITS_NEED + ' 下就能抓到牠</div>' +
+                '<div class="hw-dots">' + dots + '</div>' +
+                '<div class="hw-game-msg" aria-live="polite">&nbsp;</div>' +
+            '</div>' +
+            '<div class="hw-arena">' +
+                '<div class="hw-target" role="button" aria-label="小幽靈"><div class="hw-target-inner">' + HW_SVG.ghost(96, { candy: true }) + '</div></div>' +
+            '</div>';
         document.body.appendChild(ov);
-        requestAnimationFrame(function () { requestAnimationFrame(function () { ov.classList.add('show'); }); });
+        var arena = ov.querySelector('.hw-arena');
+        var target = ov.querySelector('.hw-target');
+        hwGame = { ov: ov, arena: arena, target: target, hits: 0, done: false, wander: null };
+        ov.querySelector('.hw-game-close').onclick = function () { hwEndGame_(); };
+        target.addEventListener('pointerdown', function (e) { e.preventDefault(); e.stopPropagation(); hwHit_(e); });
+        arena.addEventListener('pointerdown', function (e) { hwMiss_(e); });
+        requestAnimationFrame(function () { requestAnimationFrame(function () { ov.classList.add('show'); hwMoveTarget_(true); }); });
+        hwGame.wander = setInterval(function () { hwMoveTarget_(false); }, 1500);
     }
-    function hwClosePopup_() {
-        var ov = document.querySelector('.fx-egg-overlay'); if (!ov) return;
+
+    function hwMoveTarget_(center) {
+        if (!hwGame || hwGame.done) return;
+        var a = hwGame.arena.getBoundingClientRect(), sz = 112;
+        var w = Math.max(a.width - sz, 10), h = Math.max(a.height - sz - 20, 10);
+        var x = center ? w / 2 : Math.random() * w;
+        var y = center ? h / 2 : Math.random() * h;
+        hwGame.target.style.transform = 'translate(' + x.toFixed(0) + 'px,' + y.toFixed(0) + 'px)';
+    }
+
+    function hwSwing_(clientX, clientY, hit) {
+        if (!hwGame) return;
+        var a = hwGame.arena.getBoundingClientRect();
+        var n = document.createElement('div');
+        n.className = 'hw-net' + (hit ? ' hit' : '');
+        n.style.left = (clientX - a.left - 50) + 'px';
+        n.style.top = (clientY - a.top - 50) + 'px';
+        n.innerHTML = HW_NET_SVG;
+        hwGame.arena.appendChild(n);
+        setTimeout(function () { if (n.parentNode) n.remove(); }, 520);
+    }
+
+    function hwMsg_(t) { if (hwGame) hwGame.ov.querySelector('.hw-game-msg').textContent = t; }
+
+    function hwHit_(e) {
+        if (!hwGame || hwGame.done) return;
+        hwSwing_(e.clientX, e.clientY, true);
+        hwGame.hits++;
+        var ds = hwGame.ov.querySelectorAll('.hw-dot');
+        for (var i = 0; i < ds.length; i++) ds[i].classList.toggle('on', i < hwGame.hits);
+        hwGame.target.classList.remove('ouch'); void hwGame.target.offsetWidth; hwGame.target.classList.add('ouch');
+        var left = HW_HITS_NEED - hwGame.hits;
+        if (left <= 0) { hwCaptured_(); return; }
+        hwMsg_(left === 1 ? '最後一下！' : (left === 2 ? '快抓到了！' : ['打中了！', '幽靈嚇一跳！', '再來！'][Math.floor(Math.random() * 3)]));
+        setTimeout(function () { hwMoveTarget_(false); }, 160);   // 被打中後躲開
+    }
+    function hwMiss_(e) {
+        if (!hwGame || hwGame.done) return;
+        hwSwing_(e.clientX, e.clientY, false);
+        hwMsg_(['撲空了～', '差一點！', '牠在那邊！'][Math.floor(Math.random() * 3)]);
+    }
+
+    function hwCaptured_() {
+        var g = hwGame; if (!g) return;
+        g.done = true; clearInterval(g.wander);
+        hwMsg_('抓到了！🎉');
+        var cap = document.createElement('div');
+        cap.className = 'hw-capture';
+        cap.innerHTML = HW_CAPTURE_SVG;
+        g.target.appendChild(cap);
+        g.target.classList.add('caught');
+        setTimeout(function () { hwReward_(); }, 1400);
+    }
+
+    function hwEndGame_() {
+        if (!hwGame) return;
+        clearInterval(hwGame.wander);
+        var ov = hwGame.ov; hwGame = null;
         ov.classList.remove('show');
         setTimeout(function () { if (ov.parentNode) ov.remove(); }, 260);
     }
-    function hwCopy_(code) {
-        var done = function () { hwToast_('已複製優惠碼 ' + code); };
-        try {
-            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(code).then(done, function () { hwCopyFallback_(code); done(); }); return; }
-        } catch (e) {}
-        hwCopyFallback_(code); done();
+
+    // ----- 🎟️ 抓到後：領券 -----
+    function hwCouponAmount_() { return (typeof allData !== 'undefined' && allData && Number(allData.hwCouponAmount) > 0) ? Number(allData.hwCouponAmount) : 0; }
+
+    function hwReward_() {
+        var amt = hwCouponAmount_();
+        if (!amt) { hwShowCard_('candy'); return; }
+        if (typeof isLoggedIn === 'undefined' || !isLoggedIn) { hwShowCard_('login', { amount: amt }); return; }
+        hwShowCard_('loading');
+        hwClaim_();
     }
-    function hwCopyFallback_(code) {
-        try { var t = document.createElement('textarea'); t.value = code; t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); } catch (e) {}
+
+    function hwClaim_() {
+        var token = '';
+        try { token = liff.getAccessToken() || ''; } catch (e) {}
+        if (!token) { hwShowCard_('error', { message: '登入資訊過期了，請重新登入 LINE 再領一次', relogin: true }); return; }
+        fetch(GAS_URL + '?page=claimFestivalCoupon&fx=halloween&at=' + encodeURIComponent(token) + '&t=' + Date.now())
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (!res) throw new Error('empty');
+                if (res.status === 'success' || res.status === 'already') {
+                    hwStore_('hw_claimed', '1');
+                    if (typeof loadMyCoupons === 'function') loadMyCoupons();
+                    hwShowCard_(res.status, res.coupon);
+                } else if (res.status === 'disabled') hwShowCard_('candy');
+                else if (res.status === 'ended') hwShowCard_('error', { message: res.message || '活動已結束' });
+                else hwShowCard_('error', { message: res.message || '領券失敗，請稍後再試', relogin: !!res.relogin });
+            })
+            .catch(function () { hwShowCard_('error', { message: '網路不太穩，券還沒領到，請再試一次', retry: true }); });
     }
-    function hwGoCart_(code) {
-        try { sessionStorage.setItem('hw_egg_code', code); } catch (e) {}
-        hwClosePopup_();
-        setTimeout(function () { if (typeof openCartModal === 'function') openCartModal(); }, 280);
+
+    function hwTicket_(c, stamp) {
+        return '<div class="hw-ticket' + (stamp ? ' used' : '') + '">' +
+                 '<div class="hw-ticket-l"><div class="hw-ticket-cur">折抵</div><div class="hw-ticket-amt">$' + (Number(c.amount) || 0) + '</div></div>' +
+                 '<div class="hw-ticket-r"><div class="hw-ticket-name">🎃 ' + (c.name || '萬聖節抓幽靈券') + '</div>' +
+                 '<div class="hw-ticket-exp">使用期限：' + (c.expiry || '2026/11/01') + '</div>' +
+                 '<div class="hw-ticket-tip">結帳時自動折抵，不用記代碼</div></div>' +
+                 (stamp ? '<div class="hw-ticket-stamp">' + stamp + '</div>' : '') +
+               '</div>';
     }
-    // 購物車打開時自動填入並套用（只在客人點過「去購物車使用」之後）
-    function hwAutoApply_() {
-        var code = null;
-        try { code = sessionStorage.getItem('hw_egg_code'); } catch (e) {}
-        if (!code) return;
-        if (typeof isLoggedIn === 'undefined' || !isLoggedIn) return;          // 訪客看得到登入提示
-        if (typeof allData !== 'undefined' && allData && allData.promoEnabled === false) return;
-        var input = document.getElementById('promo-code-input');
-        if (!input || typeof applyPromoCode !== 'function') return;
-        input.value = code;
-        applyPromoCode();
+
+    function hwShowCard_(type, info) {
+        info = info || {};
+        var g = hwGame;
+        if (!g) {   // 從「登入後自動領券」進來時，沒有遊戲畫面，開一個新的
+            hwStartGameShell_();
+            g = hwGame;
+        }
+        var html = '', hasCart = (typeof cart !== 'undefined' && cart && cart.length > 0);
+        var goBtn = hasCart ? '<button class="primary" onclick="hwEndGame_(); setTimeout(openCartModal, 280);">去結帳使用</button>'
+                            : '<button class="primary" onclick="hwEndGame_()">繼續逛逛</button>';
+        if (type === 'candy') {
+            html = '<div class="fx-egg-title">👻 抓到了！</div><div class="fx-egg-sub">小幽靈送你一顆糖 🍬<br>祝你萬聖節快樂，不給糖就搗蛋！</div>' +
+                   '<div class="fx-egg-btns"><button class="primary" onclick="hwEndGame_()">收下糖果</button></div>';
+        } else if (type === 'login') {
+            html = '<div class="fx-egg-title">👻 抓到了！</div><div class="fx-egg-sub">小幽靈留下一張折價券給你</div>' +
+                   hwTicket_({ amount: info.amount }) +
+                   '<div class="fx-egg-note">登入 LINE 就能把券收進你的券夾，結帳時自動折抵（每人限領一張）</div>' +
+                   '<div class="fx-egg-btns"><button class="ghost" onclick="hwEndGame_()">先不要</button><button class="primary line" onclick="hwLoginClaim_()">LINE 登入領券</button></div>';
+        } else if (type === 'loading') {
+            html = '<div class="fx-egg-title">👻 抓到了！</div><div class="fx-egg-sub"><span class="spinner-border spinner-border-sm me-2"></span>正在把券放進你的券夾…</div>';
+        } else if (type === 'success') {
+            html = '<div class="fx-egg-title">🎉 券已經放進你的券夾！</div>' + hwTicket_(info) +
+                   '<div class="fx-egg-note">下次結帳時，系統會自動幫你折抵，不用記任何代碼</div>' +
+                   '<div class="fx-egg-btns">' + goBtn + '</div>';
+        } else if (type === 'already') {
+            var st = info.state;
+            html = '<div class="fx-egg-title">👻 又抓到了！</div>' +
+                   '<div class="fx-egg-sub">' + (st === 'used' ? '你的萬聖節券已經用掉囉，謝謝支持！' : (st === 'available' ? '你已經領過囉，這張券還在你的券夾裡' : '這張券已經失效了')) + '</div>' +
+                   hwTicket_(info, st === 'used' ? '已使用' : (st === 'available' ? '' : '已失效')) +
+                   '<div class="fx-egg-btns">' + (st === 'available' ? goBtn : '<button class="primary" onclick="hwEndGame_()">好的</button>') + '</div>';
+        } else {
+            html = '<div class="fx-egg-title">😵 券還沒領到</div><div class="fx-egg-sub">' + (info.message || '請稍後再試') + '</div>' +
+                   '<div class="fx-egg-btns"><button class="ghost" onclick="hwEndGame_()">關閉</button>' +
+                   (info.relogin ? '<button class="primary line" onclick="hwLoginClaim_()">重新登入領券</button>'
+                                 : (info.retry ? '<button class="primary" onclick="hwShowCard_(\'loading\'); hwClaim_();">再試一次</button>' : '')) + '</div>';
+        }
+        var box = g.ov.querySelector('.hw-result');
+        if (!box) {
+            box = document.createElement('div');
+            box.className = 'hw-result';
+            g.ov.appendChild(box);
+        }
+        box.innerHTML = '<div class="fx-egg-card"><div class="fx-egg-art">' + HW_SVG.ghost(84, { candy: true }) + '</div>' + html + '</div>';
+        requestAnimationFrame(function () { box.classList.add('show'); });
     }
+
+    // 沒有遊戲畫面時（登入回來自動領券），只開一個空的遮罩用來放結果卡
+    function hwStartGameShell_() {
+        var ov = document.createElement('div');
+        ov.className = 'hw-game show shell';
+        ov.innerHTML = '<button class="hw-game-close" aria-label="關閉">✕</button>';
+        document.body.appendChild(ov);
+        hwGame = { ov: ov, done: true, wander: null };
+        ov.querySelector('.hw-game-close').onclick = function () { hwEndGame_(); };
+    }
+
+    // 訪客：記住「抓到了、待領券」，登入回來後自動領
+    function hwLoginClaim_() {
+        hwStore_('hw_pending_claim', String(Date.now()));
+        if (typeof loginWithLine === 'function') loginWithLine();
+    }
+    function hwCheckPendingClaim_() {
+        var t = Number(hwStore_('hw_pending_claim')) || 0;
+        if (!t) return;
+        if (Date.now() - t > 30 * 60 * 1000) { try { localStorage.removeItem('hw_pending_claim'); } catch (e) {} return; }
+        var tries = 0;
+        var timer = setInterval(function () {
+            tries++;
+            var ready = (typeof isLoggedIn !== 'undefined' && isLoggedIn) && (typeof allData !== 'undefined' && allData && allData.products);
+            if (ready || tries > 30) {
+                clearInterval(timer);
+                if (!ready) return;
+                try { localStorage.removeItem('hw_pending_claim'); } catch (e) {}
+                if (!hwCouponAmount_()) return;
+                hwShowCard_('loading');
+                hwClaim_();
+            }
+        }, 500);
+    }
+
     function hwToast_(msg) {
         var t = document.getElementById('fx-toast');
         if (!t) { t = document.createElement('div'); t.id = 'fx-toast'; t.className = 'fx-toast'; document.body.appendChild(t); }
@@ -1313,12 +1522,10 @@
         clearTimeout(t.__timer);
         t.__timer = setTimeout(function () { t.classList.remove('show'); }, 2600);
     }
-    function hwTodayKey_() { var d = new Date(); return 'hw_egg_' + d.getFullYear() + (d.getMonth() + 1) + d.getDate(); }
     function hwStore_(k, v) {
         try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {}
         return null;
     }
-    function hwEsc_(s) { return String(s).replace(/[&<>"'\\]/g, ''); }
 
     // 分類列左右捲動（電腦版）
     function scrollCatNav(dx) {
@@ -1405,7 +1612,7 @@
             await liff.init({ liffId: LIFF_ID }); 
             const forceGuest = localStorage.getItem('force_guest') === 'true';
             if (liff.isLoggedIn() && !forceGuest) { 
-                userProfile = await liff.getProfile(); isLoggedIn = true; updateUserUI(true);
+                userProfile = await liff.getProfile(); isLoggedIn = true; updateUserUI(true); loadMyCoupons();
                 favorites = JSON.parse(localStorage.getItem('pos_fav_' + userProfile.userId)) || [];
             } else { isLoggedIn = false; updateUserUI(false); } 
             
@@ -2365,10 +2572,75 @@
         if(!input) return;
         if (allData.promoCodes && allData.promoCodes[input]) {
             appliedPromo = { code: input, discount: Number(allData.promoCodes[input]) };
+            if (selectedCoupon) { selectedCoupon = null; couponOptOut = true; renderCouponSection(); }   // 優惠碼與優惠券擇一
             msgBox.innerHTML = `✅ 套用成功！已為您折抵 <span class="fw-bold">$${appliedPromo.discount}</span>`; msgBox.className = "text-success d-block mt-1"; updateCartUI();
         } else {
             appliedPromo = null; msgBox.innerText = `❌ 無效的優惠碼`; msgBox.className = "text-danger d-block mt-1"; updateCartUI();
         }
+    }
+
+    // ================= 🎟️ 券夾：會員的專屬券／節慶券，結帳時自動帶出 =================
+    let myCoupons = []; let selectedCoupon = null; let couponOptOut = false;
+    function loadMyCoupons() {
+        if (!isLoggedIn || !userProfile || !userProfile.userId) return;
+        fetch(GAS_URL + '?page=myCoupons&uid=' + encodeURIComponent(userProfile.userId) + '&t=' + Date.now())
+            .then(r => r.json())
+            .then(list => {
+                myCoupons = Array.isArray(list) ? list.filter(c => Number(c.amount) > 0) : [];
+                if (selectedCoupon && !myCoupons.some(c => c.couponId === selectedCoupon.couponId)) selectedCoupon = null;
+                updateCouponHint();
+                const modal = document.getElementById('cartModal');
+                if (modal && modal.classList.contains('show')) { renderCouponSection(); updateCartUI(); }
+            })
+            .catch(() => {});
+    }
+    // 打開購物車時：沒用優惠碼、也沒按過「不使用」，就自動選折最多的那張
+    function autoPickCoupon() {
+        if (!isLoggedIn || appliedPromo || couponOptOut || !myCoupons.length) return;
+        if (selectedCoupon && myCoupons.some(c => c.couponId === selectedCoupon.couponId)) return;
+        selectedCoupon = myCoupons.slice().sort((a, b) => b.amount - a.amount)[0];
+    }
+    function renderCouponSection() {
+        const box = document.getElementById('coupon-section'); if (!box) return;
+        if (!isLoggedIn || !myCoupons.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+        autoPickCoupon();
+        let html = '<div class="cpn-wrap"><div class="cpn-title"><span>🎟️ 我的券夾（' + myCoupons.length + ' 張可用）</span>' +
+                   (selectedCoupon ? '<span class="cpn-off" onclick="pickCoupon(null)">不使用</span>' : '') + '</div>';
+        myCoupons.forEach(c => {
+            const sel = selectedCoupon && selectedCoupon.couponId === c.couponId;
+            const exp = c.expiryFull || c.expiry;
+            html += '<div class="cpn-item' + (sel ? ' sel' : '') + (String(c.couponId).indexOf('HW-') === 0 ? ' hw' : '') + '" onclick="pickCoupon(\'' + String(c.couponId).replace(/'/g, '') + '\')">' +
+                      '<div class="cpn-amt">$' + Number(c.amount) + '</div>' +
+                      '<div class="cpn-info"><div class="cpn-name">' + (c.name || '專屬優惠券') + '</div><div class="cpn-exp">' + (exp ? '使用期限：' + exp : '無使用期限') + '</div></div>' +
+                      '<div class="cpn-check">' + (sel ? '✓ 使用中' : '使用') + '</div></div>';
+        });
+        html += '</div>';
+        box.innerHTML = html; box.style.display = 'block';
+    }
+    function pickCoupon(id) {
+        if (!id) { selectedCoupon = null; couponOptOut = true; }
+        else {
+            const c = myCoupons.find(x => x.couponId === id);
+            if (selectedCoupon && c && selectedCoupon.couponId === c.couponId) { selectedCoupon = null; couponOptOut = true; }
+            else {
+                selectedCoupon = c || null; couponOptOut = false;
+                // 優惠券與優惠碼擇一使用
+                if (appliedPromo) {
+                    appliedPromo = null;
+                    const inp = document.getElementById('promo-code-input'); if (inp) inp.value = '';
+                    const msg = document.getElementById('promo-msg'); if (msg) { msg.innerText = '已改用優惠券（優惠券與優惠碼擇一使用）'; msg.className = 'text-muted d-block mt-1'; }
+                }
+            }
+        }
+        renderCouponSection(); updateCartUI();
+    }
+    // 底部購物車列提示「有券可折」
+    function updateCouponHint() {
+        const el = document.getElementById('cart-coupon-hint'); if (!el) return;
+        if (isLoggedIn && myCoupons.length) {
+            const best = myCoupons.reduce((m, c) => Math.max(m, Number(c.amount) || 0), 0);
+            el.textContent = '🎟️ 有券可折 $' + best; el.style.display = 'inline-block';
+        } else el.style.display = 'none';
     }
 
     function updateCartUI() { 
@@ -2407,6 +2679,16 @@
             finalTotal -= appliedPromo.discount; if(finalTotal < 0) finalTotal = 0;
             document.getElementById('modal-discount-amount').innerText = `-$${appliedPromo.discount}`; discountRow.style.setProperty("display", "flex", "important");
         } else { discountRow.style.setProperty("display", "none", "important"); }
+        const couponRow = document.getElementById('coupon-display-row');
+        if (couponRow) {
+            if (selectedCoupon && isLoggedIn && count > 0) {
+                const use = Math.min(Number(selectedCoupon.amount) || 0, Math.max(finalTotal, 0));
+                finalTotal -= use;
+                document.getElementById('coupon-display-name').innerText = selectedCoupon.name || '優惠券';
+                document.getElementById('modal-coupon-amount').innerText = '-$' + use;
+                couponRow.style.setProperty("display", "flex", "important");
+            } else couponRow.style.setProperty("display", "none", "important");
+        }
         
         let pointsContainer = document.getElementById('points-alert-container');
         if (finalTotal > 0) {
@@ -2445,7 +2727,7 @@
         }
     }
 
-    function openCartModal() { appliedPromo = null; document.getElementById('promo-code-input').value = ''; document.getElementById('promo-msg').innerText = ''; renderCartModal(); cartModal.show(); }
+    function openCartModal() { appliedPromo = null; couponOptOut = false; document.getElementById('promo-code-input').value = ''; document.getElementById('promo-msg').innerText = ''; renderCartModal(); cartModal.show(); loadMyCoupons(); }
     
     function renderCartModal() { 
         const body = document.getElementById('cart-modal-body'); const loginPrompt = document.getElementById('guest-login-prompt'); const submitBtn = document.getElementById('btn-submit-order'); const promoSec = document.getElementById('promo-code-section');
@@ -2453,6 +2735,7 @@
         const promoOn = !(allData && allData.promoEnabled === false);
         if (isLoggedIn) { loginPrompt.style.display = 'none'; promoSec.style.display = promoOn ? 'block' : 'none'; if (!promoOn) appliedPromo = null; submitBtn.innerText = "送出訂單"; submitBtn.classList.remove('btn-secondary'); submitBtn.classList.add('btn-confirm'); } 
         else { loginPrompt.style.display = 'block'; promoSec.style.display = 'none'; appliedPromo = null; submitBtn.innerText = "以訪客身分送單"; submitBtn.classList.remove('btn-confirm'); submitBtn.classList.add('btn-secondary'); }
+        renderCouponSection();
         updateCartUI();
         if (cart.length === 0) { body.innerHTML = '<div class="text-center py-4 text-muted">購物車是空的</div>'; return; } 
         let html = ''; 
@@ -2556,7 +2839,14 @@
         if (window.currentYqDiscount > 0) itemsText += `, [永圻滿件95折] 折抵 $${window.currentYqDiscount}`;
         if (appliedPromo) { finalTotal -= appliedPromo.discount; if(finalTotal < 0) finalTotal = 0; itemsText += `, [優惠碼 ${appliedPromo.code}] 折抵 $${appliedPromo.discount}`; }
 
-        const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: itemsText, total: finalTotal, cartItems: cart, contactName: cName, contactPhone: cPhone } };
+        // 券由後端驗證＋核銷（屬本人、未用、未過期），無效時後端會自動補回金額
+        let usedCoupon = null, couponClaimed = 0;
+        if (selectedCoupon && isLoggedIn) {
+            couponClaimed = Math.min(Number(selectedCoupon.amount) || 0, Math.max(finalTotal, 0));
+            if (couponClaimed > 0) { usedCoupon = selectedCoupon; finalTotal -= couponClaimed; }
+        }
+        const orderData = { action: 'createOrder', order: { userId: userProfile.userId, displayName: userProfile.displayName, itemsStr: itemsText, total: finalTotal, cartItems: cart, contactName: cName, contactPhone: cPhone,
+                            couponId: usedCoupon ? usedCoupon.couponId : '', couponClaimed: couponClaimed } };
 
         const sentAt = Date.now();
         const loaderEl = document.getElementById('loader');
@@ -2567,14 +2857,16 @@
             .then(() => {
                 // no-cors 收不到回應，因此主動回頭查驗訂單是否真的寫入
                 if (loadText) loadText.innerText = '確認訂單中...';
-                return verifyOrder(sentAt, finalTotal, 0);
+                return verifyOrder(sentAt, usedCoupon ? '' : finalTotal, 0);   // 用券時金額以後端核銷結果為準，不比對金額
             })
             .then(res => {
                 loaderEl.style.display = 'none';
                 isSubmitting = false; if (submitBtn) submitBtn.disabled = false;
                 if (res && res.found) {
                     // 確認訂單存在才清空購物車
-                    cart = []; appliedPromo = null; saveCartToLocal(); updateCartUI(); renderMenu();
+                    cart = []; appliedPromo = null;
+                    if (usedCoupon) { myCoupons = myCoupons.filter(c => c.couponId !== usedCoupon.couponId); selectedCoupon = null; updateCouponHint(); }
+                    saveCartToLocal(); updateCartUI(); renderMenu();
                     const idEl = document.getElementById('success-order-id');
                     if (idEl && res.orderId) idEl.innerText = '訂單編號：' + String(res.orderId).slice(-6);
                     orderSuccessModal.show();
