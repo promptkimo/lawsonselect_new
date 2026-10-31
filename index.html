@@ -532,6 +532,9 @@
         /* 功能鍵：金色圈＋LINE 加一圈冬青 */
         html.fx-christmas .fx-menu-ico { position: relative; display: inline-block; margin-bottom: 8px; line-height: 0; }
         html.fx-christmas .fx-menu-ico .menu-btn-img { margin-bottom: 0; border-radius: 50%; box-shadow: 0 0 0 2.5px #c9a227, 0 4px 12px rgba(201,162,39,0.35); }
+        /* 聖誕版 Cooper 圖：徽章只佔圖的 80%（帽子、鹿角會超出圓框），所以放大一點、拿掉外圈，不裁成圓形 */
+        html.fx-christmas .fx-menu-ico .menu-btn-img.fx-xm-icon { width: 70px; height: 70px; margin: -7px; border-radius: 0; box-shadow: none; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.15)); }
+        @media (min-width: 768px) { html.fx-christmas .fx-menu-ico .menu-btn-img.fx-xm-icon { width: 88px; height: 88px; margin: -9px; } }
         .fx-acc.holly { width: 56%; right: -18%; bottom: -10%; transform: rotate(-8deg); }
         .fx-acc.bell { width: 40%; left: -14%; top: -14%; transform-origin: 50% 0; animation: fxSwing 2.2s ease-in-out infinite; }
 
@@ -1443,7 +1446,7 @@
         map.forEach(function (m) {
             var url = fxDriveImg_(m[1]); if (!url) return;
             var it = document.querySelector('.quick-menu .menu-item[onclick^="' + m[0] + '"] .menu-btn-img');
-            if (it) { var pre = new Image(); pre.onload = function () { it.src = url; }; pre.referrerPolicy = 'no-referrer'; pre.src = url; }
+            if (it) { var pre = new Image(); pre.onload = function () { it.src = url; it.classList.add('fx-xm-icon'); }; pre.referrerPolicy = 'no-referrer'; pre.src = url; }
         });
         var items = document.querySelectorAll('.quick-menu .menu-item');
         for (var q = 0; q < items.length; q++) {
