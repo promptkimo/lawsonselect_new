@@ -484,6 +484,132 @@
             .mf-banner-sub { font-size: 0.76rem; }
         }
         /* ======================================================
+           🎄 聖誕節主題（僅在 html.fx-christmas 時生效）
+           風格：溫暖北歐聖誕 — 奶油白底、酒紅、松綠、金色；頂部松綠雪景＋燈串
+           ====================================================== */
+        .xm-loader-deco { display: none; }
+        html.fx-christmas {
+            --primary: #b3283a;        /* 酒紅 */
+            --primary-soft: #d0556a;
+            --accent: #2f6b4f;         /* 松綠 */
+            --app-bg: #fbf6ee;
+            --xm-green: #1f4d3a;
+            --xm-green-2: #2f6b4f;
+            --xm-red: #b3283a;
+            --xm-gold: #c9a227;
+            --xm-gold-light: #f3c75f;
+        }
+        html.fx-christmas body { background-color: #fbf6ee;
+            background-image: radial-gradient(#ece3d3 1.2px, transparent 1.3px), radial-gradient(#ece3d3 1px, transparent 1.1px);
+            background-size: 46px 46px, 46px 46px; background-position: 0 0, 23px 23px; }
+
+        /* 頂部松綠雪景帶（跟著頁面捲走） */
+        .xm-hero { position: absolute; left: 0; right: 0; top: 0; height: 300px; z-index: 0; pointer-events: none; overflow: hidden;
+            background: radial-gradient(ellipse at 50% -20%, #3d7d5d 0%, rgba(61,125,93,0) 60%), linear-gradient(180deg, #1f4d3a 0%, #2a5f47 100%);
+            border-bottom-left-radius: 50% 34px; border-bottom-right-radius: 50% 34px; }
+        .xm-hero::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 26px;
+            background: radial-gradient(circle at 20px -6px, transparent 20px, #fbf6ee 21px) repeat-x; background-size: 40px 26px; opacity: 0.9; }
+        @media (min-width: 768px) { .xm-hero { height: 330px; } }
+        .xm-flake { position: absolute; top: -12px; color: #fff; opacity: 0.85; animation: xmSnow linear infinite; will-change: transform; }
+        @keyframes xmSnow { from { transform: translate(0, -10px) rotate(0deg); } to { transform: translate(var(--sway, 20px), 320px) rotate(220deg); } }
+        /* 燈串 */
+        .xm-lights { position: absolute; left: 0; right: 0; top: 0; height: 40px; z-index: 1; pointer-events: none; overflow: hidden; }
+        .xm-wire { position: absolute; left: 0; top: 0; width: 100%; height: 30px; }
+        .xm-bulb { position: absolute; width: 12px; height: 18px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; animation: xmTwinkle 1.6s ease-in-out infinite; }
+        .xm-bulb::before { content: ''; position: absolute; left: 2px; top: -4px; width: 6px; height: 5px; background: #4a4a4a; border-radius: 1px; }
+        @keyframes xmTwinkle { 0%,100% { opacity: 1; filter: brightness(1.2) saturate(1.2); } 50% { opacity: 0.6; filter: brightness(0.85); } }
+
+        html.fx-christmas .marquee-container { background: #b3283a; color: #fff; border-bottom: 2px solid #c9a227; }
+        html.fx-christmas .marquee-content::before { content: '🎄 '; }
+        html.fx-christmas .marquee-content::after { content: ' 🎁'; }
+        html.fx-christmas #update-time-banner { background: transparent !important; color: #d5e8dc !important; position: relative; z-index: 1; padding-top: 34px !important; }
+        html.fx-christmas .quick-menu { border: 1px solid rgba(201,162,39,0.45); box-shadow: 0 10px 30px rgba(15,40,28,0.28); }
+        /* 白卡兩個上角：冬青葉 */
+        html.fx-christmas .quick-menu::before, html.fx-christmas .quick-menu::after { content: ''; position: absolute; top: -12px; width: 56px; height: 40px; pointer-events: none; z-index: 3;
+            background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 50'%3E%3Cpath d='M34 26C24 10 8 12 3 6c2 9 0 14 6 18-5 2-6 6-4 10 8-6 18-2 29-8z' fill='%232f6b4f'/%3E%3Cpath d='M36 26c10-16 26-14 31-20-2 9 0 14-6 18 5 2 6 6 4 10-8-6-18-2-29-8z' fill='%231f4d3a'/%3E%3Ccircle cx='31' cy='30' r='6' fill='%23c8243a'/%3E%3Ccircle cx='41' cy='30' r='6' fill='%23b3283a'/%3E%3Ccircle cx='36' cy='38' r='6' fill='%23d63649'/%3E%3Ccircle cx='29' cy='28' r='1.8' fill='%23fff' opacity='.7'/%3E%3C/svg%3E"); }
+        html.fx-christmas .quick-menu::before { left: 10px; transform: rotate(-12deg); }
+        html.fx-christmas .quick-menu::after { right: 10px; transform: rotate(12deg) scaleX(-1); }
+        /* 功能鍵：金色圈＋LINE 加一圈冬青 */
+        html.fx-christmas .fx-menu-ico { position: relative; display: inline-block; margin-bottom: 8px; line-height: 0; }
+        html.fx-christmas .fx-menu-ico .menu-btn-img { margin-bottom: 0; border-radius: 50%; box-shadow: 0 0 0 2.5px #c9a227, 0 4px 12px rgba(201,162,39,0.35); }
+        .fx-acc.holly { width: 56%; right: -18%; bottom: -10%; transform: rotate(-8deg); }
+        .fx-acc.bell { width: 40%; left: -14%; top: -14%; transform-origin: 50% 0; animation: fxSwing 2.2s ease-in-out infinite; }
+
+        html.fx-christmas .cat-pill.active { background: #b3283a; border-color: #b3283a; color: #fff; box-shadow: 0 3px 10px rgba(179,40,58,0.3); }
+        html.fx-christmas .section-title { border-left-color: #c9a227; }
+        html.fx-christmas .section-title::after { content: ' 🎄'; }
+        html.fx-christmas .product-card:hover { border-color: #c9a227; box-shadow: 0 8px 24px rgba(201,162,39,0.22); }
+        html.fx-christmas .top10-grid .product-card::after { content: ''; position: absolute; left: 8px; top: 124px; width: 40px; height: 32px; z-index: 12; pointer-events: none;
+            background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 50'%3E%3Cpath d='M32 22C22 6 4 6 8 18c3 8 16 7 24 4zM32 22c10-16 28-16 24-4-3 8-16 7-24 4z' fill='%23d4ae2e' stroke='%23a8841c' stroke-width='1.5'/%3E%3Cpath d='M30 24l-10 22 7-3 3 6 3-24zM34 24l10 22-7-3-3 6-3-24z' fill='%23c9a227' stroke='%23a8841c' stroke-width='1.2'/%3E%3Ccircle cx='32' cy='22' r='5' fill='%23e8c24a' stroke='%23a8841c' stroke-width='1.5'/%3E%3C/svg%3E");
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2)); }
+        @media (min-width: 768px) { html.fx-christmas .top10-grid .product-card::after { top: 182px; width: 46px; height: 36px; } }
+        html.fx-christmas .cart-bar { background: rgba(31, 77, 58, 0.97); border: 1.5px solid #c9a227; box-shadow: 0 8px 24px rgba(15,40,28,0.35); }
+        html.fx-christmas .cart-bar-total { color: #f3c75f; }
+        html.fx-christmas .cart-bar > div::before { content: ''; display: inline-block; width: 28px; height: 28px; margin-right: 8px; flex-shrink: 0;
+            background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='8' y='26' width='48' height='32' rx='4' fill='%23d63649'/%3E%3Crect x='5' y='18' width='54' height='12' rx='3' fill='%23b3283a'/%3E%3Crect x='28' y='18' width='8' height='40' fill='%23f3c75f'/%3E%3Cpath d='M32 18C24 6 12 10 18 17c3 3 10 2 14 1zM32 18c8-12 20-8 14-1-3 3-10 2-14 1z' fill='%23f3c75f'/%3E%3C/svg%3E"); }
+        html.fx-christmas .cart-bar > div:has(.cart-pop)::before { animation: fxHop 0.5s ease; }
+        /* 載入畫面：聖誕樹＋禮物，進度條是拐杖糖條紋 */
+        html.fx-christmas #loader { background: radial-gradient(ellipse at 50% 40%, #fffdf8 0%, #f6efe2 75%); }
+        html.fx-christmas .xm-loader-deco { display: block; position: absolute; bottom: 2px; z-index: 0; }
+        html.fx-christmas .xm-loader-deco.tree { left: calc(50% - 150px); width: 78px; }
+        html.fx-christmas .xm-loader-deco.gift { left: calc(50% + 86px); width: 46px; }
+        html.fx-christmas .loader-img { position: relative; z-index: 1; }
+        html.fx-christmas .load-bar-fill { background: repeating-linear-gradient(45deg, #b3283a 0 8px, #fff 8px 16px); }
+        /* 頁尾雪景小鎮 */
+        html.fx-christmas .fx-footer { color: #6b6b6b; }
+        html.fx-christmas .fx-footer-title { color: #b3283a; }
+        html.fx-christmas .fx-footer-sub { color: #8a8a8a; }
+        .xm-footer-gift { cursor: pointer; animation: fxBob 3s ease-in-out infinite; }
+
+        /* 雪橇（偶爾飛過，掉下閃亮的禮物） */
+        .xm-sleigh { position: absolute; top: 9vh; left: -220px; width: 200px; animation: xmFly 9s linear forwards; pointer-events: none; }
+        .xm-sleigh svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); }
+        @keyframes xmFly { 0% { transform: translate(0, 0) rotate(-4deg); } 50% { transform: translate(calc(50vw + 110px), -18px) rotate(2deg); } 100% { transform: translate(calc(100vw + 260px), 10px) rotate(-3deg); } }
+        .xm-drop { position: absolute; pointer-events: auto; cursor: pointer; padding: 8px; -webkit-tap-highlight-color: transparent;
+            transition: top 3.2s cubic-bezier(.25,.6,.4,1), opacity 0.6s ease; }
+        .xm-drop > div { animation: fxBob 2.4s ease-in-out infinite; }
+        .xm-drop svg { display: block; filter: drop-shadow(0 0 12px rgba(243,199,95,0.95)); }
+        .xm-drop .fx-lucky-tip { background: #b3283a; color: #fff; }
+        .xm-drop .fx-lucky-tip::after { border-top-color: #b3283a; }
+        .xm-drop.gone { opacity: 0; pointer-events: none; }
+        .xm-page-flake { position: absolute; top: -20px; color: #b9cde3; animation: xmSnowPage linear infinite; }
+        @keyframes xmSnowPage { from { transform: translate(0, 0) rotate(0); } to { transform: translate(var(--sway, 30px), 110vh) rotate(260deg); } }
+
+        /* 🎁 接禮物小遊戲 */
+        .hw-game.xm { background: radial-gradient(ellipse at 50% 20%, rgba(47,107,79,0.985) 0%, rgba(18,46,34,0.99) 70%); }
+        .hw-game.xm .hw-game-title { color: #f3c75f; }
+        .hw-game.xm .hw-game-sub { color: #d5e8dc; }
+        .hw-game.xm .hw-dot { border-color: #f3c75f; }
+        .hw-game.xm .hw-dot.on { background: #f3c75f; }
+        .xm-fall { position: absolute; top: 0; width: 84px; padding: 10px; cursor: pointer; z-index: 2; touch-action: none;
+            animation: xmFall var(--dur, 3.4s) linear forwards; }
+        .xm-fall svg { display: block; width: 100%; filter: drop-shadow(0 0 10px rgba(243,199,95,0.6)); pointer-events: none; }
+        @keyframes xmFall { from { transform: translateY(-100px) rotate(var(--r0, -12deg)); } to { transform: translateY(var(--h, 700px)) rotate(var(--r1, 14deg)); } }
+        .xm-fall.got { animation: none; transition: transform 0.35s ease, opacity 0.35s ease; opacity: 0; pointer-events: none; }
+        .xm-plus { position: absolute; z-index: 3; color: #f3c75f; font-weight: 800; font-size: 1.3rem; pointer-events: none; animation: xmPlus 0.8s ease-out forwards; }
+        @keyframes xmPlus { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-50px); opacity: 0; } }
+        .xm-big { position: absolute; left: 50%; top: 42%; width: 150px; margin-left: -75px; margin-top: -75px; z-index: 4; animation: hwShake 0.22s linear infinite; }
+        .xm-big svg { width: 100%; display: block; overflow: visible; filter: drop-shadow(0 0 24px rgba(243,199,95,0.9)); }
+        .xm-big .lid { transition: transform 0.5s cubic-bezier(.3,.8,.4,1.3); transform-origin: 50% 100%; }
+        .xm-big.open { animation: none; }
+        .xm-big.open .lid { transform: translate(18px, -46px) rotate(24deg); }
+        .xm-spark { position: absolute; left: 50%; top: 42%; width: 8px; height: 8px; border-radius: 50%; background: #f3c75f; z-index: 3; pointer-events: none; animation: xmSpark 0.9s ease-out forwards; }
+        @keyframes xmSpark { from { transform: translate(0, 0) scale(1); opacity: 1; } to { transform: translate(var(--x), var(--y)) scale(0.3); opacity: 0; } }
+        /* 結果卡、票券改成聖誕配色 */
+        html.fx-christmas .fx-egg-card { border-color: #b3283a; }
+        html.fx-christmas .fx-egg-title { color: #1f4d3a; }
+        html.fx-christmas .fx-egg-btns .primary { background: #b3283a; border-color: #b3283a; }
+        html.fx-christmas .fx-egg-btns .primary.line { background: #06c755; border-color: #06c755; }
+        html.fx-christmas .fx-egg-btns .ghost { color: #1f4d3a; border-color: #1f4d3a; }
+        html.fx-christmas .hw-ticket { background: linear-gradient(135deg, #1f4d3a, #2f6b4f); box-shadow: 0 6px 16px rgba(31,77,58,0.3); }
+        html.fx-christmas .hw-ticket-l { background: #b3283a; color: #fff; }
+        html.fx-christmas .hw-ticket-tip { color: #f3c75f; }
+        .cpn-item.xm .cpn-amt { background: #b3283a; }
+        @media (prefers-reduced-motion: reduce) {
+            .xm-flake, .xm-page-flake, .xm-bulb, .xm-footer-gift, .fx-acc.bell { animation: none !important; }
+            .xm-float-layer { display: none; }
+        }
+        /* ======================================================
            🎃 萬聖節主題（僅在 html.fx-halloween 時生效，其餘時間零影響）
            做法：整頁換成「夜空」配色；商品卡、彈窗等「白底區塊」改用奶油色，照片才看得清楚
            ====================================================== */
@@ -751,11 +877,18 @@
     // 之後要加聖誕節、過年，只要在這裡加一筆，再寫對應的裝飾即可。
     //   start：開始日（含）　end：結束日（不含，這天 00:00 起消失）
     //   banner：進站橫幅（null = 不顯示）{ title, sub, notes:[{ text, strong }] }
-    //   egg：抓幽靈小遊戲（只有萬聖節使用）
+    //   egg：節慶小遊戲（萬聖節抓幽靈、聖誕節接禮物）
+    //   icons：節慶期間換掉上方功能鍵的圖（只有聖誕節使用）
     var FESTIVALS = [
         { id: 'halloween', name: '萬聖節', start: '2026-10-23', end: '2026-11-02',
           banner: null,
-          egg: true },   // 抓幽靈小遊戲；券的金額在後台「節慶抓幽靈券」設定
+          egg: true },   // 抓幽靈小遊戲；券的金額在後台「節慶小遊戲折價券」設定
+        { id: 'christmas', name: '聖誕節', start: '2026-11-20', end: '2026-12-27',
+          banner: null,
+          egg: true,     // 接禮物小遊戲；券的金額在後台設定（預設 $50）
+          // 聖誕版 Cooper 圖：跟 index.html 放在同一個資料夾的圖檔，也可以改貼雲端硬碟的分享連結
+          // 圖檔讀不到時會自動沿用原本的圖，不會出現破圖
+          icons: { checkout: 'xm_checkout.png', orders: 'xm_orders.png', support: 'xm_support.png' } },
         { id: 'midautumn', name: '中秋節', start: '2026-09-15', end: '2026-09-29',
           banner: { title: '中秋佳節 · 月圓人團圓', sub: '樂森良選祝您闔家團圓、平安喜樂',
                     notes: [ { text: '9/25（五）– 9/27（日）店休', strong: true }, { text: '9/28（一）照常營業' } ] } }
@@ -1095,6 +1228,7 @@
             if (!ACTIVE_FESTIVAL) return;
             if (ACTIVE_FESTIVAL.id === 'midautumn') initMidAutumn_(ACTIVE_FESTIVAL);
             else if (ACTIVE_FESTIVAL.id === 'halloween') initHalloween_(ACTIVE_FESTIVAL);
+            else if (ACTIVE_FESTIVAL.id === 'christmas') initChristmas_(ACTIVE_FESTIVAL);
         } catch (e) { console.warn('節慶裝飾載入失敗（不影響購物）:', e); }
     }
 
@@ -1191,6 +1325,287 @@
         requestAnimationFrame(function () {
             requestAnimationFrame(function () { b.classList.remove('mf-enter'); });
         });
+    }
+
+    // ---------- 🎄 聖誕節：雪景、燈串、雪橇送禮、接禮物小遊戲 ----------
+    var XM_SVG = {
+        gift: function (w, c) {
+            c = c || {};
+            var box = c.box || '#d63649', lid = c.lid || '#b3283a', rib = c.rib || '#f3c75f';
+            return '<svg width="' + w + '" viewBox="0 0 64 64" aria-hidden="true">' +
+                   '<rect x="8" y="26" width="48" height="32" rx="4" fill="' + box + '"/><rect x="28" y="26" width="8" height="32" fill="' + rib + '"/>' +
+                   '<g class="lid"><rect x="5" y="18" width="54" height="12" rx="3" fill="' + lid + '"/><rect x="28" y="18" width="8" height="12" fill="' + rib + '"/>' +
+                   '<path d="M32 18C24 6 12 10 18 17c3 3 10 2 14 1zM32 18c8-12 20-8 14-1-3 3-10 2-14 1z" fill="' + rib + '"/><circle cx="32" cy="18" r="3.4" fill="' + (c.knot || '#e0b13c') + '"/></g></svg>';
+        },
+        tree: function (w) {
+            return '<svg width="' + w + '" viewBox="0 0 60 80" aria-hidden="true"><rect x="26" y="66" width="8" height="12" rx="2" fill="#7a5233"/>' +
+                   '<path d="M30 6 L52 40 H40 L56 66 H4 L20 40 H8 Z" fill="#2f6b4f"/><path d="M30 6 L44 28 H16 Z" fill="#3d7d5d"/>' +
+                   '<circle cx="22" cy="48" r="3" fill="#d63649"/><circle cx="38" cy="54" r="3" fill="#f3c75f"/><circle cx="31" cy="34" r="2.6" fill="#f3c75f"/><circle cx="42" cy="44" r="2.6" fill="#d63649"/><circle cx="17" cy="60" r="2.6" fill="#f3c75f"/>' +
+                   '<path d="M30 0 l2.4 5 5.4.6-4 3.7 1.1 5.4-4.9-2.8-4.9 2.8 1.1-5.4-4-3.7 5.4-.6z" fill="#f3c75f"/></svg>';
+        },
+        snowman: function (w) {
+            return '<svg width="' + w + '" viewBox="0 0 50 70" aria-hidden="true"><circle cx="25" cy="50" r="17" fill="#fff" stroke="#dfe7ee" stroke-width="1.5"/><circle cx="25" cy="24" r="12" fill="#fff" stroke="#dfe7ee" stroke-width="1.5"/>' +
+                   '<rect x="15" y="6" width="20" height="5" rx="1.5" fill="#2b2b2b"/><rect x="18" y="-4" width="14" height="12" rx="2" fill="#2b2b2b"/>' +
+                   '<circle cx="21" cy="22" r="1.6" fill="#2b2b2b"/><circle cx="29" cy="22" r="1.6" fill="#2b2b2b"/><path d="M25 25 l8 2 -8 1.5z" fill="#f08a24"/>' +
+                   '<path d="M14 33 Q25 39 36 33 L37 37 Q25 43 13 37 Z" fill="#b3283a"/><rect x="30" y="36" width="5" height="10" fill="#b3283a"/>' +
+                   '<circle cx="25" cy="45" r="1.6" fill="#2b2b2b"/><circle cx="25" cy="52" r="1.6" fill="#2b2b2b"/></svg>';
+        },
+        house: function (w) {
+            return '<svg width="' + w + '" viewBox="0 0 70 60" aria-hidden="true"><rect x="10" y="26" width="50" height="32" fill="#c8794b"/><path d="M4 28 L35 4 L66 28 Z" fill="#8a3b2b"/>' +
+                   '<path d="M2 28 Q8 22 14 26 Q20 20 26 25 Q35 18 44 25 Q50 20 56 26 Q62 22 68 28 L66 31 H4Z" fill="#fff"/><path d="M14 22 Q24 12 35 6 Q46 12 56 22" stroke="#fff" stroke-width="3" fill="none"/>' +
+                   '<rect x="18" y="34" width="12" height="11" fill="#ffd36b"/><rect x="40" y="38" width="11" height="20" fill="#5a3322"/><rect x="47" y="14" width="7" height="12" fill="#6b3a2a"/></svg>';
+        },
+        sleigh: function () {
+            return '<svg viewBox="0 0 200 80" aria-hidden="true">' +
+                   // 麋鹿
+                   '<g fill="#8a5a3a"><ellipse cx="38" cy="44" rx="20" ry="9"/><rect x="24" y="50" width="4" height="16" rx="2"/><rect x="46" y="50" width="4" height="16" rx="2"/><path d="M52 40 q8-10 10-18 l5 2 q-2 10-10 20z"/><circle cx="64" cy="22" r="7"/></g>' +
+                   '<path d="M60 16 l-4-10 M60 16 l-8-6 M66 15 l2-11 M66 15 l7-7" stroke="#6b4428" stroke-width="2.4" stroke-linecap="round"/><circle cx="70" cy="24" r="2.6" fill="#d63649"/>' +
+                   '<path d="M56 42 Q90 30 112 44" stroke="#c9a227" stroke-width="1.5" fill="none"/>' +
+                   // 雪橇＋聖誕老人
+                   '<path d="M104 36 h70 q10 0 10 12 v6 h-82 q-8 0-8-8z" fill="#b3283a"/><path d="M98 66 h86 q10 0 12-8" stroke="#c9a227" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+                   '<rect x="110" y="56" width="4" height="10" fill="#c9a227"/><rect x="168" y="56" width="4" height="10" fill="#c9a227"/>' +
+                   '<ellipse cx="166" cy="30" rx="14" ry="12" fill="#a77b4f"/><path d="M158 22 q8-6 16 0" stroke="#7a5233" stroke-width="2" fill="none"/>' +
+                   '<circle cx="134" cy="30" r="13" fill="#d63649"/><circle cx="134" cy="16" r="8" fill="#f5d7c4"/><path d="M126 18 q8 14 16 0 q-2 8-8 9 q-6-1-8-9z" fill="#fff"/>' +
+                   '<path d="M125 13 q9-14 20-2z" fill="#d63649"/><circle cx="147" cy="9" r="3" fill="#fff"/><rect x="124" y="11" width="21" height="4" rx="2" fill="#fff"/></svg>';
+        },
+        holly: function () {
+            return '<svg viewBox="0 0 70 50" aria-hidden="true"><path d="M34 26C24 10 8 12 3 6c2 9 0 14 6 18-5 2-6 6-4 10 8-6 18-2 29-8z" fill="#2f6b4f"/><path d="M36 26c10-16 26-14 31-20-2 9 0 14-6 18 5 2 6 6 4 10-8-6-18-2-29-8z" fill="#1f4d3a"/>' +
+                   '<circle cx="31" cy="30" r="6" fill="#c8243a"/><circle cx="41" cy="30" r="6" fill="#b3283a"/><circle cx="36" cy="38" r="6" fill="#d63649"/></svg>';
+        },
+        bell: function () {
+            return '<svg viewBox="0 0 40 44" aria-hidden="true"><path d="M20 4 q-12 0-13 16 q0 10-5 14 h36 q-5-4-5-14 q-1-16-13-16z" fill="#e0b13c" stroke="#a8841c" stroke-width="1.4"/><circle cx="20" cy="38" r="4.5" fill="#a8841c"/><rect x="18" y="0" width="4" height="6" rx="2" fill="#a8841c"/><path d="M6 33 h28" stroke="#b3283a" stroke-width="3"/></svg>';
+        }
+    };
+    var XM_FLAKE = '❄';
+    var XM_GIFT_COLORS = [{}, { box: '#2f6b4f', lid: '#1f4d3a', rib: '#f3c75f' }, { box: '#f3c75f', lid: '#e0b13c', rib: '#b3283a', knot: '#d63649' }, { box: '#5b8fc7', lid: '#3f72aa', rib: '#fff', knot: '#e9eef5' }];
+
+    function fxDriveImg_(v) {
+        v = String(v || '').trim(); if (!v) return '';
+        if (/^https?:\/\//.test(v) && !/drive\.google\.com\/(file\/d|open)/.test(v)) return v;
+        var m = v.match(/\/d\/([\w-]{20,})/) || v.match(/[?&]id=([\w-]{20,})/) || v.match(/^([\w-]{20,})$/);
+        return m ? 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w240' : v;
+    }
+
+    function initChristmas_(f) {
+        var reduce = false;
+        try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+        FX_GAME = {
+            fx: 'christmas', couponName: '聖誕禮物券', icon: '🎁', expiry: '2026/12/26',
+            claimedKey: 'xm_claimed', pendingKey: 'xm_pending_claim',
+            caught: '🎁 全部接到了！', again: '🎁 又接到禮物了！',
+            candy: '聖誕老人送你一根拐杖糖 🍬<br>祝你聖誕快樂、新年快樂！', candyBtn: '收下拐杖糖',
+            leave: '聖誕老人留下一張折價券給你', used: '你的聖誕禮物券已經用掉囉，謝謝支持！',
+            art: function () { return XM_SVG.gift(84); }
+        };
+
+        // 1. 頂部松綠雪景帶＋燈串＋飄雪
+        if (!document.getElementById('xm-hero')) {
+            var hero = document.createElement('div');
+            hero.id = 'xm-hero'; hero.className = 'xm-hero'; hero.setAttribute('aria-hidden', 'true');
+            var flakes = '';
+            if (!reduce) {
+                var nf = window.innerWidth < 576 ? 16 : 28;
+                for (var i = 0; i < nf; i++) {
+                    var dur = 7 + Math.random() * 7;
+                    flakes += '<span class="xm-flake" style="left:' + (Math.random() * 100).toFixed(1) + '%;font-size:' + (8 + Math.random() * 10).toFixed(0) + 'px;animation-duration:' + dur.toFixed(1) +
+                              's;animation-delay:' + (-Math.random() * dur).toFixed(1) + 's;--sway:' + Math.round(-30 + Math.random() * 60) + 'px;">' + XM_FLAKE + '</span>';
+                }
+            }
+            hero.innerHTML = flakes;
+            document.body.insertBefore(hero, document.body.firstChild);
+            // 燈串：掛在跑馬燈／頁面最上緣
+            var lights = document.createElement('div');
+            lights.className = 'xm-lights'; lights.setAttribute('aria-hidden', 'true');
+            var colors = ['#e8394d', '#f3c75f', '#3fae74', '#5b9be0'], bulbs = '', n = Math.ceil(window.innerWidth / 46);
+            var wire = '<svg class="xm-wire" preserveAspectRatio="none" viewBox="0 0 ' + (n * 46) + ' 30"><path d="M0 4 ';
+            for (var k = 0; k < n; k++) wire += 'Q' + (k * 46 + 23) + ' 18 ' + (k * 46 + 46) + ' 4 ';
+            wire += '" stroke="#e8dcc0" stroke-opacity="0.75" stroke-width="1.4" fill="none"/></svg>';
+            for (var j = 0; j < n; j++) {
+                bulbs += '<span class="xm-bulb" style="left:' + (j * 46 + 18) + 'px;top:12px;background:' + colors[j % 4] + ';box-shadow:0 0 8px ' + colors[j % 4] +
+                         ';animation-delay:' + ((j % 4) * 0.4).toFixed(1) + 's"></span>';
+            }
+            lights.innerHTML = wire + bulbs;
+            hero.appendChild(lights);
+            var mq = document.getElementById('marquee-bar');
+            if (mq && mq.style.display !== 'none') lights.style.top = mq.offsetHeight + 'px';
+            setTimeout(function () { var m2 = document.getElementById('marquee-bar'); if (m2) lights.style.top = (m2.style.display === 'none' ? 0 : m2.offsetHeight) + 'px'; }, 3000);
+        }
+
+        // 2. 載入畫面：聖誕樹＋禮物
+        var dw = document.querySelector('#loader .dog-wrapper');
+        if (dw && !dw.querySelector('.xm-loader-deco')) {
+            dw.insertAdjacentHTML('beforeend', '<span class="xm-loader-deco tree">' + XM_SVG.tree(78) + '</span><span class="xm-loader-deco gift">' + XM_SVG.gift(46) + '</span>');
+        }
+
+        // 3. 功能鍵：聖誕版 Cooper（有設定圖片才換）＋金色圈＋LINE 冬青
+        var icons = f.icons || {};
+        var map = [['openCartModal', icons.checkout], ['openMyOrders', icons.orders], ['openSupport', icons.support]];
+        map.forEach(function (m) {
+            var url = fxDriveImg_(m[1]); if (!url) return;
+            var it = document.querySelector('.quick-menu .menu-item[onclick^="' + m[0] + '"] .menu-btn-img');
+            if (it) { var pre = new Image(); pre.onload = function () { it.src = url; }; pre.referrerPolicy = 'no-referrer'; pre.src = url; }
+        });
+        var items = document.querySelectorAll('.quick-menu .menu-item');
+        for (var q = 0; q < items.length; q++) {
+            var img = items[q].querySelector('.menu-btn-img');
+            if (!img || img.parentNode.classList.contains('fx-menu-ico')) continue;
+            var wrap = document.createElement('span'); wrap.className = 'fx-menu-ico';
+            img.parentNode.insertBefore(wrap, img); wrap.appendChild(img);
+            if (img.id === 'member-btn-img') {
+                wrap.insertAdjacentHTML('beforeend', '<span class="fx-acc holly" aria-hidden="true">' + XM_SVG.holly() + '</span><span class="fx-acc bell" aria-hidden="true">' + XM_SVG.bell() + '</span>');
+            }
+        }
+
+        // 4. 頁尾：雪景小鎮（禮物可以點，給「減少動態效果」的客人也能玩）
+        var layout = document.querySelector('.app-layout');
+        if (layout && !document.getElementById('fx-footer')) {
+            var ft = document.createElement('div');
+            ft.id = 'fx-footer'; ft.className = 'fx-footer';
+            ft.innerHTML = '<div class="fx-footer-row">' + XM_SVG.tree(46) + XM_SVG.house(64) + XM_SVG.snowman(40) +
+                           '<span class="xm-footer-gift" role="button" aria-label="接禮物" onclick="xmStartGame_(this)">' + XM_SVG.gift(40) + '</span>' +
+                           XM_SVG.tree(56) + '</div>' +
+                           '<div class="fx-footer-title">聖誕快樂 Merry Christmas</div>' +
+                           '<div class="fx-footer-sub">看到雪橇飛過、掉下閃亮的禮物，點它就能玩接禮物、贏折價券 🎁</div>';
+            layout.appendChild(ft);
+        }
+
+        // 5. 飄浮層：頁面上稀疏的雪花＋偶爾飛過的雪橇
+        if (!reduce && !document.getElementById('fx-float-layer')) {
+            var layer = document.createElement('div');
+            layer.id = 'fx-float-layer'; layer.className = 'fx-float-layer xm-float-layer';
+            var html = '', np = window.innerWidth < 576 ? 7 : 12;
+            for (var a = 0; a < np; a++) {
+                var d2 = 16 + Math.random() * 14;
+                html += '<span class="xm-page-flake" aria-hidden="true" style="left:' + (Math.random() * 100).toFixed(1) + 'vw;font-size:' + (10 + Math.random() * 10).toFixed(0) +
+                        'px;opacity:' + (0.35 + Math.random() * 0.35).toFixed(2) + ';animation-duration:' + d2.toFixed(1) + 's;animation-delay:' + (-Math.random() * d2).toFixed(1) + 's;--sway:' + Math.round(-40 + Math.random() * 80) + 'px">' + XM_FLAKE + '</span>';
+            }
+            layer.innerHTML = html;
+            document.body.appendChild(layer);
+            xmScheduleSleigh_(5000);
+        }
+
+        // 6. 訪客接到禮物後去登入 → 回來時自動領券
+        hwCheckPendingClaim_();
+    }
+
+    // ----- 雪橇：每隔一段時間飛過，飛到中間掉下一個閃亮禮物 -----
+    var xmSleighTimer = null;
+    function xmScheduleSleigh_(ms) { clearTimeout(xmSleighTimer); xmSleighTimer = setTimeout(xmSleigh_, ms); }
+    function xmSleigh_() {
+        var layer = document.getElementById('fx-float-layer'); if (!layer) return;
+        if (hwGame || document.querySelector('.modal.show')) { xmScheduleSleigh_(8000); return; }
+        var mobile = window.innerWidth < 576;
+        var sl = document.createElement('div');
+        sl.className = 'xm-sleigh'; sl.setAttribute('aria-hidden', 'true');
+        if (mobile) sl.style.width = '150px';
+        sl.innerHTML = XM_SVG.sleigh();
+        layer.appendChild(sl);
+        setTimeout(function () { if (sl.parentNode) sl.remove(); }, 9500);
+        // 飛到畫面中間時掉禮物
+        setTimeout(function () {
+            var old = document.getElementById('xm-drop'); if (old) old.remove();
+            var g = document.createElement('div');
+            g.id = 'xm-drop'; g.className = 'xm-drop';
+            g.setAttribute('role', 'button'); g.setAttribute('aria-label', '接住聖誕禮物');
+            g.style.left = (35 + Math.random() * 25).toFixed(1) + 'vw';
+            g.style.top = '10vh';
+            var first = !hwStore_('xm_caught_ever');
+            g.innerHTML = (first ? '<span class="fx-lucky-tip">接住我！</span>' : '') + '<div>' + XM_SVG.gift(mobile ? 50 : 60, XM_GIFT_COLORS[Math.floor(Math.random() * 4)]) + '</div>';
+            g.onclick = function (ev) { ev.stopPropagation(); xmStartGame_(g); };
+            layer.appendChild(g);
+            requestAnimationFrame(function () { requestAnimationFrame(function () { g.style.top = (38 + Math.random() * 22).toFixed(1) + 'vh'; }); });
+            setTimeout(function () { if (g.parentNode && !g.classList.contains('poof')) { g.classList.add('gone'); setTimeout(function () { if (g.parentNode) g.remove(); }, 700); } }, 11000);
+        }, 4300);
+        var claimed = hwStore_('xm_claimed');
+        xmScheduleSleigh_((claimed ? 55000 : 25000) + Math.random() * 12000);
+    }
+
+    // ----- 🎁 接禮物小遊戲：點到掉下來的禮物 5 個 -----
+    function xmStartGame_(src) {
+        if (hwGame) return;
+        if (src && src.id === 'xm-drop') { src.classList.add('gone'); setTimeout(function () { if (src.parentNode) src.remove(); }, 600); }
+        hwStore_('xm_caught_ever', '1');
+        var ov = document.createElement('div');
+        ov.className = 'hw-game xm';
+        var dots = ''; for (var i = 0; i < HW_HITS_NEED; i++) dots += '<span class="hw-dot"></span>';
+        ov.innerHTML =
+            '<button class="hw-game-close" aria-label="離開遊戲">✕</button>' +
+            '<div class="hw-game-top">' +
+                '<div class="hw-game-title">接住聖誕老人的禮物！</div>' +
+                '<div class="hw-game-sub">禮物從天上掉下來，點到 ' + HW_HITS_NEED + ' 個就成功</div>' +
+                '<div class="hw-dots">' + dots + '</div>' +
+                '<div class="hw-game-msg" aria-live="polite">&nbsp;</div>' +
+            '</div>' +
+            '<div class="hw-arena"></div>';
+        document.body.appendChild(ov);
+        var arena = ov.querySelector('.hw-arena');
+        hwGame = { ov: ov, arena: arena, hits: 0, done: false, wander: null };
+        ov.querySelector('.hw-game-close').onclick = function () { hwEndGame_(); };
+        arena.addEventListener('pointerdown', function (e) {
+            if (!hwGame || hwGame.done) return;
+            if (e.target === arena) hwMsg_(['差一點！', '再快一點～', '禮物在那邊！'][Math.floor(Math.random() * 3)]);
+        });
+        requestAnimationFrame(function () { requestAnimationFrame(function () { ov.classList.add('show'); }); });
+        setTimeout(xmSpawnGift_, 500);
+        hwGame.wander = setInterval(xmSpawnGift_, 850);
+    }
+
+    function xmSpawnGift_() {
+        var g = hwGame; if (!g || g.done || !g.arena) return;
+        var a = g.arena.getBoundingClientRect();
+        var el = document.createElement('div');
+        el.className = 'xm-fall';
+        el.style.left = (Math.random() * Math.max(a.width - 84, 10)).toFixed(0) + 'px';
+        el.style.setProperty('--h', (a.height + 40).toFixed(0) + 'px');
+        el.style.setProperty('--dur', (3 + Math.random() * 1.2).toFixed(2) + 's');
+        el.style.setProperty('--r0', Math.round(-20 + Math.random() * 40) + 'deg');
+        el.style.setProperty('--r1', Math.round(-30 + Math.random() * 60) + 'deg');
+        el.innerHTML = XM_SVG.gift(64, XM_GIFT_COLORS[Math.floor(Math.random() * 4)]);
+        el.addEventListener('pointerdown', function (e) { e.preventDefault(); e.stopPropagation(); xmCatch_(el); });
+        el.addEventListener('animationend', function () { if (el.parentNode) el.remove(); });
+        g.arena.appendChild(el);
+    }
+
+    function xmCatch_(el) {
+        var g = hwGame; if (!g || g.done || el.classList.contains('got')) return;
+        var r = el.getBoundingClientRect(), a = g.arena.getBoundingClientRect();
+        var cur = getComputedStyle(el).transform;
+        el.classList.add('got');
+        el.style.transform = (cur && cur !== 'none' ? cur + ' ' : '') + 'scale(1.5)';
+        setTimeout(function () { if (el.parentNode) el.remove(); }, 380);
+        var plus = document.createElement('div');
+        plus.className = 'xm-plus'; plus.textContent = '+1';
+        plus.style.left = (r.left - a.left + r.width / 2 - 12) + 'px'; plus.style.top = (r.top - a.top) + 'px';
+        g.arena.appendChild(plus); setTimeout(function () { if (plus.parentNode) plus.remove(); }, 820);
+        g.hits++;
+        var ds = g.ov.querySelectorAll('.hw-dot');
+        for (var i = 0; i < ds.length; i++) ds[i].classList.toggle('on', i < g.hits);
+        var left = HW_HITS_NEED - g.hits;
+        if (left <= 0) { xmWin_(); return; }
+        hwMsg_(left === 1 ? '最後一個！' : (left === 2 ? '快完成了！' : ['接到了！', '好身手！', '再來一個！'][Math.floor(Math.random() * 3)]));
+    }
+
+    function xmWin_() {
+        var g = hwGame; if (!g) return;
+        g.done = true; clearInterval(g.wander);
+        var falls = g.arena.querySelectorAll('.xm-fall'); for (var i = 0; i < falls.length; i++) falls[i].remove();
+        hwMsg_('全部接到了！🎉');
+        var big = document.createElement('div');
+        big.className = 'xm-big'; big.innerHTML = XM_SVG.gift(150);
+        g.arena.appendChild(big);
+        setTimeout(function () {
+            big.classList.add('open');
+            for (var k = 0; k < 14; k++) {
+                var sp = document.createElement('div');
+                sp.className = 'xm-spark';
+                var ang = (k / 14) * Math.PI * 2, dist = 70 + Math.random() * 60;
+                sp.style.setProperty('--x', Math.round(Math.cos(ang) * dist) + 'px');
+                sp.style.setProperty('--y', Math.round(Math.sin(ang) * dist - 30) + 'px');
+                sp.style.background = ['#f3c75f', '#e8394d', '#3fae74', '#fff'][k % 4];
+                g.arena.appendChild(sp);
+            }
+        }, 800);
+        setTimeout(function () { hwReward_(); }, 1700);
     }
 
     // ---------- 🎃 萬聖節：夜空、幽靈、蝙蝠、頁尾、幸運幽靈彩蛋 ----------
@@ -1445,8 +1860,21 @@
         setTimeout(function () { if (ov.parentNode) ov.remove(); }, 260);
     }
 
-    // ----- 🎟️ 抓到後：領券 -----
-    function hwCouponAmount_() { return (typeof allData !== 'undefined' && allData && Number(allData.hwCouponAmount) > 0) ? Number(allData.hwCouponAmount) : 0; }
+    // ----- 🎟️ 遊戲過關後：領券（萬聖節、聖誕節共用，文字與圖案由 FX_GAME 決定）-----
+    var FX_GAME = {
+        fx: 'halloween', couponName: '萬聖節抓幽靈券', icon: '🎃', expiry: '2026/11/01',
+        claimedKey: 'hw_claimed', pendingKey: 'hw_pending_claim',
+        caught: '👻 抓到了！', again: '👻 又抓到了！',
+        candy: '小幽靈送你一顆糖 🍬<br>祝你萬聖節快樂，不給糖就搗蛋！', candyBtn: '收下糖果',
+        leave: '小幽靈留下一張折價券給你', used: '你的萬聖節券已經用掉囉，謝謝支持！',
+        art: function () { return HW_SVG.ghost(84, { candy: true }); }
+    };
+    function hwCouponAmount_() {
+        if (typeof allData === 'undefined' || !allData) return 0;
+        var fc = allData.festivalCoupons || {};
+        var v = (fc[FX_GAME.fx] !== undefined) ? fc[FX_GAME.fx] : (FX_GAME.fx === 'halloween' ? allData.hwCouponAmount : 0);
+        return Number(v) > 0 ? Number(v) : 0;
+    }
 
     function hwReward_() {
         var amt = hwCouponAmount_();
@@ -1460,12 +1888,12 @@
         var token = '';
         try { token = liff.getAccessToken() || ''; } catch (e) {}
         if (!token) { hwShowCard_('error', { message: '登入資訊過期了，請重新登入 LINE 再領一次', relogin: true }); return; }
-        fetch(GAS_URL + '?page=claimFestivalCoupon&fx=halloween&at=' + encodeURIComponent(token) + '&t=' + Date.now())
+        fetch(GAS_URL + '?page=claimFestivalCoupon&fx=' + FX_GAME.fx + '&at=' + encodeURIComponent(token) + '&t=' + Date.now())
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 if (!res) throw new Error('empty');
                 if (res.status === 'success' || res.status === 'already') {
-                    hwStore_('hw_claimed', '1');
+                    hwStore_(FX_GAME.claimedKey, '1');
                     if (typeof loadMyCoupons === 'function') loadMyCoupons();
                     hwShowCard_(res.status, res.coupon);
                 } else if (res.status === 'disabled') hwShowCard_('candy');
@@ -1478,8 +1906,8 @@
     function hwTicket_(c, stamp) {
         return '<div class="hw-ticket' + (stamp ? ' used' : '') + '">' +
                  '<div class="hw-ticket-l"><div class="hw-ticket-cur">折抵</div><div class="hw-ticket-amt">$' + (Number(c.amount) || 0) + '</div></div>' +
-                 '<div class="hw-ticket-r"><div class="hw-ticket-name">🎃 ' + (c.name || '萬聖節抓幽靈券') + '</div>' +
-                 '<div class="hw-ticket-exp">使用期限：' + (c.expiry || '2026/11/01') + '</div>' +
+                 '<div class="hw-ticket-r"><div class="hw-ticket-name">' + FX_GAME.icon + ' ' + (c.name || FX_GAME.couponName) + '</div>' +
+                 '<div class="hw-ticket-exp">使用期限：' + (c.expiry || FX_GAME.expiry) + '</div>' +
                  '<div class="hw-ticket-tip">結帳時自動折抵，不用記代碼</div></div>' +
                  (stamp ? '<div class="hw-ticket-stamp">' + stamp + '</div>' : '') +
                '</div>';
@@ -1496,23 +1924,23 @@
         var goBtn = hasCart ? '<button class="primary" onclick="hwEndGame_(); setTimeout(openCartModal, 280);">去結帳使用</button>'
                             : '<button class="primary" onclick="hwEndGame_()">繼續逛逛</button>';
         if (type === 'candy') {
-            html = '<div class="fx-egg-title">👻 抓到了！</div><div class="fx-egg-sub">小幽靈送你一顆糖 🍬<br>祝你萬聖節快樂，不給糖就搗蛋！</div>' +
-                   '<div class="fx-egg-btns"><button class="primary" onclick="hwEndGame_()">收下糖果</button></div>';
+            html = '<div class="fx-egg-title">' + FX_GAME.caught + '</div><div class="fx-egg-sub">' + FX_GAME.candy + '</div>' +
+                   '<div class="fx-egg-btns"><button class="primary" onclick="hwEndGame_()">' + FX_GAME.candyBtn + '</button></div>';
         } else if (type === 'login') {
-            html = '<div class="fx-egg-title">👻 抓到了！</div><div class="fx-egg-sub">小幽靈留下一張折價券給你</div>' +
+            html = '<div class="fx-egg-title">' + FX_GAME.caught + '</div><div class="fx-egg-sub">' + FX_GAME.leave + '</div>' +
                    hwTicket_({ amount: info.amount }) +
                    '<div class="fx-egg-note">登入 LINE 就能把券收進你的券夾，結帳時自動折抵（每人限領一張）</div>' +
                    '<div class="fx-egg-btns"><button class="ghost" onclick="hwEndGame_()">先不要</button><button class="primary line" onclick="hwLoginClaim_()">LINE 登入領券</button></div>';
         } else if (type === 'loading') {
-            html = '<div class="fx-egg-title">👻 抓到了！</div><div class="fx-egg-sub"><span class="spinner-border spinner-border-sm me-2"></span>正在把券放進你的券夾…</div>';
+            html = '<div class="fx-egg-title">' + FX_GAME.caught + '</div><div class="fx-egg-sub"><span class="spinner-border spinner-border-sm me-2"></span>正在把券放進你的券夾…</div>';
         } else if (type === 'success') {
             html = '<div class="fx-egg-title">🎉 券已經放進你的券夾！</div>' + hwTicket_(info) +
                    '<div class="fx-egg-note">下次結帳時，系統會自動幫你折抵，不用記任何代碼</div>' +
                    '<div class="fx-egg-btns">' + goBtn + '</div>';
         } else if (type === 'already') {
             var st = info.state;
-            html = '<div class="fx-egg-title">👻 又抓到了！</div>' +
-                   '<div class="fx-egg-sub">' + (st === 'used' ? '你的萬聖節券已經用掉囉，謝謝支持！' : (st === 'available' ? '你已經領過囉，這張券還在你的券夾裡' : '這張券已經失效了')) + '</div>' +
+            html = '<div class="fx-egg-title">' + FX_GAME.again + '</div>' +
+                   '<div class="fx-egg-sub">' + (st === 'used' ? FX_GAME.used : (st === 'available' ? '你已經領過囉，這張券還在你的券夾裡' : '這張券已經失效了')) + '</div>' +
                    hwTicket_(info, st === 'used' ? '已使用' : (st === 'available' ? '' : '已失效')) +
                    '<div class="fx-egg-btns">' + (st === 'available' ? goBtn : '<button class="primary" onclick="hwEndGame_()">好的</button>') + '</div>';
         } else {
@@ -1527,7 +1955,7 @@
             box.className = 'hw-result';
             g.ov.appendChild(box);
         }
-        box.innerHTML = '<div class="fx-egg-card"><div class="fx-egg-art">' + HW_SVG.ghost(84, { candy: true }) + '</div>' + html + '</div>';
+        box.innerHTML = '<div class="fx-egg-card"><div class="fx-egg-art">' + FX_GAME.art() + '</div>' + html + '</div>';
         requestAnimationFrame(function () { box.classList.add('show'); });
     }
 
@@ -1543,13 +1971,13 @@
 
     // 訪客：記住「抓到了、待領券」，登入回來後自動領
     function hwLoginClaim_() {
-        hwStore_('hw_pending_claim', String(Date.now()));
+        hwStore_(FX_GAME.pendingKey, String(Date.now()));
         if (typeof loginWithLine === 'function') loginWithLine();
     }
     function hwCheckPendingClaim_() {
-        var t = Number(hwStore_('hw_pending_claim')) || 0;
+        var t = Number(hwStore_(FX_GAME.pendingKey)) || 0;
         if (!t) return;
-        if (Date.now() - t > 30 * 60 * 1000) { try { localStorage.removeItem('hw_pending_claim'); } catch (e) {} return; }
+        if (Date.now() - t > 30 * 60 * 1000) { try { localStorage.removeItem(FX_GAME.pendingKey); } catch (e) {} return; }
         var tries = 0;
         var timer = setInterval(function () {
             tries++;
@@ -1557,7 +1985,7 @@
             if (ready || tries > 30) {
                 clearInterval(timer);
                 if (!ready) return;
-                try { localStorage.removeItem('hw_pending_claim'); } catch (e) {}
+                try { localStorage.removeItem(FX_GAME.pendingKey); } catch (e) {}
                 if (!hwCouponAmount_()) return;
                 hwShowCard_('loading');
                 hwClaim_();
@@ -2660,7 +3088,7 @@
         myCoupons.forEach(c => {
             const sel = selectedCoupon && selectedCoupon.couponId === c.couponId;
             const exp = c.expiryFull || c.expiry;
-            html += '<div class="cpn-item' + (sel ? ' sel' : '') + (String(c.couponId).indexOf('HW-') === 0 ? ' hw' : '') + '" onclick="pickCoupon(\'' + String(c.couponId).replace(/'/g, '') + '\')">' +
+            html += '<div class="cpn-item' + (sel ? ' sel' : '') + (String(c.couponId).indexOf('HW-') === 0 ? ' hw' : (String(c.couponId).indexOf('XM-') === 0 ? ' xm' : '')) + '" onclick="pickCoupon(\'' + String(c.couponId).replace(/'/g, '') + '\')">' +
                       '<div class="cpn-amt">$' + Number(c.amount) + '</div>' +
                       '<div class="cpn-info"><div class="cpn-name">' + (c.name || '專屬優惠券') + '</div><div class="cpn-exp">' + (exp ? '使用期限：' + exp : '無使用期限') + '</div></div>' +
                       '<div class="cpn-check">' + (sel ? '✓ 使用中' : '使用') + '</div></div>';
